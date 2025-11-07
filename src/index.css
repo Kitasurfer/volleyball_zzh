@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply font-sans text-neutral-900 antialiased;
+  }
+
+  /* Support for prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .container {
+    @apply mx-auto px-6 lg:px-12;
+    max-width: 1400px;
+  }
+
+  /* Button styles */
+  .btn-primary {
+    @apply bg-primary-500 text-white px-6 py-3 rounded-md font-semibold hover:bg-primary-600 transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border-2 border-neutral-200 text-neutral-900 px-6 py-3 rounded-md font-semibold hover:bg-neutral-100 hover:border-primary-500 transition-all duration-200;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-white p-8 rounded-lg shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .card-interactive {
+    @apply card hover:-translate-y-1 hover:scale-[1.02] cursor-pointer;
+  }
+}
+
+img {
+  object-position: top;
+}

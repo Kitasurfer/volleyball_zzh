@@ -12,7 +12,7 @@ interface SupabaseVectorJobRow {
   content_items: {
     title: string;
     language: string;
-  } | null;
+  }[] | null;
 }
 
 interface State {
@@ -50,16 +50,20 @@ export const useAdminVectorJobs = () => {
         return;
       }
 
-      const jobs: VectorJobSummary[] = (data as SupabaseVectorJobRow[]).map((row) => ({
-        id: row.id,
-        contentId: row.content_id,
-        title: row.content_items?.title ?? 'Untitled content',
-        language: row.content_items?.language ?? '—',
-        status: row.status,
-        startedAt: row.started_at ?? undefined,
-        completedAt: row.completed_at ?? undefined,
-        error: row.error,
-      }));
+      const jobs: VectorJobSummary[] = (data as SupabaseVectorJobRow[]).map((row) => {
+        const firstContentItem = row.content_items?.[0];
+
+        return {
+          id: row.id,
+          contentId: row.content_id,
+          title: firstContentItem?.title ?? 'Untitled content',
+          language: firstContentItem?.language ?? '—',
+          status: row.status,
+          startedAt: row.started_at ?? undefined,
+          completedAt: row.completed_at ?? undefined,
+          error: row.error,
+        };
+      });
 
       setState({ jobs, loading: false });
     };

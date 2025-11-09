@@ -63,8 +63,16 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="border-t border-primary-600 mt-12 pt-8 text-center">
-          <p className="text-neutral-100">{t.footer.copyright}</p>
+        <div className="border-t border-primary-600 mt-12 pt-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-neutral-100 text-sm">{t.footer.copyright}</p>
+            <Link 
+              to="/admin/login" 
+              className="text-xs text-neutral-400 hover:text-accent-500 transition-colors opacity-50 hover:opacity-100"
+            >
+              Admin
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { LanguageProvider } from './lib/LanguageContext';
+import { AuthProvider } from './lib/AuthContext';
 import { queryClient } from './lib/queryClient';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -53,48 +54,50 @@ const AdminFallback = () => (
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <Router>
-          <div className="flex flex-col min-h-screen bg-background-page">
-            <Header />
-            <main className="flex-grow">
-              <Suspense fallback={<PageFallback />}>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/gallery" element={<GalleryPage />} />
-                  <Route path="/hall" element={<HallPage />} />
-                  <Route path="/beach" element={<BeachPage />} />
-                  <Route path="/training" element={<TrainingPage />} />
-                  <Route path="/competitions" element={<CompetitionsPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
+      <AuthProvider>
+        <LanguageProvider>
+          <Router>
+            <div className="flex flex-col min-h-screen bg-background-page">
+              <Header />
+              <main className="flex-grow">
+                <Suspense fallback={<PageFallback />}>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/gallery" element={<GalleryPage />} />
+                    <Route path="/hall" element={<HallPage />} />
+                    <Route path="/beach" element={<BeachPage />} />
+                    <Route path="/training" element={<TrainingPage />} />
+                    <Route path="/competitions" element={<CompetitionsPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
 
-                  <Route path="/admin/login" element={<AdminLoginPage />} />
+                    <Route path="/admin/login" element={<AdminLoginPage />} />
 
-                  <Route
-                    path="/admin/*"
-                    element={
-                      <AdminRouteGuard>
-                        <Suspense fallback={<AdminFallback />}>
-                          <AdminLayout />
-                        </Suspense>
-                      </AdminRouteGuard>
-                    }
-                  >
-                    <Route index element={<AdminOverviewPage />} />
-                    <Route path="content" element={<AdminContentPage />} />
-                    <Route path="media" element={<AdminMediaPage />} />
-                    <Route path="vector-jobs" element={<AdminVectorJobsPage />} />
-                    <Route path="chats" element={<AdminChatsPage />} />
-                  </Route>
-                </Routes>
-              </Suspense>
-            </main>
-            <Footer />
-            <Chatbot />
-          </div>
-        </Router>
-      </LanguageProvider>
+                    <Route
+                      path="/admin/*"
+                      element={
+                        <AdminRouteGuard>
+                          <Suspense fallback={<AdminFallback />}>
+                            <AdminLayout />
+                          </Suspense>
+                        </AdminRouteGuard>
+                      }
+                    >
+                      <Route index element={<AdminOverviewPage />} />
+                      <Route path="content" element={<AdminContentPage />} />
+                      <Route path="media" element={<AdminMediaPage />} />
+                      <Route path="vector-jobs" element={<AdminVectorJobsPage />} />
+                      <Route path="chats" element={<AdminChatsPage />} />
+                    </Route>
+                  </Routes>
+                </Suspense>
+              </main>
+              <Footer />
+              <Chatbot />
+            </div>
+          </Router>
+        </LanguageProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

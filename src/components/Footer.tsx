@@ -33,8 +33,8 @@ const Footer: React.FC = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 flex-shrink-0" />
-                <a href="mailto:info@blockbuster-volleyball.de" className="text-neutral-100 hover:text-accent-500 transition-colors">
-                  info@blockbuster-volleyball.de
+                <a href="mailto:info@zizishausen-volleyball.de" className="text-neutral-100 hover:text-accent-500 transition-colors">
+                  info@zizishausen-volleyball.de
                 </a>
               </div>
               <div className="flex items-center space-x-3">

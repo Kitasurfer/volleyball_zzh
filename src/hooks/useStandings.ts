@@ -30,16 +30,22 @@ export type StandingsResponse = {
 };
 
 const FUNCTIONS_URL = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const fetchStandings = async (): Promise<StandingsResponse> => {
   const baseUrl = FUNCTIONS_URL?.replace(/\/$/, '') ?? '';
   const endpoint = `${baseUrl}/league-results`;
 
-  const response = await fetch(endpoint, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (SUPABASE_ANON_KEY) {
+    headers.apikey = SUPABASE_ANON_KEY;
+    headers.Authorization = `Bearer ${SUPABASE_ANON_KEY}`;
+  }
+
+  const response = await fetch(endpoint, { headers });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch standings (${response.status})`);

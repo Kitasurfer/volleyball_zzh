@@ -7,3 +7,6 @@
   NETLIFY_USE_PNPM = "true"
   PNPM_VERSION = "9.11.0"
   NODE_VERSION = "20.11.1"
+  VITE_SUPABASE_URL = "https://kxwmkvtxkaczuonnnxlj.supabase.co"
+  VITE_SUPABASE_FUNCTIONS_URL = "https://kxwmkvtxkaczuonnnxlj.functions.supabase.co"
+  VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4d21rdnR4a2FjenVvbm5ueGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NDUwNzQsImV4cCI6MjA3ODAyMTA3NH0.L_wiWNZbDL9Nhf1A_ynY_-SLn1F2uSBQRELxeQghI7I"

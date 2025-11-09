@@ -172,10 +172,10 @@ const ContactPage: React.FC = () => {
                 <div>
                   <h3 className="text-h3 font-semibold text-neutral-900 mb-2">{t.info.email}</h3>
                   <a
-                    href="mailto:info@blockbuster-volleyball.de"
+                    href="mailto:info@zizishausen-volleyball.de"
                     className="text-body text-primary-500 hover:text-primary-600"
                   >
-                    info@blockbuster-volleyball.de
+                    info@zizishausen-volleyball.de
                   </a>
                 </div>
               </div>

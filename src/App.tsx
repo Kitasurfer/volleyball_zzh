@@ -74,7 +74,7 @@ function App() {
                     <Route path="/admin/login" element={<AdminLoginPage />} />
 
                     <Route
-                      path="/admin/*"
+                      path="/admin"
                       element={
                         <AdminRouteGuard>
                           <Suspense fallback={<AdminFallback />}>

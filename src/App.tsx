@@ -26,6 +26,7 @@ const AdminContentPage = lazy(() => import('./pages/admin/AdminContentPage'));
 const AdminMediaPage = lazy(() => import('./pages/admin/AdminMediaPage'));
 const AdminVectorJobsPage = lazy(() => import('./pages/admin/AdminVectorJobsPage'));
 const AdminChatsPage = lazy(() => import('./pages/admin/AdminChatsPage'));
+const AdminAlbumsPage = lazy(() => import('./pages/admin/AdminAlbumsPage'));
 
 /**
  * Fallback component shown while loading
@@ -86,6 +87,7 @@ function App() {
                       <Route index element={<AdminOverviewPage />} />
                       <Route path="content" element={<AdminContentPage />} />
                       <Route path="media" element={<AdminMediaPage />} />
+                      <Route path="albums" element={<AdminAlbumsPage />} />
                       <Route path="vector-jobs" element={<AdminVectorJobsPage />} />
                       <Route path="chats" element={<AdminChatsPage />} />
                     </Route>

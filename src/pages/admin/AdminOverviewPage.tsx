@@ -1,23 +1,28 @@
+import { useLanguage } from '../../lib/LanguageContext';
+
 const AdminOverviewPage = () => {
+  const { t } = useLanguage();
+  const admin = t.admin.overview;
+
   const cards = [
     {
-      title: 'Content Items',
-      description: 'Manage articles, translations, and publish status.',
+      title: admin.cards.contentTitle,
+      description: admin.cards.contentDescription,
       path: '/admin/content',
     },
     {
-      title: 'Media Library',
-      description: 'Upload and organize images, videos, and documents.',
+      title: admin.cards.mediaTitle,
+      description: admin.cards.mediaDescription,
       path: '/admin/media',
     },
     {
-      title: 'Vector Jobs',
-      description: 'Monitor ingestion queue, retry failures, and track progress.',
+      title: admin.cards.vectorTitle,
+      description: admin.cards.vectorDescription,
       path: '/admin/vector-jobs',
     },
     {
-      title: 'Chat Sessions',
-      description: 'Review conversations, export transcripts, and observe usage.',
+      title: admin.cards.chatsTitle,
+      description: admin.cards.chatsDescription,
       path: '/admin/chats',
     },
   ];
@@ -25,11 +30,8 @@ const AdminOverviewPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-neutral-900">Welcome back!</h2>
-        <p className="mt-2 text-sm text-neutral-500">
-          Use the sections below to manage content, keep the vector knowledge base up to date, and
-          monitor the AI assistant.
-        </p>
+        <h2 className="text-2xl font-semibold text-neutral-900">{admin.title}</h2>
+        <p className="mt-2 text-sm text-neutral-500">{admin.subtitle}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

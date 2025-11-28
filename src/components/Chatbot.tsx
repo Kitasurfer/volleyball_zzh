@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect, memo } from 'react';
-import { MessageCircle, Send, X } from 'lucide-react';
+import { MessageCircle, Send, X, Copy } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { supabase } from '../lib/supabase';
-import type { ChatMessage, ChatbotResponse, Citation } from '../types/chatbot';
+import type { ChatMessage, ChatbotResponse } from '../types/chatbot';
 import type { Translation } from '../types';
+import { LinkifiedText } from './LinkifiedText';
 
 const styles: Record<string, string> = {
   button:
-    'fixed bottom-6 right-6 z-50 bg-primary-500 text-white p-4 rounded-full shadow-lg transition-transform duration-300 hover:scale-110 hover:bg-primary-600',
-  window: 'fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden',
+    'fixed bottom-6 right-6 z-[100] bg-primary-500 text-white p-4 rounded-full shadow-lg transition-transform duration-300 hover:scale-110 hover:bg-primary-600',
+  window: 'fixed bottom-6 right-6 z-[100] w-96 max-w-[calc(100vw-3rem)] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden',
   header: 'bg-primary-500 text-white px-6 py-4 flex items-center justify-between',
   headerTitle: 'flex items-center gap-3',
   closeButton: 'text-white hover:text-neutral-200 transition-colors',
@@ -17,12 +18,7 @@ const styles: Record<string, string> = {
   bubbleBot: 'bg-white text-neutral-900 shadow-sm',
   bubbleBase: 'max-w-[80%] px-4 py-2 rounded-lg',
   messageText: 'text-sm leading-relaxed whitespace-pre-line',
-  sources: 'mt-3 border-t border-neutral-200 pt-3',
-  sourcesTitle: 'text-xs font-semibold uppercase text-neutral-500 tracking-wide',
-  sourcesList: 'mt-2 space-y-2',
-  sourceItem: 'text-xs text-neutral-600',
-  sourceLink: 'font-medium text-primary-500 hover:text-primary-600',
-  sourceFallback: 'mt-2 text-xs text-neutral-500',
+  copyButton: 'absolute top-2 right-2 p-1 rounded text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors',
   typingWrapper: 'flex justify-start',
   typingBubble: 'bg-white px-4 py-2 rounded-lg shadow-sm',
   typingDots: 'flex gap-2',
@@ -35,54 +31,38 @@ const styles: Record<string, string> = {
     'bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
 };
 
-const CitationList = memo(({ citations, t }: { citations?: Citation[]; t: Translation['chatbot'] }) => {
-  if (!citations || citations.length === 0) {
-    return <p className={styles.sourceFallback}>{t.noSources}</p>;
-  }
-
-  return (
-    <ul className={styles.sourcesList}>
-      {citations.map((citation, index) => (
-        <li key={`citation-${index}`} className={styles.sourceItem}>
-          {citation.url ? (
-            <a
-              href={citation.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.sourceLink}
-            >
-              {citation.title || citation.url}
-            </a>
-          ) : (
-            <span className="font-medium text-neutral-700">{citation.title || t.noSources}</span>
-          )}
-          {citation.snippet && <p className="mt-1 text-neutral-500">{citation.snippet}</p>}
-        </li>
-      ))}
-    </ul>
-  );
-});
-
-CitationList.displayName = 'CitationList';
-
 const MessageBubble = memo(
-  ({ message, t }: { message: ChatMessage; t: Translation['chatbot'] }) => (
-    <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`${styles.bubbleBase} ${
-          message.sender === 'user' ? styles.bubbleUser : styles.bubbleBot
-        }`}
-      >
-        <p className={styles.messageText}>{message.text}</p>
-        {message.sender === 'bot' && (
-          <div className={styles.sources}>
-            <p className={styles.sourcesTitle}>{t.sources}</p>
-            <CitationList citations={message.citations} t={t} />
-          </div>
-        )}
+  ({ message, t }: { message: ChatMessage; t: Translation['chatbot'] }) => {
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(message.text);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+    };
+
+    return (
+      <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+        <div
+          className={`${styles.bubbleBase} ${
+            message.sender === 'user' ? styles.bubbleUser : styles.bubbleBot
+          } relative`}
+        >
+          {message.sender === 'bot' && (
+            <button
+              onClick={handleCopy}
+              className={styles.copyButton}
+              title={t.copy || 'Copy'}
+              aria-label="Copy message"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          )}
+          <LinkifiedText text={message.text} className="text-sm leading-relaxed whitespace-pre-line" />
+        </div>
       </div>
-    </div>
-  ),
+    );
+  },
 );
 
 MessageBubble.displayName = 'MessageBubble';
@@ -95,6 +75,7 @@ const Chatbot: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -109,6 +90,14 @@ const Chatbot: React.FC = () => {
         sender: 'bot',
       };
       setMessages([greeting]);
+    }
+    // Фокус на инпут только при открытии чата, но не при кликах в области сообщений
+    if (isOpen && messages.length === 1) {
+      setTimeout(() => {
+        if (inputRef.current && !inputRef.current.disabled) {
+          inputRef.current.focus();
+        }
+      }, 200);
     }
   }, [isOpen, language, messages.length]);
 
@@ -125,22 +114,42 @@ const Chatbot: React.FC = () => {
       sender: 'user',
     };
 
+    const messagesForHistory = [...messages, userMessage];
+    const history = messagesForHistory.slice(-6).map((message) => ({
+      role: message.sender === 'user' ? 'user' : 'assistant',
+      content: message.text,
+    }));
+
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke<{ data?: ChatbotResponse }>('chatbot', {
-        body: { question: input, language, sessionId },
+        body: { question: input, language, sessionId, history },
       });
 
       if (error) throw error;
 
+      let answerText = data?.data?.answer || 'Sorry, I could not process your request.';
+      
+      // Если цитат нет, убираем упоминания источников из текста
+      if (!data?.data?.citations || data.data.citations.length === 0) {
+        // Убираем различные варианты упоминаний источников
+        answerText = answerText
+          .replace(/Источники:?\s*$/gi, '')
+          .replace(/Sources:?\s*$/gi, '')
+          .replace(/Quellen:?\s*$/gi, '')
+          .replace(/\n\s*Источники:?\s*$/gi, '')
+          .replace(/\n\s*Sources:?\s*$/gi, '')
+          .replace(/\n\s*Quellen:?\s*$/gi, '')
+          .trim();
+      }
+
       const botMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: data?.data?.answer || 'Sorry, I could not process your request.',
+        text: answerText,
         sender: 'bot',
-        citations: data?.data?.citations || [],
       };
 
       if (data?.data?.sessionId) {
@@ -161,11 +170,17 @@ const Chatbot: React.FC = () => {
           id: (Date.now() + 1).toString(),
           text: errorMessages[language] || errorMessages.de,
           sender: 'bot',
-          citations: [],
         },
       ]);
     } finally {
       setIsLoading(false);
+      // Не фокусируемся автоматически на инпуте после отправки
+      // Пользователь сам кликнет на инпут когда будет готов
+      setTimeout(() => {
+        if (inputRef.current && !inputRef.current.disabled) {
+          inputRef.current.focus();
+        }
+      }, 0);
     }
   };
 
@@ -176,13 +191,19 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  const handleChatClick = (e: React.MouseEvent) => {
+    // Полностью отключаем автоматический фокус при клике в области чата
+    // Пользователь должен сам решать когда фокусироваться на инпуте
+    return;
+  };
+
   return (
     <>
       {/* Chatbot Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-primary-500 text-white p-4 rounded-full shadow-lg hover:bg-primary-600 transition-all duration-300 hover:scale-110"
+          className="fixed bottom-6 right-6 z-[100] bg-primary-500 text-white p-4 rounded-full shadow-lg hover:bg-primary-600 transition-all duration-300 hover:scale-110"
           aria-label="Open chat"
         >
           <MessageCircle className="w-6 h-6" />
@@ -191,7 +212,7 @@ const Chatbot: React.FC = () => {
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-[100] w-96 max-w-[calc(100vw-3rem)] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-primary-500 text-white px-6 py-4 flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -208,7 +229,10 @@ const Chatbot: React.FC = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 space-y-4 overflow-y-auto max-h-96 bg-neutral-50">
+          <div 
+            className="flex-1 p-4 space-y-4 overflow-y-auto max-h-96 bg-neutral-50"
+            onClick={handleChatClick}
+          >
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -221,41 +245,10 @@ const Chatbot: React.FC = () => {
                       : 'bg-white text-neutral-900 shadow-sm'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-line">{message.text}</p>
-                  {message.sender === 'bot' && (
-                    <div className="mt-3 border-t border-neutral-200 pt-3">
-                      <p className="text-xs font-semibold uppercase text-neutral-500 tracking-wide">
-                        {t.chatbot.sources}
-                      </p>
-                      {message.citations && message.citations.length > 0 ? (
-                        <ul className="mt-2 space-y-2">
-                          {message.citations.map((citation, index) => (
-                            <li key={`${message.id}-citation-${index}`} className="text-xs text-neutral-600">
-                              {citation.url ? (
-                                <a
-                                  href={citation.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="font-medium text-primary-500 hover:text-primary-600"
-                                >
-                                  {citation.title || citation.url}
-                                </a>
-                              ) : (
-                                <span className="font-medium text-neutral-700">
-                                  {citation.title || t.chatbot.noSources}
-                                </span>
-                              )}
-                              {citation.snippet && (
-                                <p className="mt-1 text-neutral-500">{citation.snippet}</p>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="mt-2 text-xs text-neutral-500">{t.chatbot.noSources}</p>
-                      )}
-                    </div>
-                  )}
+                  <LinkifiedText
+                    text={message.text}
+                    className="text-sm leading-relaxed whitespace-pre-line"
+                  />
                 </div>
               </div>
             ))}
@@ -275,21 +268,23 @@ const Chatbot: React.FC = () => {
 
           {/* Input */}
           <div className="border-t border-neutral-200 p-4 bg-white">
-            <div className="flex space-x-2">
+            <div className="flex gap-2">
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={t.chatbot.placeholder}
-                disabled={isLoading}
+                placeholder={t.chatbot.inputPlaceholder || 'Type your message...'}
                 className="flex-1 px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                disabled={isLoading}
               />
               <button
+                type="button"
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 className="bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={t.chatbot.send}
+                aria-label="Send message"
               >
                 <Send className="w-5 h-5" />
               </button>

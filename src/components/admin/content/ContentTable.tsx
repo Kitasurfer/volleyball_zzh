@@ -4,7 +4,9 @@ interface Props {
   items: ContentItemSummary[];
   onEnqueue: (contentId: string) => void;
   onEdit: (contentId: string) => void;
+  onDelete: (item: ContentItemSummary) => void;
   enqueueingId?: string | null;
+  deletingId?: string | null;
 }
 
 const statusBadgeClass: Record<string, string> = {
@@ -13,7 +15,7 @@ const statusBadgeClass: Record<string, string> = {
   published: 'bg-emerald-100 text-emerald-700',
 };
 
-const ContentTable = ({ items, onEnqueue, onEdit, enqueueingId }: Props) => (
+const ContentTable = ({ items, onEnqueue, onEdit, onDelete, enqueueingId, deletingId }: Props) => (
   <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
     <table className="min-w-full divide-y divide-neutral-200">
       <thead className="bg-neutral-50">
@@ -73,6 +75,14 @@ const ContentTable = ({ items, onEnqueue, onEdit, enqueueingId }: Props) => (
                   className="inline-flex items-center rounded-lg border border-primary-500 px-3 py-1 text-xs font-semibold text-primary-600 transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:text-neutral-400"
                 >
                   {enqueueingId === item.id ? 'Enqueuing…' : 'Enqueue job'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onDelete(item)}
+                  disabled={deletingId === item.id}
+                  className="inline-flex items-center rounded-lg border border-rose-400 px-3 py-1 text-xs font-semibold text-rose-500 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:text-neutral-400"
+                >
+                  {deletingId === item.id ? 'Deleting…' : 'Delete'}
                 </button>
               </div>
             </td>

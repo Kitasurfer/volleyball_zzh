@@ -1,5 +1,15 @@
 export type MediaTypeFilter = 'image' | 'video' | 'document' | 'audio' | 'other';
 
+export type LanguageCode = 'de' | 'en' | 'ru';
+
+export type LocalizedTextMap = Partial<Record<LanguageCode, string>>;
+
+export interface MediaAlbum {
+  id: string;
+  slug: string;
+  category: string;
+}
+
 export interface MediaAssetSummary {
   id: string;
   title: string | null;
@@ -9,6 +19,9 @@ export interface MediaAssetSummary {
   storagePath: string;
   createdAt: string;
   signedUrl?: string;
+  albumId?: string | null;
+  hasAltText?: boolean;
+  hasTitleI18n?: boolean;
 }
 
 export interface MediaFilters {
@@ -24,10 +37,16 @@ export interface MediaAssetDetail {
   language: string | null;
   mediaType: string;
   storagePath: string;
+  albumId?: string | null;
   width?: number | null;
   height?: number | null;
   durationSeconds?: number | null;
   metadata?: Record<string, unknown> | null;
+  altText?: LocalizedTextMap | null;
+  titleI18n?: LocalizedTextMap | null;
+  versions?: Record<string, unknown> | null;
+  fileSizeBytes?: number | null;
+  mimeType?: string | null;
   createdAt: string;
   updatedAt: string;
 }

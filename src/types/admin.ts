@@ -1,4 +1,6 @@
+export type AdminNavKey = 'overview' | 'content' | 'media' | 'albums' | 'vectorJobs' | 'chats';
+
 export interface AdminNavItem {
-  label: string;
-  path: string;
+	key: AdminNavKey;
+	path: string;
 }

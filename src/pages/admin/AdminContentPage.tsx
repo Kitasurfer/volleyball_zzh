@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from 'react';
 import ContentFilters from '../../components/admin/content/ContentFilters';
 import ContentTable from '../../components/admin/content/ContentTable';
 import Pagination from '../../components/admin/common/Pagination';
+import ContentEditorModal from '../../components/admin/content/ContentEditorModal';
 import type {
   ContentFilters as FilterState,
   ContentEditorInput,
@@ -10,7 +11,9 @@ import type {
 import { useAdminContent } from '../../hooks/useAdminContent';
 import { useAdminContentDetail } from '../../hooks/useAdminContentDetail';
 import { useAdminContentEditor } from '../../hooks/useAdminContentEditor';
+import { useAdminContentDelete } from '../../hooks/useAdminContentDelete';
 import { supabase } from '../../lib/supabase';
+import { useLanguage } from '../../lib/LanguageContext';
 
 interface PaginationState {
   page: number;
@@ -31,7 +34,17 @@ const emptyEditorInput: ContentEditorInput = {
   mediaLinks: [],
 };
 
+const generateSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\W-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+
 const AdminContentPage = () => {
+  const { t } = useLanguage();
+  const admin = t.admin.content;
   const [filters, setFilters] = useState<FilterState>({ search: '', status: 'all', language: 'all' });
   const [pagination, setPagination] = useState<PaginationState>({ page: 1, pageSize: 20 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -44,6 +57,12 @@ const AdminContentPage = () => {
   const [enqueueingId, setEnqueueingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docLanguage, setDocLanguage] = useState<string>('de');
+  const [docUploading, setDocUploading] = useState(false);
+  const [docUploadError, setDocUploadError] = useState<string | null>(null);
+  const [docUploadSuccess, setDocUploadSuccess] = useState<string | null>(null);
+  const { deletingId, deleteError, deleteSuccess, handleDelete } = useAdminContentDelete({ onDeleted: refresh });
 
   const handleEnqueue = async (contentId: string) => {
     if (enqueueingId) return;
@@ -62,6 +81,66 @@ const AdminContentPage = () => {
     }
 
     setEnqueueingId(null);
+  };
+
+  const handleDocumentUpload = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!docFile) {
+      setDocUploadError('Please choose a document file.');
+      return;
+    }
+
+    setDocUploadError(null);
+    setDocUploadSuccess(null);
+    setDocUploading(true);
+
+    try {
+      const safeName = docFile.name.replace(/[^a-zA-Z0-9_.-]+/g, '-');
+      const storagePath = `uploads/${Date.now()}-${safeName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(storagePath, docFile, {
+          upsert: true,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data, error: funcError } = await supabase.functions.invoke<{
+        success?: boolean;
+        content_id?: string;
+        job_id?: string;
+        error?: { code?: string; message?: string };
+      }>('process-document', {
+        body: {
+          storage_path: storagePath,
+          language: docLanguage,
+          type: 'article',
+          title: docFile.name,
+          tags: [],
+        },
+      });
+
+      if (funcError) {
+        throw funcError;
+      }
+
+      if (!data?.success) {
+        const message = data?.error?.message || 'Document processing failed.';
+        throw new Error(message);
+      }
+
+      setDocUploadSuccess('Document uploaded and processing started. It may take some time to appear in the list.');
+      setDocFile(null);
+      refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setDocUploadError(message);
+    } finally {
+      setDocUploading(false);
+    }
   };
 
   const handleCreate = () => {
@@ -125,16 +204,24 @@ const AdminContentPage = () => {
       mediaLinks: editorValues.mediaLinks,
     };
 
-    if (!baseInput.title || !baseInput.slug) {
-      setFormError('Title and slug are required.');
+    if (!baseInput.title) {
+      setFormError('Title is required.');
       return;
     }
 
+    const nextSlugRaw = baseInput.slug || generateSlug(baseInput.title);
+    const nextSlug = nextSlugRaw || `content-${Date.now()}`;
+
+    const input: ContentEditorInput = {
+      ...baseInput,
+      slug: nextSlug,
+    };
+
     try {
       if (editorMode === 'create') {
-        await createContent(baseInput);
+        await createContent(input);
       } else if (selectedId) {
-        await updateContent(selectedId, baseInput);
+        await updateContent(selectedId, input);
       }
 
       setIsEditorOpen(false);
@@ -155,10 +242,8 @@ const AdminContentPage = () => {
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-neutral-900">Content Manager</h2>
-          <p className="mt-1 text-sm text-neutral-500">
-            Filter, inspect, and synchronize knowledge base articles across languages.
-          </p>
+          <h2 className="text-xl font-semibold text-neutral-900">{admin.pageTitle}</h2>
+          <p className="mt-1 text-sm text-neutral-500">{admin.pageSubtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -166,33 +251,99 @@ const AdminContentPage = () => {
             onClick={refresh}
             className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100"
           >
-            Refresh
+            {admin.refresh}
           </button>
           <button
             type="button"
             onClick={handleCreate}
             className="rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-600"
           >
-            New content
+            {admin.newContent}
           </button>
         </div>
       </header>
+
+      <section className="space-y-2 rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-neutral-900">Upload document</h3>
+        <p className="text-xs text-neutral-500">
+          Upload a PDF/DOCX/PPTX document to process it via Docling and create a content item automatically.
+        </p>
+        <form
+          onSubmit={handleDocumentUpload}
+          className="mt-2 flex flex-col gap-3 md:flex-row md:items-end"
+        >
+          <div className="flex-1">
+            <label className="block text-xs font-semibold uppercase text-neutral-500">
+              File
+            </label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.ppt,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+              onChange={(event) => setDocFile(event.target.files?.[0] ?? null)}
+              className="mt-1 w-full text-sm text-neutral-600"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold uppercase text-neutral-500">
+              Language
+            </label>
+            <select
+              value={docLanguage}
+              onChange={(event) => setDocLanguage(event.target.value)}
+              className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
+            >
+              <option value="de">DE</option>
+              <option value="en">EN</option>
+              <option value="ru">RU</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            disabled={docUploading || !docFile}
+            className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:bg-neutral-300"
+          >
+            {docUploading ? 'Uploading…' : 'Upload document'}
+          </button>
+        </form>
+        {docUploadError && (
+          <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+            {docUploadError}
+          </div>
+        )}
+        {docUploadSuccess && (
+          <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-600">
+            {docUploadSuccess}
+          </div>
+        )}
+      </section>
 
       <ContentFilters onChange={setFilters} />
 
       {actionError && (
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
-          {actionError}
+          {admin.actionErrorPrefix} {actionError}
+        </div>
+      )}
+
+      {(deleteError || deleteSuccess) && (
+        <div
+          className={`rounded-lg border p-3 text-xs ${
+            deleteError
+              ? 'border-rose-200 bg-rose-50 text-rose-600'
+              : 'border-emerald-200 bg-emerald-50 text-emerald-600'
+          }`}
+        >
+          {deleteError ? `${admin.deleteErrorPrefix} ${deleteError}` : admin.deleteSuccess}
         </div>
       )}
 
       {loading ? (
         <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm text-neutral-500">
-          Loading content…
+          {admin.loading}
         </div>
       ) : error ? (
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
-          Failed to load content: {error}
+          {admin.loadErrorPrefix} {error}
         </div>
       ) : (
         <Fragment>
@@ -201,6 +352,8 @@ const AdminContentPage = () => {
             onEnqueue={handleEnqueue}
             enqueueingId={enqueueingId}
             onEdit={handleEdit}
+            onDelete={handleDelete}
+            deletingId={deletingId}
           />
           <Pagination
             page={pagination.page}
@@ -212,170 +365,17 @@ const AdminContentPage = () => {
       )}
 
       {isEditorOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-neutral-900/40 px-4">
-          <div className="relative w-full max-w-3xl rounded-xl bg-white p-6 shadow-xl">
-            <header className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold text-neutral-900">
-                  {editorMode === 'create' ? 'Create content' : 'Edit content'}
-                </h3>
-                <p className="mt-1 text-xs text-neutral-500">
-                  Fill the fields below to {editorMode === 'create' ? 'add a new article' : 'update this article'}.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closeEditor}
-                className="rounded-lg border border-neutral-300 px-3 py-1 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100"
-              >
-                Close
-              </button>
-            </header>
-
-            {(detailLoading && editorMode === 'edit') && (
-              <div className="mt-6 text-sm text-neutral-500">Loading content details…</div>
-            )}
-
-            {formError && (
-              <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">{formError}</div>
-            )}
-            {saveError && (
-              <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">{saveError}</div>
-            )}
-            {saveSuccess && (
-              <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-600">{saveSuccess}</div>
-            )}
-
-            <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-neutral-500">Title</label>
-                  <input
-                    name="title"
-                    type="text"
-                    defaultValue={editorValues.title}
-                    required
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-neutral-500">Slug</label>
-                  <input
-                    name="slug"
-                    type="text"
-                    defaultValue={editorValues.slug}
-                    required
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-neutral-500">Language</label>
-                  <select
-                    name="language"
-                    defaultValue={editorValues.language}
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                  >
-                    <option value="de">DE</option>
-                    <option value="en">EN</option>
-                    <option value="ru">RU</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-neutral-500">Status</label>
-                  <select
-                    name="status"
-                    defaultValue={editorValues.status}
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                  >
-                    <option value="draft">Draft</option>
-                    <option value="review">Review</option>
-                    <option value="published">Published</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-neutral-500">Type</label>
-                  <input
-                    name="type"
-                    type="text"
-                    defaultValue={editorValues.type}
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-neutral-500">Summary</label>
-                  <textarea
-                    name="summary"
-                    defaultValue={editorValues.summary ?? ''}
-                    rows={3}
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase text-neutral-500">Tags (comma separated)</label>
-                  <input
-                    name="tags"
-                    type="text"
-                    defaultValue={editorValues.tags.join(', ')}
-                    className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase text-neutral-500">Published at</label>
-                <input
-                  name="publishedAt"
-                  type="datetime-local"
-                  defaultValue={editorValues.publishedAt ?? ''}
-                  className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase text-neutral-500">Body (Markdown)</label>
-                <textarea
-                  name="bodyMarkdown"
-                  defaultValue={editorValues.bodyMarkdown ?? ''}
-                  rows={6}
-                  className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold uppercase text-neutral-500">Body (HTML)</label>
-                <textarea
-                  name="bodyHtml"
-                  defaultValue={editorValues.bodyHtml ?? ''}
-                  rows={6}
-                  className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={closeEditor}
-                  className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-600 transition hover:bg-neutral-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:bg-neutral-300"
-                >
-                  {saving ? 'Saving…' : editorMode === 'create' ? 'Create content' : 'Update content'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ContentEditorModal
+          mode={editorMode}
+          detailLoading={detailLoading}
+          formError={formError}
+          saveError={saveError}
+          saveSuccess={saveSuccess}
+          editorValues={editorValues}
+          saving={saving}
+          onClose={closeEditor}
+          onSubmit={handleSubmit}
+        />
       )}
     </div>
   );

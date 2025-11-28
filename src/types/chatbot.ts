@@ -3,6 +3,8 @@ export interface CitationMedia {
   url: string;
   type: string;
   title?: string;
+  description?: string;
+  classification?: string;
 }
 
 export interface Citation {
@@ -12,6 +14,11 @@ export interface Citation {
   snippet?: string;
   score?: number;
   media?: CitationMedia[];
+  source_file?: string;
+  download_url?: string;
+  language?: string;
+  headings?: string[];
+  origin?: unknown;
 }
 
 export interface ChatMessage {

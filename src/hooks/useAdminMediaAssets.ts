@@ -9,6 +9,9 @@ interface SupabaseMediaRow {
   language: string | null;
   media_type: string;
   storage_path: string;
+  album_id: string | null;
+  alt_text: Record<string, unknown> | null;
+  title_i18n: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -58,7 +61,10 @@ export const useAdminMediaAssets = (filters: MediaFilters, options: Options = de
 
       const query = supabase
         .from('media_assets')
-        .select('id, title, description, language, media_type, storage_path, created_at', { count: 'exact' })
+        .select(
+          'id, title, description, language, media_type, storage_path, album_id, alt_text, title_i18n, created_at',
+          { count: 'exact' },
+        )
         .order('created_at', { ascending: false });
 
       if (payload.language !== 'all') {
@@ -88,28 +94,53 @@ export const useAdminMediaAssets = (filters: MediaFilters, options: Options = de
 
       if (rows.length) {
         const bucketPrefix = `${MEDIA_BUCKET}/`;
-        const paths = rows.map((row) => row.storage_path.replace(bucketPrefix, ''));
-        const { data: urlData, error: signedUrlError } = await supabase.storage
-          .from(MEDIA_BUCKET)
-          .createSignedUrls(paths, 60 * 60);
+        const bucketRows = rows.filter((row) => row.storage_path.startsWith(bucketPrefix));
+        const paths = bucketRows.map((row) => row.storage_path.slice(bucketPrefix.length));
 
-        if (!signedUrlError && urlData) {
-          urlData.forEach((item, index) => {
-            signedUrls[rows[index].storage_path] = item.signedUrl;
-          });
+        if (paths.length) {
+          const { data: urlData, error: signedUrlError } = await supabase.storage
+            .from(MEDIA_BUCKET)
+            .createSignedUrls(paths, 60 * 60);
+
+          if (!signedUrlError && urlData) {
+            urlData.forEach((item, index) => {
+              signedUrls[bucketRows[index].storage_path] = item.signedUrl;
+            });
+          }
         }
       }
 
-      const items: MediaAssetSummary[] = rows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        language: row.language,
-        mediaType: row.media_type,
-        storagePath: row.storage_path,
-        createdAt: row.created_at,
-        signedUrl: signedUrls[row.storage_path],
-      }));
+      const items: MediaAssetSummary[] = rows.map((row) => {
+        const hasAlt = !!(
+          row.alt_text &&
+          typeof row.alt_text === 'object' &&
+          Object.keys(row.alt_text as Record<string, unknown>).length > 0
+        );
+
+        const hasI18n = !!(
+          row.title_i18n &&
+          typeof row.title_i18n === 'object' &&
+          Object.keys(row.title_i18n as Record<string, unknown>).length > 0
+        );
+
+        const bucketPrefix = `${MEDIA_BUCKET}/`;
+
+        return {
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          language: row.language,
+          mediaType: row.media_type,
+          storagePath: row.storage_path,
+          createdAt: row.created_at,
+          signedUrl: row.storage_path.startsWith(bucketPrefix)
+            ? signedUrls[row.storage_path]
+            : row.storage_path,
+          albumId: row.album_id,
+          hasAltText: hasAlt,
+          hasTitleI18n: hasI18n,
+        };
+      });
 
       setState({ items, loading: false, total: count ?? items.length });
     };

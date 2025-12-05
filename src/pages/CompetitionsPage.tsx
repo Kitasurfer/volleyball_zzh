@@ -26,7 +26,7 @@ const content = {
   de: {
     hero: {
       title: 'Wettbewerbe & Ergebnisse',
-      subtitle: 'Alle Ligaresultate und Spieltermine der SG TSV Zizishausen/SKV Unterensingen',
+      subtitle: 'Alle Ligaresultate und Spieltermine von SKV Unterensingen',
       cta: 'Zum Kontakt',
     },
     standings: {
@@ -39,6 +39,7 @@ const content = {
       points: 'Punkte',
       updated: 'Stand:',
       noData: 'Aktuell liegen keine Daten vor.',
+      loading: 'Tabellen werden geladen…',
     },
     schedule: {
       titleUpcoming: 'Bevorstehende Spiele',
@@ -67,7 +68,7 @@ const content = {
   en: {
     hero: {
       title: 'Competitions & Results',
-      subtitle: 'All league standings and fixtures for SG TSV Zizishausen/SKV Unterensingen',
+      subtitle: 'All league standings and fixtures for SKV Unterensingen',
       cta: 'Contact Us',
     },
     standings: {
@@ -80,6 +81,7 @@ const content = {
       points: 'Points',
       updated: 'Updated:',
       noData: 'No standings data available right now.',
+      loading: 'Loading standings…',
     },
     schedule: {
       titleUpcoming: 'Upcoming Matches',
@@ -108,7 +110,7 @@ const content = {
   ru: {
     hero: {
       title: 'Соревнования и результаты',
-      subtitle: 'Вся турнирная таблица и календарь SG TSV Zizishausen/SKV Unterensingen',
+      subtitle: 'Вся турнирная таблица и календарь SKV Unterensingen',
       cta: 'Связаться с нами',
     },
     standings: {
@@ -121,6 +123,7 @@ const content = {
       points: 'Очки',
       updated: 'Обновлено:',
       noData: 'Данные таблицы пока недоступны.',
+      loading: 'Загружаем таблицу…',
     },
     schedule: {
       titleUpcoming: 'Ближайшие матчи',
@@ -205,7 +208,7 @@ const CompetitionsPage: React.FC = () => {
         <div className="container mx-auto px-6 lg:px-12">
           <div className="max-w-3xl">
             <span className="inline-flex items-center gap-2 text-accent-200 uppercase tracking-widest text-xs font-semibold">
-              <Trophy className="w-4 h-4" /> SG TSV Zizishausen/SKV Unterensingen
+              <Trophy className="w-4 h-4" /> SKV Unterensingen Volleyball
             </span>
             <h1 className="text-4xl lg:text-5xl font-bold mt-4 mb-4">{t.hero.title}</h1>
             <p className="text-lg text-white/80 mb-8">{t.hero.subtitle}</p>
@@ -241,7 +244,7 @@ const CompetitionsPage: React.FC = () => {
               <div className="overflow-x-auto">
                 {isLoading ? (
                   <div className="p-6 flex justify-center">
-                    <Spinner text="Loading standings…" />
+                    <Spinner text={t.standings.loading} />
                   </div>
                 ) : error ? (
                   <div className="p-6">

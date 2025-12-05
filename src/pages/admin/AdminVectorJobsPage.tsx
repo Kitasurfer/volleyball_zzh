@@ -2,8 +2,12 @@ import { useState } from 'react';
 import VectorJobsTable from '../../components/admin/vector/VectorJobsTable';
 import { useAdminVectorJobs } from '../../hooks/useAdminVectorJobs';
 import { supabase } from '../../lib/supabase';
+import { AdminAlert } from '../../components/admin/common/AdminAlert';
+import { useLanguage } from '../../lib/LanguageContext';
 
 const AdminVectorJobsPage = () => {
+  const { t } = useLanguage();
+  const admin = t.admin.vectorJobs;
   const { jobs, loading, error, refresh } = useAdminVectorJobs();
   const [retryingJobId, setRetryingJobId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -28,34 +32,32 @@ const AdminVectorJobsPage = () => {
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-neutral-900">Vector Jobs</h2>
-          <p className="mt-1 text-sm text-neutral-500">
-            Track ingestion progress, identify bottlenecks, and retry failed jobs.
-          </p>
+          <h2 className="text-xl font-semibold text-neutral-900">{admin.pageTitle}</h2>
+          <p className="mt-1 text-sm text-neutral-500">{admin.pageSubtitle}</p>
         </div>
         <button
           type="button"
           onClick={refresh}
           className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100"
         >
-          Refresh
+          {admin.refresh}
         </button>
       </header>
 
       {actionError && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+        <AdminAlert variant="error" size="sm">
           {actionError}
-        </div>
+        </AdminAlert>
       )}
 
       {loading ? (
         <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm text-neutral-500">
-          Loading jobs…
+          {admin.loading}
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
-          Failed to load jobs: {error}
-        </div>
+        <AdminAlert variant="error" size="md">
+          {admin.loadErrorPrefix} {error}
+        </AdminAlert>
       ) : (
         <VectorJobsTable jobs={jobs} onRetry={handleRetry} retryingJobId={retryingJobId} />
       )}

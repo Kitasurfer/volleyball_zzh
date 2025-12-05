@@ -1,5 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { generateOpenAIEmbedding, createQdrantClient } from './clients.ts';
+import {
+  generateEmbedding as generateEmbeddingFromJobs,
+  fetchPendingJobs as fetchPendingJobsFromJobs,
+  processJob as processJobFromJobs,
+} from './jobs.ts';
+import {
+  chunkSnippet as chunkSnippetFromQdrant,
+  generatePointId as generatePointIdFromQdrant,
+  upsertQdrant as upsertQdrantFromQdrant,
+} from './qdrant.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -525,7 +535,7 @@ const processJob = async (job: VectorJob) => {
   }
 };
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -549,7 +559,7 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           field_name: field_name || 'content_id',
-          field_schema: field_type || 'keyword'
+          field_schema: field_type || 'keyword',
         }),
       });
       
@@ -592,8 +602,8 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           filter: {
-            must: [{ key: 'content_id', match: { value: content_id } }]
-          }
+            must: [{ key: 'content_id', match: { value: content_id } }],
+          },
         }),
       });
       
@@ -603,7 +613,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ 
         success: true, 
         content_id,
-        result 
+        result,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -636,19 +646,21 @@ Deno.serve(async (req) => {
       const validChunks = chunks.filter((c: any) => c.text && c.text.trim().length > 50);
       console.log(`Valid chunks: ${validChunks.length}`);
       
-      const vectors = await Promise.all(validChunks.map((chunk: any) => generateEmbedding(chunk.text)));
+      const vectors = await Promise.all(
+        validChunks.map((chunk: any) => generateEmbeddingFromJobs(chunk.text)),
+      );
       
       const points = vectors.map((vector, index) => {
         const chunk = validChunks[index];
         return {
-          id: generatePointId(),
+          id: generatePointIdFromQdrant(),
           vector,
           payload: {
             content_id,
             chunk_index: index,
             language: language || 'de',
             title: title || 'Uploaded Document',
-            snippet: chunkSnippet(chunk.text),
+            snippet: chunkSnippetFromQdrant(chunk.text),
             headings: chunk.headings,
             source_file,
             type: 'rules',
@@ -657,12 +669,12 @@ Deno.serve(async (req) => {
       });
       
       console.log(`Upserting ${points.length} points to Qdrant`);
-      await upsertQdrant(points);
+      await upsertQdrantFromQdrant(points);
       
       return new Response(JSON.stringify({ 
         success: true, 
         uploaded: points.length,
-        content_id 
+        content_id,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -678,7 +690,7 @@ Deno.serve(async (req) => {
 
   try {
     console.log('Fetching pending jobs...');
-    const jobs = await fetchPendingJobs();
+    const jobs = await fetchPendingJobsFromJobs();
     console.log(`Found ${jobs.length} pending jobs`);
 
     if (!jobs.length) {
@@ -691,7 +703,7 @@ Deno.serve(async (req) => {
     console.log('Processing jobs:', jobs.map((j) => j.id));
 
     for (const job of jobs) {
-      await processJob(job);
+      await processJobFromJobs(job);
     }
 
     return new Response(JSON.stringify({ processed: jobs.length }), {

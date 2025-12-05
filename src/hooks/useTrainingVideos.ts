@@ -78,6 +78,12 @@ const FEATURED_SHORTS: {
   },
 ];
 
+const FALLBACK_TRAINING_VIDEO_TITLE: Record<Language, string> = {
+  de: 'Training-Video',
+  en: 'Training video',
+  ru: 'Тренировочное видео',
+};
+
 const getFeaturedTrainingVideos = (language: Language): TrainingVideo[] =>
   FEATURED_SHORTS.map((short) => {
     const embedUrl = getYoutubeEmbedUrl(short.url) ?? undefined;
@@ -214,16 +220,16 @@ export const useTrainingVideos = (): UseTrainingVideosResult => {
             ? (row.alt_text as Record<string, string>)[language]
             : undefined;
 
+        const fallbackTitle =
+          FALLBACK_TRAINING_VIDEO_TITLE[language as Language] ??
+          FALLBACK_TRAINING_VIDEO_TITLE.ru;
+
         const baseTitle =
           i18nTitle ||
           i18nAlt ||
           row.title ||
           album?.slug ||
-          (language === 'de'
-            ? 'Training-Video'
-            : language === 'en'
-            ? 'Training video'
-            : 'Тренировочное видео');
+          fallbackTitle;
 
         const storagePath = row.storage_path;
         const isBucketPath = storagePath.startsWith(bucketPrefix);

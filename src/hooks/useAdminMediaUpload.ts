@@ -10,8 +10,8 @@ interface UseAdminMediaUploadOptions {
 }
 
 interface UseAdminMediaUploadResult {
-  file: File | null;
-  setFile: (file: File | null) => void;
+  files: File[];
+  setFiles: (files: File[]) => void;
   sourceType: MediaSourceType;
   setSourceType: (value: MediaSourceType) => void;
   url: string;
@@ -51,7 +51,7 @@ const inferMediaTypeFromUrl = (value: string): string => {
 export const useAdminMediaUpload = (
   options: UseAdminMediaUploadOptions = {},
 ): UseAdminMediaUploadResult => {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [sourceType, setSourceType] = useState<MediaSourceType>('file');
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
@@ -65,8 +65,8 @@ export const useAdminMediaUpload = (
   const handleUpload = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (sourceType === 'file' && !file) {
-      setUploadError('Select a file to upload or switch to URL mode.');
+    if (sourceType === 'file' && files.length === 0) {
+      setUploadError('Select at least one file to upload or switch to URL mode.');
       return;
     }
 
@@ -89,40 +89,42 @@ export const useAdminMediaUpload = (
     const langKey = language === 'de' || language === 'en' || language === 'ru' ? language : null;
 
     try {
-      if (sourceType === 'file' && file) {
-        const extension = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
-        const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const randomSuffix = Math.random().toString(36).slice(2, 8);
-        const path = `uploads/${Date.now()}-${randomSuffix}.${extension}`;
+      if (sourceType === 'file' && files.length > 0) {
+        for (const file of files) {
+          const extension = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
+          const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const randomSuffix = Math.random().toString(36).slice(2, 8);
+          const path = `uploads/${Date.now()}-${randomSuffix}.${extension}`;
 
-        const { data: uploadData, error: uploadErr } = await supabase.storage
-          .from(MEDIA_BUCKET)
-          .upload(path, file, { upsert: false });
+          const { data: uploadData, error: uploadErr } = await supabase.storage
+            .from(MEDIA_BUCKET)
+            .upload(path, file, { upsert: false });
 
-        if (uploadErr) {
-          setUploadError(uploadErr.message);
-          setUploading(false);
-          return;
-        }
+          if (uploadErr) {
+            setUploadError(uploadErr.message);
+            setUploading(false);
+            return;
+          }
 
-        const storagePath = `${MEDIA_BUCKET}/${uploadData?.path ?? path}`;
-        const baseTitle = title || sanitizedName;
+          const storagePath = `${MEDIA_BUCKET}/${uploadData?.path ?? path}`;
+          const baseTitle = title || sanitizedName;
 
-        const { error: insertError } = await supabase.from('media_assets').insert({
-          storage_path: storagePath,
-          title: baseTitle,
-          description: description || null,
-          language: language === 'all' ? null : language,
-          media_type: inferMediaType(file),
-          album_id: albumId === 'none' ? null : albumId,
-          alt_text: langKey ? { [langKey]: baseTitle } : {},
-          title_i18n: langKey ? { [langKey]: baseTitle } : {},
-        });
+          const { error: insertError } = await supabase.from('media_assets').insert({
+            storage_path: storagePath,
+            title: baseTitle,
+            description: description || null,
+            language: language === 'all' ? null : language,
+            media_type: inferMediaType(file),
+            album_id: albumId === 'none' ? null : albumId,
+            alt_text: langKey ? { [langKey]: baseTitle } : {},
+            title_i18n: langKey ? { [langKey]: baseTitle } : {},
+          });
 
-        if (insertError) {
-          setUploadError(insertError.message);
-          setUploading(false);
-          return;
+          if (insertError) {
+            setUploadError(insertError.message);
+            setUploading(false);
+            return;
+          }
         }
       }
 
@@ -150,7 +152,7 @@ export const useAdminMediaUpload = (
       }
 
       setUploadSuccess('Media asset saved successfully.');
-      setFile(null);
+      setFiles([]);
       setUrl('');
       setTitle('');
       setDescription('');
@@ -170,8 +172,8 @@ export const useAdminMediaUpload = (
   };
 
   return {
-    file,
-    setFile,
+    files,
+    setFiles,
     sourceType,
     setSourceType,
     url,

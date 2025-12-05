@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { generateSlug } from '../lib/slug';
 
 export interface AlbumRow {
   id: string;
@@ -27,14 +28,6 @@ const defaultTranslations = (): TranslationsState => ({
   en: { title: '', subtitle: '', description: '' },
   ru: { title: '', subtitle: '', description: '' },
 });
-
-const generateSlug = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[\s\W-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
 
 export interface UseAdminAlbumsResult {
   albums: AlbumRow[];
@@ -66,7 +59,7 @@ export const useAdminAlbums = (): UseAdminAlbumsResult => {
   const [albums, setAlbums] = useState<AlbumRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | 'new'>('new');
   const [slug, setSlug] = useState('');
-  const [category, setCategory] = useState('team');
+  const [category, setCategory] = useState('spieltage');
   const [season, setSeason] = useState('');
   const [status, setStatus] = useState('published');
   const [eventDate, setEventDate] = useState('');
@@ -142,7 +135,7 @@ export const useAdminAlbums = (): UseAdminAlbumsResult => {
   const resetForm = () => {
     setSelectedId('new');
     setSlug('');
-    setCategory('team');
+    setCategory('spieltage');
     setSeason('');
     setStatus('published');
     setEventDate('');

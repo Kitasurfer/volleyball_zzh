@@ -5,45 +5,16 @@
  * creates content_item entry, and enqueues vectorization job.
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
-interface DoclingChunk {
-  text: string;
-  headings: string[];
-}
-
-interface DoclingResponse {
-  markdown: string;
-  metadata: {
-    pages: number;
-    figures: number;
-    tables: number;
-  };
-  images: string[];
-  error?: string;
-}
-
-interface RequestBody {
-  storage_path: string;
-  language: string;
-  type: string;
-  title: string;
-  tags?: string[];
-}
-
-const getSupabase = () => {
-  const url = Deno.env.get('SUPABASE_URL') || '';
-  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-  return createClient(url, key);
-};
-
-const getDoclingUrl = () => Deno.env.get('DOCLING_SERVICE_URL') || 'http://localhost:8000';
+import { corsHeaders } from './config.ts';
+import type { DoclingChunk, DoclingResponse, RequestBody } from './types.ts';
+import { downloadFile as downloadFileFromStorage } from './storage.ts';
+import {
+  processWithDocling as processWithDoclingImpl,
+  splitMarkdownIntoChunks as splitMarkdownIntoChunksImpl,
+  fallbackChunking as fallbackChunkingImpl,
+} from './docling.ts';
+import { createContentItem as createContentItemImpl } from './content.ts';
+import { enqueueVectorJob as enqueueVectorJobImpl } from './jobs.ts';
 
 const generateSlug = (title: string, timestamp: number): string => {
   const base = title
@@ -59,17 +30,7 @@ const generateSlug = (title: string, timestamp: number): string => {
  * Download file from Supabase Storage
  */
 const downloadFile = async (storagePath: string): Promise<Uint8Array> => {
-  const supabase = getSupabase();
-  
-  const { data, error } = await supabase.storage
-    .from('documents')
-    .download(storagePath);
-  
-  if (error) {
-    throw new Error(`Failed to download file: ${error.message}`);
-  }
-  
-  return new Uint8Array(await data.arrayBuffer());
+  return downloadFileFromStorage(storagePath);
 };
 
 /**
@@ -78,120 +39,23 @@ const downloadFile = async (storagePath: string): Promise<Uint8Array> => {
 const processWithDocling = async (
   fileContent: Uint8Array,
   filename: string,
-  language: string
+  language: string,
 ): Promise<DoclingResponse> => {
-  const doclingUrl = getDoclingUrl();
-  
-  const formData = new FormData();
-  formData.append('file', new Blob([fileContent], { type: 'application/pdf' }), filename);
-  
-  const url = new URL('/process', doclingUrl);
-  url.searchParams.set('max_tokens', '512');
-  url.searchParams.set('language', language);
-  
-  console.log(`Sending to Docling: ${url.toString()}`);
-  
-  const response = await fetch(url.toString(), {
-    method: 'POST',
-    body: formData,
-  });
-  
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Docling service error: ${response.status} - ${text}`);
-  }
-  
-  return await response.json();
+  return processWithDoclingImpl(fileContent, filename, language);
 };
 
 /**
  * Split markdown into semantic chunks by headings
  */
 const splitMarkdownIntoChunks = (markdown: string, maxChunkSize = 1500): DoclingChunk[] => {
-  const chunks: DoclingChunk[] = [];
-  const lines = markdown.split('\n');
-  
-  let currentChunk = '';
-  let currentHeadings: string[] = [];
-  const headingStack: string[] = [];
-  
-  for (const line of lines) {
-    // Check if line is a heading
-    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-    
-    if (headingMatch) {
-      // Save current chunk if it has content
-      if (currentChunk.trim().length > 50) {
-        chunks.push({
-          text: currentChunk.trim(),
-          headings: [...currentHeadings],
-        });
-      }
-      
-      const level = headingMatch[1].length;
-      const headingText = headingMatch[2].trim();
-      
-      // Update heading stack
-      while (headingStack.length >= level) {
-        headingStack.pop();
-      }
-      headingStack.push(headingText);
-      
-      currentHeadings = [...headingStack];
-      currentChunk = '';
-    } else {
-      currentChunk += line + '\n';
-      
-      // If chunk is too large, split it
-      if (currentChunk.length > maxChunkSize) {
-        chunks.push({
-          text: currentChunk.trim(),
-          headings: [...currentHeadings],
-        });
-        currentChunk = '';
-      }
-    }
-  }
-  
-  // Don't forget the last chunk
-  if (currentChunk.trim().length > 50) {
-    chunks.push({
-      text: currentChunk.trim(),
-      headings: [...currentHeadings],
-    });
-  }
-  
-  return chunks;
+  return splitMarkdownIntoChunksImpl(markdown, maxChunkSize);
 };
 
 /**
  * Fallback chunking for non-PDF files or when Docling fails
  */
 const fallbackChunking = (text: string, chunkSize = 1000, overlap = 200): DoclingChunk[] => {
-  const chunks: DoclingChunk[] = [];
-  const normalized = text.trim();
-  
-  if (!normalized) return chunks;
-  
-  let start = 0;
-  const length = normalized.length;
-  
-  while (start < length) {
-    const end = Math.min(length, start + chunkSize);
-    const slice = normalized.slice(start, end).trim();
-    
-    if (slice.length > 0) {
-      chunks.push({
-        text: slice,
-        headings: [],
-      });
-    }
-    
-    if (end === length) break;
-    start = Math.max(0, end - overlap);
-  }
-  
-  return chunks;
+  return fallbackChunkingImpl(text, chunkSize, overlap);
 };
 
 /**
@@ -204,63 +68,19 @@ const createContentItem = async (
   type: string,
   tags: string[],
   storagePath: string,
-  chunks: DoclingChunk[]
+  chunks: DoclingChunk[],
 ): Promise<string> => {
-  const supabase = getSupabase();
-  
-  // Build body from chunks
-  const bodyMarkdown = chunks.map(chunk => {
-    const headingPrefix = chunk.headings.length > 0 
-      ? `## ${chunk.headings.join(' > ')}\n\n`
-      : '';
-    return headingPrefix + chunk.text;
-  }).join('\n\n---\n\n');
-  
-  const { data, error } = await supabase
-    .from('content_items')
-    .insert({
-      title,
-      slug,
-      language,
-      type,
-      tags,
-      body_markdown: bodyMarkdown,
-      summary: chunks[0]?.text.slice(0, 300) || null,
-      metadata: {
-        source_file: storagePath,
-        docling_chunks: chunks,
-        processed_at: new Date().toISOString(),
-      },
-    })
-    .select('id')
-    .single();
-  
-  if (error) {
-    throw new Error(`Failed to create content_item: ${error.message}`);
-  }
-  
-  return data.id;
+  return createContentItemImpl(title, slug, language, type, tags, storagePath, chunks);
 };
 
 /**
  * Enqueue vectorization job
  */
 const enqueueVectorJob = async (contentId: string): Promise<void> => {
-  const supabase = getSupabase();
-  
-  const { error } = await supabase
-    .from('vector_jobs')
-    .insert({
-      content_id: contentId,
-      status: 'pending',
-    });
-  
-  if (error) {
-    throw new Error(`Failed to enqueue vector job: ${error.message}`);
-  }
+  return enqueueVectorJobImpl(contentId);
 };
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders });
   }

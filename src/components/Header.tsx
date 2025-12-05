@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Globe } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { Language } from '../types';
+import { LightboxImage } from './LightboxImage';
 
 const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
@@ -45,13 +46,13 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-20 gap-6">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <img
+            <LightboxImage
               src="/images/SKV_Volleyball.png"
-              alt="SG TSV Zizishausen/SKV Unterensingen Volleyball"
+              alt="SKV Unterensingen Volleyball"
               className="h-12 w-auto object-contain"
             />
             <span className="text-xl font-bold hidden sm:block text-white">
-              SG TSV Zizishausen/SKV Unterensingen
+              SKV Unterensingen Volleyball
             </span>
           </Link>
 

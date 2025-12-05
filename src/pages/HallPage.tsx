@@ -1,34 +1,35 @@
 import React from 'react';
 import { useLanguage } from '../lib/LanguageContext';
+import { LightboxImage } from '../components/LightboxImage';
 
 const HallPage: React.FC = () => {
   const { language } = useLanguage();
 
   const content = {
     de: {
-      title: 'Inselhalle Zizishausen',
-      description: 'Unser Zuhause - moderne Ausstattung für professionelles Training',
+      title: 'Bettwiesenhalle Unterensingen',
+      description: 'Unser Trainingsort in Unterensingen - moderne Ausstattung für professionelles Training',
       sections: [
         { title: 'Ausstattung', text: 'Professionelle Volleyballfelder mit modernster Technik' },
-        { title: 'Adresse', text: 'Inselhalle, 74915 Waibstadt-Zizishausen' },
+        { title: 'Adresse', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen' },
         { title: 'Einrichtungen', text: 'Umkleideräume, Duschen, Trainingsgeräte' },
       ],
     },
     en: {
-      title: 'Inselhalle Zizishausen',
-      description: 'Our home - modern equipment for professional training',
+      title: 'Bettwiesenhalle Unterensingen',
+      description: 'Our training venue in Unterensingen - modern equipment for professional training',
       sections: [
         { title: 'Equipment', text: 'Professional volleyball courts with state-of-the-art technology' },
-        { title: 'Address', text: 'Inselhalle, 74915 Waibstadt-Zizishausen' },
+        { title: 'Address', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen' },
         { title: 'Facilities', text: 'Locker rooms, showers, training equipment' },
       ],
     },
     ru: {
-      title: 'Зал Inselhalle Zizishausen',
-      description: 'Наш дом - современное оборудование для профессиональных тренировок',
+      title: 'Зал Bettwiesenhalle Unterensingen',
+      description: 'Наш тренировочный зал в Унтерензингене — современное оборудование для профессиональных тренировок',
       sections: [
         { title: 'Оборудование', text: 'Профессиональные волейбольные площадки с современными технологиями' },
-        { title: 'Адрес', text: 'Inselhalle, 74915 Waibstadt-Zizishausen' },
+        { title: 'Адрес', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen' },
         { title: 'Удобства', text: 'Раздевалки, душевые, тренажеры' },
       ],
     },
@@ -46,8 +47,16 @@ const HallPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <img src="/images/modern_indoor_volleyball_court_arena_equipment_university_of_washington.jpg" alt="Hall 1" className="w-full h-80 object-cover rounded-lg shadow-md" />
-          <img src="/images/modern_indoor_volleyball_court_gym_equipment.jpg" alt="Hall 2" className="w-full h-80 object-cover rounded-lg shadow-md" />
+          <LightboxImage
+            src="https://kxwmkvtxkaczuonnnxlj.supabase.co/storage/v1/object/public/media-public/uploads/1764952002336-scdz0s.jpg"
+            alt="Hall 1"
+            className="w-full h-80 object-cover rounded-lg shadow-md"
+          />
+          <LightboxImage
+            src="https://kxwmkvtxkaczuonnnxlj.supabase.co/storage/v1/object/public/media-public/uploads/1764952002880-masbfm.jpg"
+            alt="Hall 2"
+            className="w-full h-80 object-cover rounded-lg shadow-md"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -57,6 +66,15 @@ const HallPage: React.FC = () => {
               <p className="text-body text-neutral-700">{section.text}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-12 max-w-5xl mx-auto">
+          <LightboxImage
+            src="https://kxwmkvtxkaczuonnnxlj.supabase.co/storage/v1/object/public/media-public/uploads/1764952004018-6b78lz.jpg"
+            alt="Hall 3"
+            wrapperClassName="w-full"
+            className="w-full max-h-[500px] object-cover rounded-lg shadow-md"
+          />
         </div>
       </div>
     </div>

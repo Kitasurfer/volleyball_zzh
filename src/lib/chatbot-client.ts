@@ -1,45 +1,35 @@
 /**
- * Chatbot client - uses local server when available
+ * Chatbot client - wraps the Supabase Edge Function call.
  */
 
-const CHATBOT_URL = 'http://localhost:54321/functions/v1/chatbot';
+import { supabase } from './supabase';
+import type { ChatbotResponse } from '../types/chatbot';
+
+export interface ChatbotHistoryItem {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 export interface ChatbotRequest {
   question: string;
   language?: string;
   sessionId?: string;
+  history?: ChatbotHistoryItem[];
 }
 
-export interface ChatbotResponse {
-  answer: string;
-  citations: Array<{
-    id: string | number;
-    score: number;
-    title?: string;
-    url?: string;
-    snippet?: string;
-    [key: string]: unknown;
-  }>;
-  sessionId?: string;
-}
-
-export async function invokeChatbot(request: ChatbotRequest): Promise<{ data?: ChatbotResponse; error?: Error }> {
+export async function invokeChatbot(
+  request: ChatbotRequest,
+): Promise<{ data?: ChatbotResponse; error?: Error }> {
   try {
-    const response = await fetch(CHATBOT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
+    const { data, error } = await supabase.functions.invoke<{ data?: ChatbotResponse }>('chatbot', {
+      body: request,
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-      throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+    if (error) {
+      throw error;
     }
 
-    const result = await response.json();
-    return { data: result.data };
+    return { data: data?.data };
   } catch (error) {
     console.error('Chatbot invocation error:', error);
     return { error: error instanceof Error ? error : new Error(String(error)) };

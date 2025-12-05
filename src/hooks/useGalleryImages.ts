@@ -1,22 +1,54 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
+import type { Language } from '../types';
 
 export type GalleryImage = {
+  id: string;
   src: string;
   category: string;
   title: string;
+  albumId?: string | null;
+  albumTitle?: string;
+  eventDate?: string | null;
+};
+
+export type GalleryAlbum = {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  eventDate: string | null;
+  createdAt: string;
+  imageCount: number;
+  coverImage: GalleryImage | null;
 };
 
 interface UseGalleryImagesResult {
   images: GalleryImage[];
+  albums: GalleryAlbum[];
+  featuredImages: GalleryImage[];
   loading: boolean;
   error: string | null;
 }
 
+const FALLBACK_IMAGE_TITLE: Record<Language, string> = {
+  de: 'Foto',
+  en: 'Photo',
+  ru: 'Фото',
+};
+
+const FALLBACK_ALBUM_TITLE: Record<Language, string> = {
+  de: 'Album',
+  en: 'Album',
+  ru: 'Альбом',
+};
+
 export const useGalleryImages = (): UseGalleryImagesResult => {
   const { language } = useLanguage();
   const [images, setImages] = useState<GalleryImage[]>([]);
+  const [albumsState, setAlbumsState] = useState<GalleryAlbum[]>([]);
+  const [featuredImages, setFeaturedImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,12 +98,14 @@ export const useGalleryImages = (): UseGalleryImagesResult => {
       if (albumsError) {
         setError(albumsError.message);
         setImages([]);
+        setAlbumsState([]);
+        setFeaturedImages([]);
         setLoading(false);
         return;
       }
 
-      const albums = (albumData as AlbumRow[] | null) ?? [];
-      const albumIds = albums.map((a) => a.id);
+      const albumRows = (albumData as AlbumRow[] | null) ?? [];
+      const albumIds = albumRows.map((a) => a.id);
 
       const albumTitleById: Record<string, string> = {};
       if (albumIds.length > 0) {
@@ -92,6 +126,8 @@ export const useGalleryImages = (): UseGalleryImagesResult => {
 
       if (albumIds.length === 0) {
         setImages([]);
+        setAlbumsState([]);
+        setFeaturedImages([]);
         setLoading(false);
         return;
       }
@@ -110,6 +146,8 @@ export const useGalleryImages = (): UseGalleryImagesResult => {
       if (mediaError) {
         setError(mediaError.message);
         setImages([]);
+        setAlbumsState([]);
+        setFeaturedImages([]);
         setLoading(false);
         return;
       }
@@ -118,6 +156,8 @@ export const useGalleryImages = (): UseGalleryImagesResult => {
 
       if (rows.length === 0) {
         setImages([]);
+        setAlbumsState([]);
+        setFeaturedImages([]);
         setLoading(false);
         return;
       }
@@ -143,8 +183,10 @@ export const useGalleryImages = (): UseGalleryImagesResult => {
 
       if (cancelled) return;
 
+      const imagesByAlbum: Record<string, GalleryImage[]> = {};
+
       const nextImages: GalleryImage[] = rows.map((row) => {
-        const album = albums.find((a) => a.id === row.album_id);
+        const album = albumRows.find((a) => a.id === row.album_id);
         const category = album?.category ?? 'other';
 
         const i18nTitle =
@@ -159,30 +201,94 @@ export const useGalleryImages = (): UseGalleryImagesResult => {
 
         const fallbackAlbumTitle = row.album_id ? albumTitleById[row.album_id] : undefined;
 
+        const fallbackTitle =
+          FALLBACK_IMAGE_TITLE[language as Language] ?? FALLBACK_IMAGE_TITLE.ru;
+
         const baseTitle =
           i18nTitle ||
           i18nAlt ||
           row.title ||
           fallbackAlbumTitle ||
           album?.slug ||
-          (language === 'de'
-            ? 'Foto'
-            : language === 'en'
-            ? 'Photo'
-            : 'Фото');
+          fallbackTitle;
 
         const storagePath = row.storage_path;
         const isBucketPath = storagePath.startsWith(bucketPrefix);
         const src = isBucketPath ? signedUrls[storagePath] ?? storagePath : storagePath;
 
-        return {
+        const eventDate = album?.event_date ?? null;
+        const albumTitle =
+          fallbackAlbumTitle ||
+          album?.slug ||
+          (FALLBACK_ALBUM_TITLE[language as Language] ?? FALLBACK_ALBUM_TITLE.ru);
+
+        const image: GalleryImage = {
+          id: row.id,
           src,
           category,
           title: baseTitle,
+          albumId: row.album_id,
+          albumTitle: row.album_id ? albumTitle : undefined,
+          eventDate,
         };
+
+        if (row.album_id) {
+          if (!imagesByAlbum[row.album_id]) {
+            imagesByAlbum[row.album_id] = [];
+          }
+          imagesByAlbum[row.album_id].push(image);
+        }
+
+        return image;
       });
 
+      const nextAlbums: GalleryAlbum[] = albumRows
+        .map((album) => {
+          const albumImages = imagesByAlbum[album.id] ?? [];
+          if (!albumImages.length) {
+            return null;
+          }
+
+          const title =
+            albumTitleById[album.id] ||
+            album.slug ||
+            (FALLBACK_ALBUM_TITLE[language as Language] ?? FALLBACK_ALBUM_TITLE.ru);
+
+          return {
+            id: album.id,
+            slug: album.slug,
+            title,
+            category: album.category,
+            eventDate: album.event_date,
+            createdAt: album.created_at,
+            imageCount: albumImages.length,
+            coverImage: albumImages[0] ?? null,
+          } as GalleryAlbum;
+        })
+        .filter((album): album is GalleryAlbum => Boolean(album));
+
+      const sortedAlbums = [...nextAlbums].sort((a, b) => {
+        if (a.eventDate && b.eventDate) {
+          return new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime();
+        }
+        if (a.eventDate && !b.eventDate) return -1;
+        if (!a.eventDate && b.eventDate) return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+
+      const featuredFromAlbums: GalleryImage[] = [];
+      for (const album of sortedAlbums) {
+        if (album.coverImage) {
+          featuredFromAlbums.push(album.coverImage);
+        }
+      }
+
+      const MAX_FEATURED = 6;
+      const nextFeaturedImages = featuredFromAlbums.slice(0, MAX_FEATURED);
+
       setImages(nextImages);
+      setAlbumsState(sortedAlbums);
+      setFeaturedImages(nextFeaturedImages);
       setLoading(false);
     };
 
@@ -193,5 +299,5 @@ export const useGalleryImages = (): UseGalleryImagesResult => {
     };
   }, [language]);
 
-  return { images, loading, error };
+  return { images, albums: albumsState, featuredImages, loading, error };
 };

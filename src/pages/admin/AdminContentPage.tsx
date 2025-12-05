@@ -14,6 +14,8 @@ import { useAdminContentEditor } from '../../hooks/useAdminContentEditor';
 import { useAdminContentDelete } from '../../hooks/useAdminContentDelete';
 import { supabase } from '../../lib/supabase';
 import { useLanguage } from '../../lib/LanguageContext';
+import { generateSlug } from '../../lib/slug';
+import { AdminAlert } from '../../components/admin/common/AdminAlert';
 
 interface PaginationState {
   page: number;
@@ -33,14 +35,6 @@ const emptyEditorInput: ContentEditorInput = {
   publishedAt: null,
   mediaLinks: [],
 };
-
-const generateSlug = (value: string) =>
-  value
-    .toLowerCase()
-    .trim()
-    .replace(/[\s\W-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
 
 const AdminContentPage = () => {
   const { t } = useLanguage();
@@ -306,35 +300,29 @@ const AdminContentPage = () => {
           </button>
         </form>
         {docUploadError && (
-          <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+          <AdminAlert variant="error" size="sm" className="mt-2">
             {docUploadError}
-          </div>
+          </AdminAlert>
         )}
         {docUploadSuccess && (
-          <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-600">
+          <AdminAlert variant="success" size="sm" className="mt-2">
             {docUploadSuccess}
-          </div>
+          </AdminAlert>
         )}
       </section>
 
       <ContentFilters onChange={setFilters} />
 
       {actionError && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+        <AdminAlert variant="error" size="sm">
           {admin.actionErrorPrefix} {actionError}
-        </div>
+        </AdminAlert>
       )}
 
       {(deleteError || deleteSuccess) && (
-        <div
-          className={`rounded-lg border p-3 text-xs ${
-            deleteError
-              ? 'border-rose-200 bg-rose-50 text-rose-600'
-              : 'border-emerald-200 bg-emerald-50 text-emerald-600'
-          }`}
-        >
+        <AdminAlert variant={deleteError ? 'error' : 'success'} size="sm">
           {deleteError ? `${admin.deleteErrorPrefix} ${deleteError}` : admin.deleteSuccess}
-        </div>
+        </AdminAlert>
       )}
 
       {loading ? (
@@ -342,9 +330,9 @@ const AdminContentPage = () => {
           {admin.loading}
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+        <AdminAlert variant="error" size="md">
           {admin.loadErrorPrefix} {error}
-        </div>
+        </AdminAlert>
       ) : (
         <Fragment>
           <ContentTable

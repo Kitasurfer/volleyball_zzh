@@ -7,6 +7,7 @@ import { useAdminMediaAlbums } from '../../hooks/useAdminMediaAlbums';
 import { useAdminMediaDelete } from '../../hooks/useAdminMediaDelete';
 import AdminMediaUploadForm from '../../components/admin/media/AdminMediaUploadForm';
 import { useLanguage } from '../../lib/LanguageContext';
+import { AdminAlert } from '../../components/admin/common/AdminAlert';
 
 const AdminMediaPage = () => {
   const { t } = useLanguage();
@@ -28,15 +29,9 @@ const AdminMediaPage = () => {
       <MediaFilters onChange={setFilters} />
 
       {(deleteError || deleteSuccess) && (
-        <div
-          className={`rounded-lg border p-3 text-xs ${
-            deleteError
-              ? 'border-rose-200 bg-rose-50 text-rose-600'
-              : 'border-emerald-200 bg-emerald-50 text-emerald-600'
-          }`}
-        >
+        <AdminAlert variant={deleteError ? 'error' : 'success'} size="sm">
           {deleteError ? `${admin.deleteErrorPrefix} ${deleteError}` : admin.deleteSuccess}
-        </div>
+        </AdminAlert>
       )}
 
       {loading ? (
@@ -44,9 +39,9 @@ const AdminMediaPage = () => {
           {admin.loading}
         </div>
       ) : error ? (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
+        <AdminAlert variant="error" size="md">
           {admin.loadErrorPrefix} {error}
-        </div>
+        </AdminAlert>
       ) : (
         <MediaTable items={items} albums={albums} onDelete={handleDelete} deletingId={deletingId} />
       )}

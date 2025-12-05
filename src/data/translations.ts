@@ -13,15 +13,15 @@ export const translations: Record<string, Translation> = {
       contact: 'Kontakt',
     },
     hero: {
-      title: 'SG TSV Zizishausen/SKV Unterensingen Volleyball',
-      subtitle: 'Wir sind SG TSV Zizishausen/SKV Unterensingen - Wir stoppen offensive Angriffe',
+      title: 'SKV Unterensingen Volleyball',
+      subtitle: 'Wir sind SKV Unterensingen – Wir stoppen offensive Angriffe',
       cta: 'Jetzt mitmachen',
     },
     footer: {
-      about: 'Über SG TSV Zizishausen/SKV Unterensingen',
+      about: 'Über SKV Unterensingen Volleyball',
       contact: 'Kontakt',
       followUs: 'Folge uns',
-      copyright: '© 2025 SG TSV Zizishausen/SKV Unterensingen Volleyball Team. Alle Rechte vorbehalten.',
+      copyright: 'SKV Unterensingen Volleyball. Alle Rechte vorbehalten.',
     },
     chatbot: {
       title: 'Frag uns!',
@@ -158,7 +158,7 @@ export const translations: Record<string, Translation> = {
         slugLabel: 'Slug',
         slugPlaceholder: 'z.B. damen1-2024-heimspiele',
         categoryLabel: 'Kategorie',
-        categoryTeam: 'Team',
+        categoryTeam: 'Spieltage',
         categoryAction: 'Action',
         categoryBeach: 'Beach',
         categoryTraining: 'Training',
@@ -184,6 +184,21 @@ export const translations: Record<string, Translation> = {
         errorPrefix: 'Fehler:',
         successSaved: 'Album wurde erfolgreich gespeichert.',
       },
+      vectorJobs: {
+        pageTitle: 'Vektor-Jobs',
+        pageSubtitle:
+          'Ingestion-Queue überwachen, Fehler neu anstoßen und Fortschritt verfolgen.',
+        refresh: 'Aktualisieren',
+        loading: 'Jobs werden geladen…',
+        loadErrorPrefix: 'Fehler beim Laden der Jobs:',
+      },
+      chats: {
+        pageTitle: 'Chat-Sessions',
+        pageSubtitle:
+          'Unterhaltungen prüfen, Transkripte exportieren und Nutzung beobachten.',
+        refresh: 'Aktualisieren',
+        loadingSessions: 'Chat-Sessions werden geladen…',
+      },
     },
   },
   en: {
@@ -198,15 +213,15 @@ export const translations: Record<string, Translation> = {
       contact: 'Contact',
     },
     hero: {
-      title: 'SG TSV Zizishausen/SKV Unterensingen Volleyball',
-      subtitle: 'We are SG TSV Zizishausen/SKV Unterensingen - We stop offensive attacks',
+      title: 'SKV Unterensingen Volleyball',
+      subtitle: 'We are SKV Unterensingen – We stop offensive attacks',
       cta: 'Join Now',
     },
     footer: {
-      about: 'About SG TSV Zizishausen/SKV Unterensingen',
+      about: 'About SKV Unterensingen Volleyball',
       contact: 'Contact',
       followUs: 'Follow Us',
-      copyright: '© 2025 SG TSV Zizishausen/SKV Unterensingen Volleyball Team. All rights reserved.',
+      copyright: 'SKV Unterensingen Volleyball. All rights reserved.',
     },
     chatbot: {
       title: 'Ask us!',
@@ -341,7 +356,7 @@ export const translations: Record<string, Translation> = {
         slugLabel: 'Slug',
         slugPlaceholder: 'e.g. damen1-2024-heimspiele',
         categoryLabel: 'Category',
-        categoryTeam: 'Team',
+        categoryTeam: 'Spieltage',
         categoryAction: 'Action',
         categoryBeach: 'Beach',
         categoryTraining: 'Training',
@@ -367,6 +382,21 @@ export const translations: Record<string, Translation> = {
         errorPrefix: 'Error:',
         successSaved: 'Album saved successfully.',
       },
+      vectorJobs: {
+        pageTitle: 'Vector Jobs',
+        pageSubtitle:
+          'Track ingestion progress, identify bottlenecks, and retry failed jobs.',
+        refresh: 'Refresh',
+        loading: 'Loading jobs…',
+        loadErrorPrefix: 'Failed to load jobs:',
+      },
+      chats: {
+        pageTitle: 'Chat Sessions',
+        pageSubtitle:
+          'Review conversations, export transcripts, and observe usage.',
+        refresh: 'Refresh',
+        loadingSessions: 'Loading sessions…',
+      },
     },
   },
   ru: {
@@ -381,15 +411,15 @@ export const translations: Record<string, Translation> = {
       contact: 'Контакты',
     },
     hero: {
-      title: 'SG TSV Zizishausen/SKV Unterensingen Volleyball',
-      subtitle: 'Мы SG TSV Zizishausen/SKV Unterensingen - Мы останавливаем атаки',
+      title: 'SKV Unterensingen Volleyball',
+      subtitle: 'Мы SKV Unterensingen – мы останавливаем атаки',
       cta: 'Присоединиться',
     },
     footer: {
-      about: 'О команде SG TSV Zizishausen/SKV Unterensingen',
+      about: 'О команде',
       contact: 'Контакты',
       followUs: 'Следите за нами',
-      copyright: '© 2025 Команда SG TSV Zizishausen/SKV Unterensingen Volleyball. Все права защищены.',
+      copyright: 'Команда SKV Unterensingen Volleyball. Все права защищены.',
     },
     chatbot: {
       title: 'Задайте вопрос!',
@@ -526,7 +556,7 @@ export const translations: Record<string, Translation> = {
         slugLabel: 'Slug',
         slugPlaceholder: 'например, damen1-2024-heimspiele',
         categoryLabel: 'Категория',
-        categoryTeam: 'Команда',
+        categoryTeam: 'Spieltage',
         categoryAction: 'Экшен',
         categoryBeach: 'Пляж',
         categoryTraining: 'Тренировки',
@@ -551,6 +581,21 @@ export const translations: Record<string, Translation> = {
         saveDefault: 'Сохранить альбом',
         errorPrefix: 'Ошибка:',
         successSaved: 'Альбом успешно сохранён.',
+      },
+      vectorJobs: {
+        pageTitle: 'Векторные задачи',
+        pageSubtitle:
+          'Контроль очереди индексации, повторные попытки и отслеживание прогресса.',
+        refresh: 'Обновить',
+        loading: 'Загружаем задачи…',
+        loadErrorPrefix: 'Ошибка при загрузке задач:',
+      },
+      chats: {
+        pageTitle: 'Сессии чата',
+        pageSubtitle:
+          'Просмотр диалогов, экспорт транскриптов и анализ использования.',
+        refresh: 'Обновить',
+        loadingSessions: 'Загружаем сессии…',
       },
     },
   },

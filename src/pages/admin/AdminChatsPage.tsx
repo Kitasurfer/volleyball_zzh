@@ -5,8 +5,12 @@ import ChatMessagesPanel from '../../components/admin/chat/ChatMessagesPanel';
 import { useAdminChatSessions } from '../../hooks/useAdminChatSessions';
 import { useAdminChatMessages } from '../../hooks/useAdminChatMessages';
 import type { ChatSessionFilters, ChatSessionSummary } from '../../types/admin/chat';
+import { useLanguage } from '../../lib/LanguageContext';
+import { AdminAlert } from '../../components/admin/common/AdminAlert';
 
 const AdminChatsPage = () => {
+  const { t } = useLanguage();
+  const admin = t.admin.chats;
   const [filters, setFilters] = useState<ChatSessionFilters>({ search: '', language: 'all' });
   const [selectedSession, setSelectedSession] = useState<ChatSessionSummary | null>(null);
 
@@ -39,17 +43,15 @@ const AdminChatsPage = () => {
     <div className="space-y-6">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-neutral-900">Chat Sessions</h2>
-          <p className="mt-1 text-sm text-neutral-500">
-            Review AI assistant conversations, monitor engagement, and export transcripts if needed.
-          </p>
+          <h2 className="text-xl font-semibold text-neutral-900">{admin.pageTitle}</h2>
+          <p className="mt-1 text-sm text-neutral-500">{admin.pageSubtitle}</p>
         </div>
         <button
           type="button"
           onClick={handleRefreshAll}
           className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100"
         >
-          Refresh
+          {admin.refresh}
         </button>
       </header>
 
@@ -61,16 +63,16 @@ const AdminChatsPage = () => {
       />
 
       {sessionsError && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+        <AdminAlert variant="error" size="sm">
           {sessionsError}
-        </div>
+        </AdminAlert>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-3">
           {sessionsLoading ? (
             <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm text-neutral-500">
-              Loading sessions…
+              {admin.loadingSessions}
             </div>
           ) : (
             <ChatSessionsTable

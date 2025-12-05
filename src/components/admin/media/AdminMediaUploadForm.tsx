@@ -11,8 +11,8 @@ interface AdminMediaUploadFormProps {
 const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onUploaded }) => {
   const { t } = useLanguage();
   const {
-    file,
-    setFile,
+    files,
+    setFiles,
     sourceType,
     setSourceType,
     url,
@@ -31,7 +31,7 @@ const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onU
     handleUpload,
   } = useAdminMediaUpload({ onUploaded });
 
-  const disableSubmit = uploading || (sourceType === 'file' && !file);
+  const disableSubmit = uploading || (sourceType === 'file' && files.length === 0);
   const ui = t.admin.media.upload;
 
   return (
@@ -53,8 +53,9 @@ const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onU
           {sourceType === 'file' ? (
             <input
               type="file"
+              multiple
               accept="image/*,video/*,audio/*,application/pdf"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              onChange={(event) => setFiles(Array.from(event.target.files ?? []))}
               className="mt-2 w-full text-sm text-neutral-600"
             />
           ) : (

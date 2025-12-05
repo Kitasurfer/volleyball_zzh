@@ -1,33 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-
-export type Standing = {
-  position: number;
-  name: string;
-  matches: number;
-  wins: number;
-  sets: string;
-  points: number;
-};
-
-export type CompetitionMatch = {
-  id: string;
-  matchNumber: string | null;
-  date: string;
-  isoDate: string | null;
-  homeTeam: string;
-  awayTeam: string;
-  opponent: string;
-  location: string | null;
-  result: string | null;
-  isHome: boolean;
-};
-
-export type StandingsResponse = {
-  standings: Standing[];
-  team: Standing | null;
-  lastUpdated: string;
-  schedule?: CompetitionMatch[];
-};
+import type { StandingsResponse } from '../types/standings';
 
 const FUNCTIONS_URL = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;

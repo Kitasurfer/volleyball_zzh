@@ -4,6 +4,7 @@ import { useTrainingVideos } from '../hooks/useTrainingVideos';
 import { TrainingHero } from '../components/training/TrainingHero';
 import { TrainingPhilosophy } from '../components/training/TrainingPhilosophy';
 import { TrainingVideosSection } from '../components/training/TrainingVideosSection';
+import { LightboxImage } from '../components/LightboxImage';
 
 const TrainingPage: React.FC = () => {
   const { language } = useLanguage();
@@ -23,7 +24,7 @@ const TrainingPage: React.FC = () => {
         'Physische Exzellenz erreichen',
       ],
       videosTitle: 'Trainingsvideos',
-      videosIntro: 'Sehen Sie Beispielübungen und Trainingssequenzen aus unserer Halle.',
+      videosIntro: 'Schauen Sie sich Beispiele für Übungen und Trainingsserien an.',
       videosLoading: 'Trainingsvideos werden geladen…',
       videosEmpty: 'Noch keine Trainingsvideos verfügbar.',
       videosError: 'Fehler beim Laden der Trainingsvideos:',
@@ -41,7 +42,7 @@ const TrainingPage: React.FC = () => {
         'Achieve physical excellence',
       ],
       videosTitle: 'Training videos',
-      videosIntro: 'Watch example drills and training sequences from our gym.',
+      videosIntro: 'Take a look at examples of exercises and training sets.',
       videosLoading: 'Loading training videos…',
       videosEmpty: 'No training videos available yet.',
       videosError: 'Failed to load training videos:',
@@ -59,7 +60,7 @@ const TrainingPage: React.FC = () => {
         'Достижение физического совершенства',
       ],
       videosTitle: 'Тренировочные видео',
-      videosIntro: 'Посмотрите примеры упражнений и тренировочных серий из нашего зала.',
+      videosIntro: 'Посмотрите примеры упражнений и тренировочных серий.',
       videosLoading: 'Загружаем тренировочные видео…',
       videosEmpty: 'Тренировочных видео пока нет.',
       videosError: 'Ошибка при загрузке тренировочных видео:',
@@ -74,13 +75,13 @@ const TrainingPage: React.FC = () => {
         <TrainingHero title={t.title} description={t.description} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <img
+          <LightboxImage
             src="/images/volleyball_team_gym_warmup_stretching_session.jpg"
             alt="Training 1"
             className="w-full h-80 object-cover rounded-lg shadow-md"
           />
-          <img
-            src="/images/intense_volleyball_team_plyometric_training_gym.jpg"
+          <LightboxImage
+            src="https://kxwmkvtxkaczuonnnxlj.supabase.co/storage/v1/object/public/media-public/uploads/1764971770284-ly8ldr.jpg"
             alt="Training 2"
             className="w-full h-80 object-cover rounded-lg shadow-md"
           />

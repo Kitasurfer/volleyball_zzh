@@ -178,6 +178,19 @@ export interface Translation {
       errorPrefix: string;
       successSaved: string;
     };
+    vectorJobs: {
+      pageTitle: string;
+      pageSubtitle: string;
+      refresh: string;
+      loading: string;
+      loadErrorPrefix: string;
+    };
+    chats: {
+      pageTitle: string;
+      pageSubtitle: string;
+      refresh: string;
+      loadingSessions: string;
+    };
   };
 }
 

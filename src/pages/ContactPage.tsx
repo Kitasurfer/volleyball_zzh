@@ -7,6 +7,7 @@ const ContactPage: React.FC = () => {
   const { language } = useLanguage();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [activeMap, setActiveMap] = useState<'gym' | 'beach'>('gym');
 
   const content = {
     de: {
@@ -21,6 +22,12 @@ const ContactPage: React.FC = () => {
         error: 'Fehler beim Senden. Bitte versuchen Sie es erneut.',
       },
       info: {
+        club: 'Verein',
+        contactPerson: 'Kontakt',
+        phone: 'Telefon',
+        trainer: 'Trainer',
+        gymLocation: 'Trainingsort Halle',
+        beachLocation: 'Trainingsort Beach',
         address: 'Adresse',
         email: 'E-Mail',
       },
@@ -37,6 +44,12 @@ const ContactPage: React.FC = () => {
         error: 'Error sending message. Please try again.',
       },
       info: {
+        club: 'Club',
+        contactPerson: 'Contact person',
+        phone: 'Phone',
+        trainer: 'Coach',
+        gymLocation: 'Indoor training location',
+        beachLocation: 'Beach training location',
         address: 'Address',
         email: 'Email',
       },
@@ -53,6 +66,12 @@ const ContactPage: React.FC = () => {
         error: 'Ошибка при отправке. Пожалуйста, попробуйте снова.',
       },
       info: {
+        club: 'Клуб',
+        contactPerson: 'Контакт',
+        phone: 'Телефон',
+        trainer: 'Тренер',
+        gymLocation: 'Зал',
+        beachLocation: 'Пляж',
         address: 'Адрес',
         email: 'Email',
       },
@@ -155,45 +174,132 @@ const ContactPage: React.FC = () => {
 
           {/* Contact Info */}
           <div className="space-y-6">
-            <div className="bg-white p-8 rounded-lg shadow-sm">
-              <div className="flex items-start space-x-4 mb-6">
+            <div className="bg-white p-8 rounded-lg shadow-sm space-y-6">
+              <div className="flex items-start space-x-4">
+                <Mail className="w-6 h-6 text-primary-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="text-h3 font-semibold text-neutral-900 mb-2">{t.info.club}</h3>
+                  <p className="text-body text-neutral-700">
+                    SKV Unterensingen Volleyball
+                  </p>
+                  <p className="text-body text-neutral-700">
+                    {t.info.contactPerson}: Sven Kühn
+                  </p>
+                  <p className="text-body text-neutral-700">
+                    {t.info.phone}: +4917689220007
+                  </p>
+                  <p className="text-body text-neutral-700">
+                    {t.info.trainer}: Heinrich Treubert
+                  </p>
+                  <a
+                    href="mailto:volleyball@skvunterensingen.de"
+                    className="text-body text-primary-500 hover:text-primary-600"
+                  >
+                    volleyball@skvunterensingen.de
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4">
                 <MapPin className="w-6 h-6 text-primary-500 flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-h3 font-semibold text-neutral-900 mb-2">{t.info.address}</h3>
+                  <h3 className="text-h3 font-semibold text-neutral-900 mb-2">{t.info.gymLocation}</h3>
                   <p className="text-body text-neutral-700">
-                    Inselhalle<br />
-                    74915 Waibstadt-Zizishausen<br />
-                    Deutschland
+                    Bettwiesenhalle<br />
+                    Schulstraße 43,<br />
+                    72669 Unterensingen
                   </p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
-                <Mail className="w-6 h-6 text-primary-500 flex-shrink-0 mt-1" />
+                <MapPin className="w-6 h-6 text-primary-500 flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-h3 font-semibold text-neutral-900 mb-2">{t.info.email}</h3>
-                  <a
-                    href="mailto:info@zizishausen-volleyball.de"
-                    className="text-body text-primary-500 hover:text-primary-600"
-                  >
-                    info@zizishausen-volleyball.de
-                  </a>
+                  <h3 className="text-h3 font-semibold text-neutral-900 mb-2">{t.info.beachLocation}</h3>
+                  <p className="text-body text-neutral-700">
+                    Beachvolleyball TSV Zizishausen<br />
+                    Auf d. Insel 1,<br />
+                    72622 Nürtingen
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Google Map */}
-        <div className="w-full h-96 bg-neutral-200 rounded-lg overflow-hidden shadow-md">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2612.5!2d9.347777!3d49.291111!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDnCsDE3JzI4LjAiTiA5wrAyMCc1My4wIkU!5e0!3m2!1sen!2sde!4v1234567890"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
+        {/* Google Map with Tabs */}
+        <div className="space-y-4">
+          {/* Map Selection Tabs */}
+          <div className="flex gap-4 border-b border-neutral-200">
+            <button
+              onClick={() => setActiveMap('gym')}
+              className={`px-6 py-3 font-semibold transition-colors relative ${
+                activeMap === 'gym'
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                <span>{t.info.gymLocation}</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveMap('beach')}
+              className={`px-6 py-3 font-semibold transition-colors relative ${
+                activeMap === 'beach'
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-neutral-600 hover:text-neutral-900'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                <span>{t.info.beachLocation}</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Map Container */}
+          <div className="w-full h-96 bg-neutral-200 rounded-lg overflow-hidden shadow-md">
+            {activeMap === 'gym' ? (
+              <iframe
+                key="gym-map"
+                src="https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            ) : (
+              <iframe
+                key="beach-map"
+                src="https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            )}
+          </div>
+
+          {/* Current Location Info */}
+          <div className="bg-neutral-50 p-4 rounded-lg">
+            <p className="text-small text-neutral-700">
+              {activeMap === 'gym' ? (
+                <>
+                  <span className="font-semibold text-neutral-900">{t.info.gymLocation}:</span>{' '}
+                  Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold text-neutral-900">{t.info.beachLocation}:</span>{' '}
+                  Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen
+                </>
+              )}
+            </p>
+          </div>
         </div>
       </div>
     </div>

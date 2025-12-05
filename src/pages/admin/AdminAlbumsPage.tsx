@@ -1,6 +1,7 @@
 import { useAdminAlbums, LANGUAGES } from '../../hooks/useAdminAlbums';
 import AdminAlbumsList from '../../components/admin/albums/AdminAlbumsList';
 import { useLanguage } from '../../lib/LanguageContext';
+import { AdminAlert } from '../../components/admin/common/AdminAlert';
 
 const AdminAlbumsPage = () => {
   const { t } = useLanguage();
@@ -76,7 +77,7 @@ const AdminAlbumsPage = () => {
                 onChange={(event) => setCategory(event.target.value)}
                 className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
               >
-                <option value="team">{admin.categoryTeam}</option>
+                <option value="spieltage">{admin.categoryTeam}</option>
                 <option value="action">{admin.categoryAction}</option>
                 <option value="beach">{admin.categoryBeach}</option>
                 <option value="training">{admin.categoryTraining}</option>
@@ -179,14 +180,14 @@ const AdminAlbumsPage = () => {
           </div>
 
           {error && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-600">
+            <AdminAlert variant="error" size="sm">
               {admin.errorPrefix} {error}
-            </div>
+            </AdminAlert>
           )}
           {success && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-600">
+            <AdminAlert variant="success" size="sm">
               {admin.successSaved}
-            </div>
+            </AdminAlert>
           )}
 
           <div className="flex items-center justify-end gap-3">

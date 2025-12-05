@@ -9,6 +9,8 @@ declare const Deno: {
   ) => Promise<void> | void;
 };
 
+import { fetchLeagueData as fetchLeagueDataImpl, findTeamStanding as findTeamStandingImpl } from './league.ts';
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -279,12 +281,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { standings, schedule } = await fetchLeagueData();
+    const { standings, schedule } = await fetchLeagueDataImpl();
     return new Response(
       JSON.stringify({
         standings,
         schedule,
-        team: findTeamStanding(standings),
+        team: findTeamStandingImpl(standings),
         lastUpdated: new Date().toISOString(),
       }),
       {

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../../lib/LanguageContext';
 
 const AdminOverviewPage = () => {
@@ -36,14 +37,14 @@ const AdminOverviewPage = () => {
 
       <div className="grid gap-4 md:grid-cols-2">
         {cards.map((card) => (
-          <a
+          <Link
             key={card.path}
-            href={card.path}
+            to={card.path}
             className="flex flex-col gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-5 transition hover:border-primary-400 hover:bg-white"
           >
             <h3 className="text-lg font-semibold text-neutral-800">{card.title}</h3>
             <p className="text-sm text-neutral-500">{card.description}</p>
-          </a>
+          </Link>
         ))}
       </div>
     </div>

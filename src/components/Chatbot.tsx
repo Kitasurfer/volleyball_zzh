@@ -1,71 +1,10 @@
-import React, { useState, useRef, useEffect, memo } from 'react';
-import { MessageCircle, Send, X, Copy } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { MessageCircle, Send, X } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
-import { supabase } from '../lib/supabase';
-import type { ChatMessage, ChatbotResponse } from '../types/chatbot';
-import type { Translation } from '../types';
+import type { ChatMessage } from '../types/chatbot';
+import type { ChatbotHistoryItem } from '../lib/chatbot-client';
 import { LinkifiedText } from './LinkifiedText';
-
-const styles: Record<string, string> = {
-  button:
-    'fixed bottom-6 right-6 z-[100] bg-primary-500 text-white p-4 rounded-full shadow-lg transition-transform duration-300 hover:scale-110 hover:bg-primary-600',
-  window: 'fixed bottom-6 right-6 z-[100] w-96 max-w-[calc(100vw-3rem)] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden',
-  header: 'bg-primary-500 text-white px-6 py-4 flex items-center justify-between',
-  headerTitle: 'flex items-center gap-3',
-  closeButton: 'text-white hover:text-neutral-200 transition-colors',
-  messages: 'flex-1 p-4 space-y-4 overflow-y-auto max-h-96 bg-neutral-50',
-  bubbleUser: 'ml-auto bg-primary-500 text-white',
-  bubbleBot: 'bg-white text-neutral-900 shadow-sm',
-  bubbleBase: 'max-w-[80%] px-4 py-2 rounded-lg',
-  messageText: 'text-sm leading-relaxed whitespace-pre-line',
-  copyButton: 'absolute top-2 right-2 p-1 rounded text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors',
-  typingWrapper: 'flex justify-start',
-  typingBubble: 'bg-white px-4 py-2 rounded-lg shadow-sm',
-  typingDots: 'flex gap-2',
-  typingDot: 'w-2 h-2 bg-neutral-400 rounded-full animate-bounce',
-  inputBar: 'border-t border-neutral-200 p-4 bg-white',
-  inputRow: 'flex gap-2',
-  inputField:
-    'flex-1 px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50',
-  sendButton:
-    'bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-};
-
-const MessageBubble = memo(
-  ({ message, t }: { message: ChatMessage; t: Translation['chatbot'] }) => {
-    const handleCopy = async () => {
-      try {
-        await navigator.clipboard.writeText(message.text);
-      } catch (err) {
-        console.error('Failed to copy:', err);
-      }
-    };
-
-    return (
-      <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-        <div
-          className={`${styles.bubbleBase} ${
-            message.sender === 'user' ? styles.bubbleUser : styles.bubbleBot
-          } relative`}
-        >
-          {message.sender === 'bot' && (
-            <button
-              onClick={handleCopy}
-              className={styles.copyButton}
-              title={t.copy || 'Copy'}
-              aria-label="Copy message"
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-          )}
-          <LinkifiedText text={message.text} className="text-sm leading-relaxed whitespace-pre-line" />
-        </div>
-      </div>
-    );
-  },
-);
-
-MessageBubble.displayName = 'MessageBubble';
+import { invokeChatbot } from '../lib/chatbot-client';
 
 const Chatbot: React.FC = () => {
   const { language, t } = useLanguage();
@@ -80,9 +19,9 @@ const Chatbot: React.FC = () => {
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const welcomeMessages: Record<string, string> = {
-        de: 'Hallo! Ich bin der SG TSV Zizishausen/SKV Unterensingen-Assistent. Wie kann ich Ihnen helfen?',
-        en: 'Hello! I am the SG TSV Zizishausen/SKV Unterensingen assistant. How can I help you?',
-        ru: 'Здравствуйте! Я ассистент команды SG TSV Zizishausen/SKV Unterensingen. Чем могу помочь?',
+        de: 'Hallo! Ich bin der SKV Unterensingen Volleyball-Assistent. Wie kann ich Ihnen helfen?',
+        en: 'Hello! I am the SKV Unterensingen Volleyball assistant. How can I help you?',
+        ru: 'Здравствуйте! Я ассистент команды SKV Unterensingen Volleyball. Чем могу помочь?',
       };
       const greeting: ChatMessage = {
         id: Date.now().toString(),
@@ -115,7 +54,7 @@ const Chatbot: React.FC = () => {
     };
 
     const messagesForHistory = [...messages, userMessage];
-    const history = messagesForHistory.slice(-6).map((message) => ({
+    const history: ChatbotHistoryItem[] = messagesForHistory.slice(-6).map((message) => ({
       role: message.sender === 'user' ? 'user' : 'assistant',
       content: message.text,
     }));
@@ -125,16 +64,19 @@ const Chatbot: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke<{ data?: ChatbotResponse }>('chatbot', {
-        body: { question: input, language, sessionId, history },
+      const { data, error } = await invokeChatbot({
+        question: input,
+        language,
+        sessionId,
+        history,
       });
 
       if (error) throw error;
 
-      let answerText = data?.data?.answer || 'Sorry, I could not process your request.';
+      let answerText = data?.answer || 'Sorry, I could not process your request.';
       
       // Если цитат нет, убираем упоминания источников из текста
-      if (!data?.data?.citations || data.data.citations.length === 0) {
+      if (!data?.citations || data.citations.length === 0) {
         // Убираем различные варианты упоминаний источников
         answerText = answerText
           .replace(/Источники:?\s*$/gi, '')
@@ -152,8 +94,8 @@ const Chatbot: React.FC = () => {
         sender: 'bot',
       };
 
-      if (data?.data?.sessionId) {
-        setSessionId(data.data.sessionId);
+      if (data?.sessionId) {
+        setSessionId(data.sessionId);
       }
 
       setMessages((prev) => [...prev, botMessage]);

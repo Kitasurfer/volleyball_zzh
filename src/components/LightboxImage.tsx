@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent } from './ui';
 
 interface LightboxImageProps {
@@ -33,11 +34,21 @@ export const LightboxImage: React.FC<LightboxImageProps> = ({
         </button>
       </DialogTrigger>
       <DialogContent className="flex max-h-screen max-w-[96vw] items-center justify-center border-none bg-black/95 p-0">
-        <img
-          src={src}
-          alt={alt}
-          className="max-h-[90vh] w-auto max-w-full object-contain"
-        />
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="group relative flex items-center justify-center focus:outline-none"
+          aria-label={alt}
+        >
+          <img
+            src={src}
+            alt={alt}
+            className="max-h-[90vh] w-auto max-w-full object-contain cursor-zoom-out"
+          />
+          <span className="absolute right-4 top-4 rounded-full bg-black/70 p-2 text-white shadow-lg transition-colors group-hover:bg-black/85">
+            <X className="h-5 w-5" />
+          </span>
+        </button>
       </DialogContent>
     </Dialog>
   );

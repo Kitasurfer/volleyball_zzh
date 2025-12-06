@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
-import { MapPin, Mail } from 'lucide-react';
+import { MapPin, Mail, Phone, MessageCircle } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
-import { supabase } from '../lib/supabase';
 
 const ContactPage: React.FC = () => {
   const { language } = useLanguage();
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [activeMap, setActiveMap] = useState<'gym' | 'beach'>('gym');
 
   const content = {
     de: {
       title: 'Kontakt',
       subtitle: 'Nehmen Sie Kontakt mit uns auf',
+      fastContact: {
+        title: 'Schneller Kontakt',
+        subtitle: 'Wählen Sie, wie Sie uns am liebsten erreichen möchten.',
+        call: 'Anrufen',
+        email: 'E-Mail schreiben',
+        whatsapp: 'WhatsApp-Nachricht',
+        note: 'Wir melden uns in der Regel innerhalb von 24 Stunden.',
+      },
       form: {
         name: 'Name',
         email: 'E-Mail',
@@ -35,6 +40,14 @@ const ContactPage: React.FC = () => {
     en: {
       title: 'Contact',
       subtitle: 'Get in touch with us',
+      fastContact: {
+        title: 'Quick contact',
+        subtitle: 'Choose how you prefer to get in touch with us.',
+        call: 'Call',
+        email: 'Send e-mail',
+        whatsapp: 'WhatsApp message',
+        note: 'We usually reply within 24 hours.',
+      },
       form: {
         name: 'Name',
         email: 'Email',
@@ -57,6 +70,14 @@ const ContactPage: React.FC = () => {
     ru: {
       title: 'Контакты',
       subtitle: 'Свяжитесь с нами',
+      fastContact: {
+        title: 'Быстрый контакт',
+        subtitle: 'Выберите удобный способ связаться с нами.',
+        call: 'Позвонить',
+        email: 'Написать e-mail',
+        whatsapp: 'Сообщение в WhatsApp',
+        note: 'Обычно отвечаем в течение 24 часов.',
+      },
       form: {
         name: 'Имя',
         email: 'Email',
@@ -80,32 +101,6 @@ const ContactPage: React.FC = () => {
 
   const t = content[language];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('loading');
-
-    try {
-      const { error } = await supabase.from('contact_submissions').insert([
-        {
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-          language: language,
-        },
-      ]);
-
-      if (error) throw error;
-
-      setStatus('success');
-      setFormData({ name: '', email: '', message: '' });
-      setTimeout(() => setStatus('idle'), 3000);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 3000);
-    }
-  };
-
   return (
     <div className="min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-6 lg:px-12">
@@ -117,59 +112,38 @@ const ContactPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-          {/* Contact Form */}
-          <div className="bg-white p-8 rounded-lg shadow-sm">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-small font-medium text-neutral-900 mb-2">
-                  {t.form.name}
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div>
-                <label className="block text-small font-medium text-neutral-900 mb-2">
-                  {t.form.email}
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-              <div>
-                <label className="block text-small font-medium text-neutral-900 mb-2">
-                  {t.form.message}
-                </label>
-                <textarea
-                  required
-                  rows={5}
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full px-4 py-3 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                ></textarea>
-              </div>
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                className="w-full bg-primary-500 text-white px-6 py-3 rounded-md font-semibold hover:bg-primary-600 transition-colors disabled:opacity-50"
+          {/* Quick Contact */}
+          <div className="bg-white p-8 rounded-lg shadow-sm space-y-6">
+            <div>
+              <h2 className="text-h3 font-semibold text-neutral-900 mb-2">{t.fastContact.title}</h2>
+              <p className="text-body text-neutral-700">{t.fastContact.subtitle}</p>
+            </div>
+            <div className="space-y-4">
+              <a
+                href="tel:+4917689220007"
+                className="flex items-center justify-between rounded-md bg-primary-500 px-4 py-3 text-white shadow-sm transition-colors hover:bg-primary-600"
               >
-                {status === 'loading' ? '...' : t.form.submit}
-              </button>
-              {status === 'success' && (
-                <p className="text-semantic-success text-center">{t.form.success}</p>
-              )}
-              {status === 'error' && (
-                <p className="text-semantic-error text-center">{t.form.error}</p>
-              )}
-            </form>
+                <span className="text-body-lg font-semibold">{t.fastContact.call}</span>
+                <Phone className="h-5 w-5" />
+              </a>
+              <a
+                href="mailto:volleyball@skvunterensingen.de?subject=Kontakt%20SKV%20Unterensingen%20Volleyball"
+                className="flex items-center justify-between rounded-md border border-primary-500 px-4 py-3 text-primary-600 shadow-sm transition-colors hover:bg-primary-50"
+              >
+                <span className="text-body-lg font-semibold">{t.fastContact.email}</span>
+                <Mail className="h-5 w-5" />
+              </a>
+              <a
+                href="https://wa.me/4917689220007"
+                className="flex items-center justify-between rounded-md bg-[#25D366] px-4 py-3 text-white shadow-sm transition-colors hover:bg-[#1ebe5d]"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="text-body-lg font-semibold">{t.fastContact.whatsapp}</span>
+                <MessageCircle className="h-5 w-5" />
+              </a>
+            </div>
+            <p className="text-small text-neutral-500">{t.fastContact.note}</p>
           </div>
 
           {/* Contact Info */}

@@ -158,7 +158,7 @@ const AboutPage: React.FC = () => {
       <div className="container mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-h1 font-bold text-primary-900 mb-4">{t.title}</h1>
+          <h1 className="text-h1 font-bold text-primary-900 mb-4 break-words text-balance">{t.title}</h1>
           <div className="w-24 h-1 bg-accent-500 mx-auto"></div>
         </div>
 

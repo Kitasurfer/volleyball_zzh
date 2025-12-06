@@ -76,6 +76,48 @@ const FEATURED_SHORTS: {
       ru: 'Короткая серия с акцентом на приём подачи и защиту.',
     },
   },
+  {
+    id: 'featured-video-1',
+    url: 'https://youtu.be/cZFjFK3Pf7c?si=XY15-b3TyORgp4gN',
+    titles: {
+      de: 'Beachvolleyball-Regeln erklärt',
+      en: 'Beach Volleyball Rules Explained',
+      ru: 'Правила пляжного волейбола',
+    },
+    descriptions: {
+      de: 'Video-Erklärung der wichtigsten Beachvolleyball-Regeln für Spieler und Zuschauer.',
+      en: 'Video explanation of the key beach volleyball rules for players and spectators.',
+      ru: 'Видео-объяснение основных правил пляжного волейбола для игроков и зрителей.',
+    },
+  },
+  {
+    id: 'featured-video-2',
+    url: 'https://www.youtube.com/watch?v=7QmFbAVC5Y4',
+    titles: {
+      de: 'Änderungen der Volleyballregeln 2025',
+      en: 'Volleyball Rule Changes 2025',
+      ru: 'Изменения правил волейбола 2025',
+    },
+    descriptions: {
+      de: 'Übersicht über neue und geänderte Volleyballregeln ab der Saison 2025.',
+      en: 'Overview of new and changed volleyball rules starting in the 2025 season.',
+      ru: 'Обзор новых и изменённых правил волейбола, которые вступают в силу с сезона 2025.',
+    },
+  },
+  {
+    id: 'featured-video-3',
+    url: 'https://www.youtube.com/watch?v=2tj8qe9pc38',
+    titles: {
+      de: 'Was die neuen Volleyballregeln bedeuten',
+      en: 'What to Expect from the New Volleyball Rules',
+      ru: 'Чего ждать от новых правил волейбола',
+    },
+    descriptions: {
+      de: 'Erklärung, wie sich die neuen FIVB-Regeln auf Spielstil und Taktik auswirken.',
+      en: 'Explains how the new FIVB rules will affect playing style and tactics.',
+      ru: 'Объяснение того, как новые правила FIVB повлияют на стиль игры и тактику.',
+    },
+  },
 ];
 
 const FALLBACK_TRAINING_VIDEO_TITLE: Record<Language, string> = {

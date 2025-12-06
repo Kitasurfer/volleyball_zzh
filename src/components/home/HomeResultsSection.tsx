@@ -1,5 +1,6 @@
 import { Alert, Spinner } from '../ui';
 import type { StandingsResponse } from '../../types/standings';
+import { normalizeTeamName, isOurTeamName } from '../../lib/teamNaming';
 
 interface ResultsTranslations {
   title: string;
@@ -77,9 +78,7 @@ export const HomeResultsSection = ({
                     </thead>
                     <tbody>
                       {data!.standings!.map((standing) => {
-                        const isTeamRow = data?.team
-                          ? standing.name === data.team.name
-                          : standing.name.includes('Zizishausen');
+                        const isTeamRow = isOurTeamName(standing.name);
 
                         return (
                           <tr
@@ -89,7 +88,7 @@ export const HomeResultsSection = ({
                             }`}
                           >
                             <td className="px-4 py-3 font-semibold">{standing.position}</td>
-                            <td className="px-4 py-3">{standing.name}</td>
+                            <td className="px-4 py-3">{normalizeTeamName(standing.name)}</td>
                             <td className="px-4 py-3 text-center">{standing.matches}</td>
                             <td className="px-4 py-3 text-center">{standing.wins}</td>
                             <td className="px-4 py-3 text-center">{standing.sets}</td>
@@ -115,7 +114,7 @@ export const HomeResultsSection = ({
                       {t.table.position}
                     </span>
                   </div>
-                  <p className="mt-4 text-body font-medium">{data.team.name}</p>
+                  <p className="mt-4 text-body font-medium">{normalizeTeamName(data.team.name)}</p>
                   <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-neutral-500">{t.table.matches}</p>

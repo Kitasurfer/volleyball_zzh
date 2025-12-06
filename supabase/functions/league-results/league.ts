@@ -133,7 +133,7 @@ const extractStandingsFromJson = (html: string): Standing[] | null => {
 };
 
 const extractStandingsFromTable = (html: string): Standing[] | null => {
-  const tableMatches = html.match(/<table class="samsDataTable">[\s\S]*?<\/table>/g);
+  const tableMatches = html.match(/<table[^>]*class="[^"]*samsDataTable[^"]*"[\s\S]*?<\/table>/g);
   if (!tableMatches || tableMatches.length === 0) {
     console.error('No samsDataTable tables found in standings HTML excerpt:', html.slice(0, 500));
     return null;

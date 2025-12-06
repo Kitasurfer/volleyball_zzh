@@ -5,6 +5,8 @@ import Footer from './components/Footer';
 import Chatbot from './components/Chatbot';
 import { Spinner } from './components/ui';
 import { AppRoutes } from './routes/AppRoutes';
+import ScrollToTop from './components/ScrollToTop';
+import CookieConsent from './components/CookieConsent';
 
 // Lazy load pages for code splitting
 const AdminLayout = () => null;
@@ -43,12 +45,14 @@ function App() {
   return (
     <AppProviders>
       <Router>
+        <ScrollToTop />
         <div className="flex flex-col min-h-screen bg-background-page">
           <Header />
           <main className="flex-grow">
             <AppRoutes PageFallback={PageFallback} AdminFallback={AdminFallback} />
           </main>
           <Footer />
+          <CookieConsent />
           <Chatbot />
         </div>
       </Router>

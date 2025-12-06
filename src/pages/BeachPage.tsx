@@ -10,16 +10,22 @@ const BeachPage: React.FC = () => {
       title: 'Beach Volleyball',
       description: '',
       text: 'Beachvolleyball fördert Beweglichkeit, Ausdauer und taktisches Denken im Sand.',
+      scheduleTitle: 'Trainingszeiten',
+      scheduleItems: ['Montag 17:00 - 20:00', 'Mittwoch 17:00 - 20:00'],
     },
     en: {
       title: 'Beach Volleyball',
       description: '',
       text: 'Beach volleyball develops agility, endurance, and tactical thinking on the sand.',
+      scheduleTitle: 'Training schedule',
+      scheduleItems: ['Monday 17:00 - 20:00', 'Wednesday 17:00 - 20:00'],
     },
     ru: {
       title: 'Пляжный волейбол',
       description: '',
       text: 'Пляжный волейбол развивает ловкость, выносливость и тактическое мышление на песке.',
+      scheduleTitle: 'Расписание тренировок',
+      scheduleItems: ['Понедельник 17:00 - 20:00', 'Среда 17:00 - 20:00'],
     },
   };
 
@@ -39,6 +45,19 @@ const BeachPage: React.FC = () => {
         <div className="max-w-4xl mx-auto mb-12">
           <p className="text-body text-neutral-700 text-center leading-relaxed">{t.text}</p>
         </div>
+
+        {t.scheduleItems && t.scheduleItems.length > 0 && (
+          <div className="max-w-3xl mx-auto mb-12">
+            <h2 className="text-h3 font-semibold text-primary-900 mb-4 text-center">{t.scheduleTitle}</h2>
+            <ul className="space-y-2 text-center">
+              {t.scheduleItems.map((item, idx) => (
+                <li key={idx} className="text-body text-neutral-700">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
           <LightboxImage

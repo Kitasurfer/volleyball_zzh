@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../lib/LanguageContext';
 import { useStandings } from '../hooks/useStandings';
 import { Alert, Spinner } from '../components/ui';
+import { normalizeTeamName, isOurTeamName } from '../lib/teamNaming';
 
 const formatDate = (isoDate: string | null, language: 'de' | 'en' | 'ru') => {
   if (!isoDate) return null;
@@ -268,16 +269,14 @@ const CompetitionsPage: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-neutral-100 text-neutral-800">
                       {data.standings.map((standing) => {
-                        const isTeamRow = data.team
-                          ? standing.name === data.team.name
-                          : standing.name.includes('Zizishausen');
+                        const isTeamRow = isOurTeamName(standing.name);
                         return (
                           <tr
                             key={`${standing.position}-${standing.name}`}
                             className={isTeamRow ? 'bg-accent-50 font-semibold text-primary-900' : ''}
                           >
                             <td className="px-4 py-3">{standing.position}</td>
-                            <td className="px-4 py-3">{standing.name}</td>
+                            <td className="px-4 py-3">{normalizeTeamName(standing.name)}</td>
                             <td className="px-4 py-3 text-center">{standing.matches}</td>
                             <td className="px-4 py-3 text-center">{standing.wins}</td>
                             <td className="px-4 py-3 text-center">{standing.sets}</td>
@@ -315,7 +314,7 @@ const CompetitionsPage: React.FC = () => {
                       <p className="font-semibold text-primary-900 text-sm leading-snug">
                         {match.isHome ? (
                           <>
-                            <span className="text-accent-600">{match.homeTeam}</span>
+                            <span className="text-accent-600">{normalizeTeamName(match.homeTeam)}</span>
                             <span className="text-neutral-400 mx-1">vs</span>
                             <span>{match.opponent}</span>
                           </>
@@ -323,7 +322,7 @@ const CompetitionsPage: React.FC = () => {
                           <>
                             <span>{match.opponent}</span>
                             <span className="text-neutral-400 mx-1">vs</span>
-                            <span className="text-accent-600">{match.awayTeam}</span>
+                            <span className="text-accent-600">{normalizeTeamName(match.awayTeam)}</span>
                           </>
                         )}
                       </p>
@@ -351,7 +350,7 @@ const CompetitionsPage: React.FC = () => {
                   <div>
                     <p className="text-sm text-neutral-500 uppercase tracking-wide">{t.standings.position}</p>
                     <p className="text-4xl font-bold text-primary-900">{data.team.position}</p>
-                    <p className="text-sm text-neutral-600 mt-1">{data.team.name}</p>
+                    <p className="text-sm text-neutral-600 mt-1">{normalizeTeamName(data.team.name)}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -413,8 +412,8 @@ const CompetitionsPage: React.FC = () => {
                     const isOurTeamHome = match.isHome;
                     const hasResult = Boolean(match.result);
                     return (
-                      <tr 
-                        key={match.id} 
+                      <tr
+                        key={match.id}
                         className={`hover:bg-neutral-50 transition-colors ${hasResult ? 'bg-white' : 'bg-blue-50/30'}`}
                       >
                         <td className="px-4 py-3 text-neutral-600 whitespace-nowrap text-xs">
@@ -424,13 +423,21 @@ const CompetitionsPage: React.FC = () => {
                           {match.matchNumber ?? '—'}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={isOurTeamHome ? 'font-semibold text-primary-900' : 'text-neutral-700'}>
-                            {match.homeTeam}
+                          <span
+                            className={
+                              isOurTeamHome ? 'font-semibold text-primary-900' : 'text-neutral-700'
+                            }
+                          >
+                            {normalizeTeamName(match.homeTeam)}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={!isOurTeamHome ? 'font-semibold text-primary-900' : 'text-neutral-700'}>
-                            {match.awayTeam}
+                          <span
+                            className={
+                              !isOurTeamHome ? 'font-semibold text-primary-900' : 'text-neutral-700'
+                            }
+                          >
+                            {normalizeTeamName(match.awayTeam)}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">

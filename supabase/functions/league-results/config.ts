@@ -14,7 +14,8 @@ const TEAM_NAME = "SG TSV Zizishausen/SKV Unterensingen";
 
 const standingsRegex = /data_scoreHistory_\d+\.push\((\{[\s\S]*?\})\);/g;
 const rowRegex = /<tr[\s\S]*?<\/tr>/g;
-const scheduleTableRegex = /<table class="samsDataTable">[\s\S]*?<\/table>/;
+// Allow extra classes/attributes on the samsDataTable, not only exact match
+const scheduleTableRegex = /<table[^>]*class="[^"]*samsDataTable[^"]*"[\s\S]*?<\/table>/;
 
 export {
   corsHeaders,

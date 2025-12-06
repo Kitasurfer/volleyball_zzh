@@ -14,6 +14,8 @@ const HallPage: React.FC = () => {
         { title: 'Adresse', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen' },
         { title: 'Einrichtungen', text: 'Umkleideräume, Duschen, Trainingsgeräte' },
       ],
+      scheduleTitle: 'Trainingszeiten',
+      scheduleItems: ['Montag 20:00 - 22:00'],
     },
     en: {
       title: 'Bettwiesenhalle Unterensingen',
@@ -23,6 +25,8 @@ const HallPage: React.FC = () => {
         { title: 'Address', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen' },
         { title: 'Facilities', text: 'Locker rooms, showers, training equipment' },
       ],
+      scheduleTitle: 'Training schedule',
+      scheduleItems: ['Monday 20:00 - 22:00'],
     },
     ru: {
       title: 'Зал Bettwiesenhalle Unterensingen',
@@ -32,6 +36,8 @@ const HallPage: React.FC = () => {
         { title: 'Адрес', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen' },
         { title: 'Удобства', text: 'Раздевалки, душевые, тренажеры' },
       ],
+      scheduleTitle: 'Расписание тренировок',
+      scheduleItems: ['Понедельник 20:00 - 22:00'],
     },
   };
 
@@ -67,6 +73,19 @@ const HallPage: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {t.scheduleItems && t.scheduleItems.length > 0 && (
+          <div className="mt-12 max-w-3xl mx-auto">
+            <h2 className="text-h3 font-semibold text-primary-900 mb-4">{t.scheduleTitle}</h2>
+            <ul className="space-y-2">
+              {t.scheduleItems.map((item, idx) => (
+                <li key={idx} className="text-body text-neutral-700">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="mt-12 max-w-5xl mx-auto">
           <LightboxImage

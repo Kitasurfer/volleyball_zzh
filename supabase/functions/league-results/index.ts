@@ -49,7 +49,7 @@ const TEAM_NAME = "SG TSV Zizishausen/SKV Unterensingen";
 
 const standingsRegex = /data_scoreHistory_\d+\.push\((\{[\s\S]*?\})\);/g;
 const rowRegex = /<tr[\s\S]*?<\/tr>/g;
-const scheduleTableRegex = /<table class="samsDataTable">[\s\S]*?<\/table>/;
+const scheduleTableRegex = /<table[^>]*class="[^"]*samsDataTable[^"]*"[\s\S]*?<\/table>/;
 
 const sanitizeText = (input: string) =>
   input
@@ -176,7 +176,7 @@ const extractStandingsFromJson = (html: string): Standing[] | null => {
 
 // Fallback: scrape HTML tables (try all tables, return the best match)
 const extractStandingsFromTable = (html: string): Standing[] | null => {
-  const tableMatches = html.match(/<table class="samsDataTable">[\s\S]*?<\/table>/g);
+  const tableMatches = html.match(/<table[^>]*class="[^"]*samsDataTable[^"]*"[\s\S]*?<\/table>/g);
   if (!tableMatches || tableMatches.length === 0) {
     console.error("No samsDataTable tables found in standings HTML excerpt:", html.slice(0, 500));
     return null;

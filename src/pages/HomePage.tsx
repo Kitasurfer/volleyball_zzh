@@ -1,11 +1,12 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Users, MapPin, Trophy, Calendar } from 'lucide-react';
+import { ArrowRight, Users, MapPin, Trophy, Calendar, Clock, Home, Sun } from 'lucide-react';
 
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui';
 import { useLanguage } from '../lib/LanguageContext';
 import { useStandings } from '../hooks/useStandings';
 import { HomeResultsSection } from '../components/home/HomeResultsSection';
+import { hallSchedule2026, beachSchedule2026 } from '../data/schedule';
 
 const HomePage: React.FC = () => {
   const { language } = useLanguage();
@@ -46,7 +47,7 @@ const HomePage: React.FC = () => {
         },
         {
           title: 'Beach Volleyball',
-          description: 'Outdoor-Programme auf Sand seit 2025',
+          description: 'Outdoor-Programme auf Sand',
           link: '/beach',
         },
         {
@@ -79,6 +80,12 @@ const HomePage: React.FC = () => {
         primary: 'Kontakt aufnehmen',
         secondary: 'Trainingsangebot',
       },
+      schedule: {
+        title: 'Trainingszeiten 2026',
+        hallTitle: 'Hallentraining',
+        beachTitle: 'Beachvolleyball',
+        viewDetails: 'Details',
+      },
     },
     en: {
       hero: {
@@ -109,7 +116,7 @@ const HomePage: React.FC = () => {
         },
         {
           title: 'Beach Volleyball',
-          description: 'Outdoor programs on sand since 2025',
+          description: 'Outdoor programs on sand',
           link: '/beach',
         },
         {
@@ -142,6 +149,12 @@ const HomePage: React.FC = () => {
         primary: 'Get in touch',
         secondary: 'Training options',
       },
+      schedule: {
+        title: 'Training Schedule 2026',
+        hallTitle: 'Indoor Training',
+        beachTitle: 'Beach Volleyball',
+        viewDetails: 'Details',
+      },
     },
     ru: {
       hero: {
@@ -172,7 +185,7 @@ const HomePage: React.FC = () => {
         },
         {
           title: 'Пляжный волейбол',
-          description: 'Программы на открытом воздухе с 2025 года',
+          description: 'Программы на открытом воздухе',
           link: '/beach',
         },
         {
@@ -205,10 +218,29 @@ const HomePage: React.FC = () => {
         primary: 'Связаться',
         secondary: 'Тренировочные программы',
       },
+      schedule: {
+        title: 'Расписание тренировок 2026',
+        hallTitle: 'Зал',
+        beachTitle: 'Пляжный волейбол',
+        viewDetails: 'Подробнее',
+      },
     },
   };
 
   const t = content[language];
+
+  // Transform schedule data for current language
+  const hallItems = hallSchedule2026.map((item) => ({
+    day: item.day[language],
+    time: item.time,
+    location: item.location?.[language],
+  }));
+
+  const beachItems = beachSchedule2026.map((item) => ({
+    day: item.day[language],
+    time: item.time,
+    location: item.location?.[language],
+  }));
 
   const formattedUpdatedAt = useMemo(() => {
     if (!data?.lastUpdated) return null;
@@ -322,6 +354,106 @@ const HomePage: React.FC = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Training Schedule Section */}
+      <section className="bg-neutral-50 py-20">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <Calendar className="w-6 h-6 text-primary-600" />
+              <h2 className="text-3xl font-bold text-primary-900">{t.schedule.title}</h2>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Hall Schedule */}
+              <div className="bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden">
+                <div className="px-5 py-4 border-b border-neutral-100 bg-gradient-to-r from-primary-50 to-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md">
+                        <Home className="w-4 h-4" />
+                      </div>
+                      <h3 className="font-semibold text-primary-900">{t.schedule.hallTitle}</h3>
+                    </div>
+                    <Link to="/hall" className="text-xs text-primary-600 hover:text-primary-700 font-medium">
+                      {t.schedule.viewDetails} →
+                    </Link>
+                  </div>
+                </div>
+                <div className="p-4 space-y-2">
+                  {hallItems.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="relative flex items-center gap-3 p-3 rounded-lg bg-primary-50 border border-primary-100"
+                    >
+                      <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg bg-gradient-to-b from-primary-400 to-primary-600" />
+                      <div className="flex-1 pl-1">
+                        <p className="font-medium text-primary-900 text-sm">{item.day}</p>
+                        <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-600">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-primary-400" />
+                            {item.time}
+                          </span>
+                          {item.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-primary-400" />
+                              {item.location}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Beach Schedule */}
+              <div className="bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden">
+                <div className="px-5 py-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md">
+                        <Sun className="w-4 h-4" />
+                      </div>
+                      <h3 className="font-semibold text-primary-900">{t.schedule.beachTitle}</h3>
+                    </div>
+                    <Link to="/beach" className="text-xs text-amber-600 hover:text-amber-700 font-medium">
+                      {t.schedule.viewDetails} →
+                    </Link>
+                  </div>
+                </div>
+                <div className="p-4 space-y-2">
+                  {beachItems.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="relative flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100"
+                    >
+                      <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg bg-gradient-to-b from-amber-400 to-orange-500" />
+                      <div className="flex-1 pl-1">
+                        <p className="font-medium text-primary-900 text-sm">{item.day}</p>
+                        <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-600">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-amber-500" />
+                            {item.time}
+                          </span>
+                          {item.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-amber-500" />
+                              {item.location}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -284,7 +284,7 @@ Deno.serve(async (req: Request) => {
 
     const cerebrasConfig = getCerebrasConfig();
     const rawAnswer = await generateCerebrasChat(cerebrasConfig, messages, {
-      temperature: 0.1,
+      temperature: 0.3,
       maxOutputTokens,
     });
 

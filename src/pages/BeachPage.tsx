@@ -2,6 +2,7 @@ import React from 'react';
 import { Clock, MapPin, Sun, Waves } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { LightboxImage } from '../components/LightboxImage';
+import { Seo } from '../components/Seo';
 import { beachSchedule2026 } from '../data/schedule';
 
 const BeachPage: React.FC = () => {
@@ -16,7 +17,7 @@ const BeachPage: React.FC = () => {
       scheduleSubtitle: 'Beachvolleyball (April - September)',
       features: [
         { icon: Sun, title: 'Outdoor', text: 'Training unter freiem Himmel' },
-        { icon: Waves, title: 'Sandplätze', text: 'Professionelle Beachanlage' },
+        { icon: Waves, title: 'Sandplätze', text: 'Professionelle Beachanlage mit 3 Feldern' },
       ],
     },
     en: {
@@ -27,7 +28,7 @@ const BeachPage: React.FC = () => {
       scheduleSubtitle: 'Beach Volleyball (April - September)',
       features: [
         { icon: Sun, title: 'Outdoor', text: 'Training in the open air' },
-        { icon: Waves, title: 'Sand Courts', text: 'Professional beach facility' },
+        { icon: Waves, title: 'Sand Courts', text: 'Professional beach facility with 3 courts' },
       ],
     },
     ru: {
@@ -38,12 +39,31 @@ const BeachPage: React.FC = () => {
       scheduleSubtitle: 'Пляжный волейбол (апрель - сентябрь)',
       features: [
         { icon: Sun, title: 'На открытом воздухе', text: 'Тренировки под открытым небом' },
-        { icon: Waves, title: 'Песчаные площадки', text: 'Профессиональная пляжная площадка' },
+        { icon: Waves, title: 'Песчаные площадки', text: 'Профессиональная пляжная площадка с 3 площадками' },
+      ],
+    },
+    it: {
+      title: 'Beach Volleyball',
+      description: 'Allenamenti all’aperto sulla sabbia',
+      text:
+        'Il beach volley sviluppa agilità, resistenza e pensiero tattico sulla sabbia. Il nostro impianto beach offre condizioni ottimali per allenamento e divertimento.',
+      scheduleTitle: 'Orari allenamenti 2026',
+      scheduleSubtitle: 'Beach volley (aprile - settembre)',
+      features: [
+        { icon: Sun, title: 'All’aperto', text: 'Allenamenti all’aria aperta' },
+        {
+          icon: Waves,
+          title: 'Campi in sabbia',
+          text: 'Impianto beach professionale con 3 campi',
+        },
       ],
     },
   };
 
   const t = content[language];
+
+  const seoTitle = t.title;
+  const seoDescription = t.description;
 
   // Transform schedule data for current language
   const scheduleItems = beachSchedule2026.map((item) => ({
@@ -54,6 +74,7 @@ const BeachPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20">
+      <Seo title={seoTitle} description={seoDescription} />
       <div className="container mx-auto px-6 lg:px-12">
         <div className="text-center mb-12">
           <h1 className="text-h1 font-bold text-primary-900 mb-4">{t.title}</h1>

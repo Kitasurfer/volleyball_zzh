@@ -1,6 +1,8 @@
 export type MediaTypeFilter = 'image' | 'video' | 'document' | 'audio' | 'other';
 
-export type LanguageCode = 'de' | 'en' | 'ru';
+import type { Language } from '../../types';
+
+export type LanguageCode = Language;
 
 export type LocalizedTextMap = Partial<Record<LanguageCode, string>>;
 

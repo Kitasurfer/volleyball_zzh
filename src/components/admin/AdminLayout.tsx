@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import type { AdminNavItem } from '../../types/admin';
 import { useLanguage } from '../../lib/LanguageContext';
 import { useAuth } from '../../lib/AuthContext';
+import { Seo } from '../Seo';
 
 const navItems: AdminNavItem[] = [
   { key: 'overview', path: '/admin' },
@@ -25,6 +26,7 @@ const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-neutral-100 text-neutral-900">
+      <Seo title="Admin" description="Admin" noIndex />
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">

@@ -5,6 +5,7 @@ import { TrainingHero } from '../components/training/TrainingHero';
 import { TrainingPhilosophy } from '../components/training/TrainingPhilosophy';
 import { TrainingVideosSection } from '../components/training/TrainingVideosSection';
 import { LightboxImage } from '../components/LightboxImage';
+import { Seo } from '../components/Seo';
 
 const TrainingPage: React.FC = () => {
   const { language } = useLanguage();
@@ -65,12 +66,34 @@ const TrainingPage: React.FC = () => {
       videosEmpty: 'Тренировочных видео пока нет.',
       videosError: 'Ошибка при загрузке тренировочных видео:',
     },
+    it: {
+      title: 'Allenamenti e video',
+      description: 'Metodi di allenamento professionali basati sugli standard FIVB',
+      philosophy: 'Filosofia di allenamento',
+      philosophyText:
+        'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale sviluppati dalla FIVB. Seguiamo il principio "allenati come giochi" – i nostri esercizi rispecchiano situazioni di gioco reali.',
+      principles: [
+        'Perfezionare le basi tecniche',
+        'Sviluppare il pensiero tattico',
+        'Costruire forza mentale',
+        'Raggiungere l’eccellenza fisica',
+      ],
+      videosTitle: 'Video di allenamento',
+      videosIntro: 'Guarda esempi di esercizi e serie di allenamento.',
+      videosLoading: 'Caricamento dei video di allenamento…',
+      videosEmpty: 'Non ci sono ancora video di allenamento.',
+      videosError: 'Errore durante il caricamento dei video di allenamento:',
+    },
   };
 
   const t = content[language];
 
+  const seoTitle = t.title;
+  const seoDescription = t.description;
+
   return (
     <div className="min-h-screen pt-32 pb-20">
+      <Seo title={seoTitle} description={seoDescription} imagePath="/images/volleyball_team_gym_warmup_stretching_session.jpg" />
       <div className="container mx-auto px-6 lg:px-12">
         <TrainingHero title={t.title} description={t.description} />
 

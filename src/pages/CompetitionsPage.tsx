@@ -2,20 +2,27 @@ import React, { useMemo } from 'react';
 import { CalendarDays, MapPin, Trophy, Users, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../lib/LanguageContext';
+import type { Language } from '../types';
 import { useStandings } from '../hooks/useStandings';
 import { Alert, Spinner } from '../components/ui';
 import { normalizeTeamName, isOurTeamName } from '../lib/teamNaming';
+import { Seo } from '../components/Seo';
 
-const formatDate = (isoDate: string | null, language: 'de' | 'en' | 'ru') => {
+const formatDate = (isoDate: string | null, language: Language) => {
   if (!isoDate) return null;
   try {
-    const formatter = new Intl.DateTimeFormat(
-      language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'en-GB',
-      {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      },
-    );
+    const locale =
+      language === 'de'
+        ? 'de-DE'
+        : language === 'ru'
+        ? 'ru-RU'
+        : language === 'it'
+        ? 'it-IT'
+        : 'en-GB';
+    const formatter = new Intl.DateTimeFormat(locale, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
     return formatter.format(new Date(isoDate));
   } catch (error) {
     console.error('Failed to format match date', error);
@@ -108,6 +115,48 @@ const content = {
       points: 'Points',
     },
   },
+  it: {
+    hero: {
+      title: 'Competizioni e risultati',
+      subtitle: 'Tutte le classifiche e il calendario di SKV Unterensingen',
+      cta: 'Contattaci',
+    },
+    standings: {
+      title: 'Classifica attuale',
+      position: 'Pos',
+      team: 'Squadra',
+      matches: 'Partite',
+      wins: 'Vittorie',
+      sets: 'Set',
+      points: 'Punti',
+      updated: 'Aggiornato:',
+      noData: 'Al momento non ci sono dati di classifica.',
+      loading: 'Caricamento classifica…',
+    },
+    schedule: {
+      titleUpcoming: 'Partite in programma',
+      titlePlayed: 'Risultati recenti',
+      titleAllMatches: 'Calendario e risultati',
+      allMatchesSubtitle: 'Tutte le partite della stagione - giocate e future',
+      opponent: 'Avversario',
+      location: 'Luogo',
+      result: 'Risultato',
+      date: 'Data',
+      team1: 'Squadra 1',
+      team2: 'Squadra 2',
+      matchNumber: 'N.',
+      noUpcoming: 'Nessuna partita in programma.',
+      noPlayed: 'Non ci sono ancora risultati.',
+      noMatches: 'Nessuna partita disponibile.',
+    },
+    teamCard: {
+      title: 'Highlights della squadra',
+      matches: 'Partite',
+      wins: 'Vittorie',
+      sets: 'Set',
+      points: 'Punti',
+    },
+  },
   ru: {
     hero: {
       title: 'Соревнования и результаты',
@@ -157,6 +206,9 @@ const CompetitionsPage: React.FC = () => {
   const { data, isLoading, error } = useStandings();
   const t = content[language];
 
+  const seoTitle = t.hero.title;
+  const seoDescription = t.hero.subtitle;
+
   const formattedUpdatedAt = useMemo(() => {
     if (!data?.lastUpdated) return null;
     return formatDate(data.lastUpdated, language);
@@ -205,6 +257,7 @@ const CompetitionsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-20 bg-neutral-50">
+      <Seo title={seoTitle} description={seoDescription} imagePath="/images/SKV_Volleyball.png" />
       <section className="bg-gradient-to-br from-[#1f4588] via-[#25509a] to-[#1f4588] text-white py-20">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="max-w-3xl">

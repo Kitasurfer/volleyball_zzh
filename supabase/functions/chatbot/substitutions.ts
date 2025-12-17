@@ -8,6 +8,7 @@ const hasSubstitutionKeyword = (text: string): boolean => {
     'замен', 'замена', 'замены',
     'auswechslung', 'auswechslungen',
     'substitution', 'substitutions',
+    'sostituzione', 'sostituzioni',
   ];
   return keywords.some((kw) => q.includes(kw));
 };
@@ -18,6 +19,9 @@ const buildSubstitutionQuery = (language: string): string => {
   }
   if (language === 'en') {
     return 'Limits on the number of regular substitutions in indoor volleyball (rule 15.6: at most six regular substitutions per set).';
+  }
+  if (language === 'it') {
+    return 'Limiti sul numero di sostituzioni regolari nella pallavolo indoor (regola 15.6: al massimo sei sostituzioni regolari per set).';
   }
   return 'Begrenzungen für die Anzahl regulärer Auswechslungen im Volleyball (Regel 15.6: höchstens sechs reguläre Auswechslungen pro Satz).';
 };
@@ -39,7 +43,14 @@ const enrichWithSubstitutionCitations = async (
       .map((item) => mapQdrantResultToCitation(item) as Citation)
       .filter((cit) => {
         const s = (cit.snippet || '').toLowerCase();
-        return s.includes('шест') || s.includes('sechs') || s.includes('six');
+        return (
+          s.includes('шест') ||
+          s.includes('sechs') ||
+          s.includes('six') ||
+          s.includes(' sei ') ||
+          s.includes(' 6 ') ||
+          s.includes('\n6')
+        );
       });
 
     if (extra.length === 0) return citations;

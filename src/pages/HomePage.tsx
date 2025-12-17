@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Users, MapPin, Trophy, Calendar, Clock, Home, Sun } from 'lucide-react';
 
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui';
+import { Seo } from '../components/Seo';
 import { useLanguage } from '../lib/LanguageContext';
 import { useStandings } from '../hooks/useStandings';
 import { HomeResultsSection } from '../components/home/HomeResultsSection';
@@ -225,9 +226,81 @@ const HomePage: React.FC = () => {
         viewDetails: 'Подробнее',
       },
     },
+    it: {
+      hero: {
+        title: 'SKV Unterensingen Volleyball',
+        subtitle: 'Siamo SKV Unterensingen – fermiamo gli attacchi offensivi',
+        description: 'Allenamenti di pallavolo professionali a Unterensingen, Germania',
+        cta: 'Unisciti a noi',
+        badge: 'PALLAVOLO PER TUTTI I LIVELLI',
+        aboutLinkLabel: 'Scopri di più su di noi',
+      },
+      metrics: [
+        { icon: MapPin, label: 'Luogo', value: 'Unterensingen' },
+        { icon: Calendar, label: 'Fondato', value: `${CLUB_FOUNDING_YEAR}` },
+        { icon: Calendar, label: 'Quest’anno compiamo', value: `${clubAgeThisYear} anni` },
+        { icon: Users, label: 'Fascia di età', value: '12-80 anni' },
+        { icon: Trophy, label: 'Specializzazione', value: 'Pallavolo' },
+      ],
+      about: {
+        title: 'Su SKV Unterensingen Volleyball',
+        text: 'Sviluppiamo talenti della pallavolo con metodi di allenamento innovativi, creando una comunità inclusiva in cui ogni giocatore può raggiungere il proprio pieno potenziale.',
+        philosophy: 'La nostra filosofia: "Allenati come giochi" - basata sui metodi FIVB.',
+      },
+      sections: [
+        {
+          title: 'Palestra',
+          description: 'Bettwiesenhalle Unterensingen con attrezzature moderne',
+          link: '/hall',
+        },
+        {
+          title: 'Beach Volleyball',
+          description: 'Programmi all’aperto sulla sabbia',
+          link: '/beach',
+        },
+        {
+          title: 'Allenamenti',
+          description: 'Metodi di allenamento professionali e video',
+          link: '/training',
+        },
+      ],
+      sectionsCtaLabel: 'Scopri di più',
+      results: {
+        title: 'Classifica attuale',
+        updatedPrefix: 'Aggiornato:',
+        loading: 'Caricamento degli ultimi risultati...',
+        error: 'Al momento non è stato possibile caricare gli ultimi risultati.',
+        noData: 'Al momento non ci sono dati di classifica.',
+        teamHighlightTitle: 'La nostra posizione',
+        table: {
+          position: 'Pos',
+          team: 'Squadra',
+          matches: 'Partite',
+          wins: 'Vittorie',
+          sets: 'Set',
+          points: 'Punti',
+        },
+      },
+      cta: {
+        title: 'Pronto a unirti a noi?',
+        subtitle:
+          'Contattaci oggi e diventa parte della famiglia SKV Unterensingen!',
+        primary: 'Contattaci',
+        secondary: 'Offerta di allenamenti',
+      },
+      schedule: {
+        title: 'Orari degli allenamenti 2026',
+        hallTitle: 'Allenamenti in palestra',
+        beachTitle: 'Beachvolley',
+        viewDetails: 'Dettagli',
+      },
+    },
   };
 
   const t = content[language];
+
+  const seoTitle = t.hero.title;
+  const seoDescription = t.hero.description;
 
   // Transform schedule data for current language
   const hallItems = hallSchedule2026.map((item) => ({
@@ -245,7 +318,14 @@ const HomePage: React.FC = () => {
   const formattedUpdatedAt = useMemo(() => {
     if (!data?.lastUpdated) return null;
     try {
-      const locale = language === 'de' ? 'de-DE' : language === 'ru' ? 'ru-RU' : 'en-GB';
+      const locale =
+        language === 'de'
+          ? 'de-DE'
+          : language === 'ru'
+          ? 'ru-RU'
+          : language === 'it'
+          ? 'it-IT'
+          : 'en-GB';
       return new Intl.DateTimeFormat(locale, {
         dateStyle: 'medium',
         timeStyle: 'short',
@@ -258,12 +338,18 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen">
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        imagePath="/images/volleyball_team_group_photo_dramatic_lighting.jpg"
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-primary-950">
         <div className="absolute inset-0">
           <img
             src="/images/volleyball_team_group_photo_dramatic_lighting.jpg"
-            alt="Hero background"
+            alt=""
+            aria-hidden="true"
             className="h-full w-full object-cover object-center opacity-40"
           />
         </div>

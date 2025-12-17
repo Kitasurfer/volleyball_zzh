@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { generateSlug } from '../lib/slug';
+import { Language, SUPPORTED_LANGUAGES } from '../types';
 
 export interface AlbumRow {
   id: string;
@@ -11,7 +12,7 @@ export interface AlbumRow {
   event_date: string | null;
 }
 
-export type LanguageCode = 'de' | 'en' | 'ru';
+export type LanguageCode = Language;
 
 export interface TranslationFormState {
   title: string;
@@ -21,12 +22,13 @@ export interface TranslationFormState {
 
 export type TranslationsState = Record<LanguageCode, TranslationFormState>;
 
-export const LANGUAGES: LanguageCode[] = ['de', 'en', 'ru'];
+export const LANGUAGES: LanguageCode[] = [...SUPPORTED_LANGUAGES];
 
 const defaultTranslations = (): TranslationsState => ({
   de: { title: '', subtitle: '', description: '' },
   en: { title: '', subtitle: '', description: '' },
   ru: { title: '', subtitle: '', description: '' },
+  it: { title: '', subtitle: '', description: '' },
 });
 
 export interface UseAdminAlbumsResult {

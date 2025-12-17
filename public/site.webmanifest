@@ -1,0 +1,20 @@
+{
+  "name": "SKV Unterensingen Volleyball",
+  "short_name": "SKV Volleyball",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f4588",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/images/SKV_Volleyball.png",
+      "sizes": "900x890",
+      "type": "image/png"
+    }
+  ]
+}

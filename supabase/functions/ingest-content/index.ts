@@ -17,6 +17,58 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+const requireAdmin = async (req: Request): Promise<Response | null> => {
+  const authHeader = req.headers.get('authorization');
+
+  if (!authHeader) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return new Response(
+      JSON.stringify({ error: 'Server misconfigured' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  if (token && token === serviceRoleKey) {
+    return null;
+  }
+
+  const userResponse = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/user`, {
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: authHeader,
+    },
+  });
+
+  if (!userResponse.ok) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const user = await userResponse.json();
+  const role = user?.app_metadata?.role ?? null;
+
+  if (role !== 'admin') {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  return null;
+};
+
 const getSupabase = () => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -539,6 +591,15 @@ Deno.serve(async (req: Request) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
+  }
+
+  const authError = await requireAdmin(req);
+  if (authError) {
+    return authError;
   }
 
   const url = new URL(req.url);

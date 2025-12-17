@@ -7,44 +7,49 @@ export interface ScheduleEntry {
     de: string;
     en: string;
     ru: string;
+    it: string;
   };
   time: string;
   location?: {
     de: string;
     en: string;
     ru: string;
+    it: string;
   };
 }
 
 export const hallSchedule2026: ScheduleEntry[] = [
   {
-    day: { de: 'Montag', en: 'Monday', ru: 'Понедельник' },
+    day: { de: 'Montag', en: 'Monday', ru: 'Понедельник', it: 'Lunedì' },
     time: '20:00 - 22:00',
     location: {
       de: 'Bettwiesenhalle',
       en: 'Bettwiesenhalle',
       ru: 'Bettwiesenhalle',
+      it: 'Bettwiesenhalle',
     },
   },
 ];
 
 export const beachSchedule2026: ScheduleEntry[] = [
   {
-    day: { de: 'Montag', en: 'Monday', ru: 'Понедельник' },
+    day: { de: 'Montag', en: 'Monday', ru: 'Понедельник', it: 'Lunedì' },
     time: '17:00 - 20:00',
     location: {
       de: 'Beachanlage Zizishausen',
       en: 'Beach courts Zizishausen',
       ru: 'Пляжные площадки Zizishausen',
+      it: 'Impianto beach Zizishausen',
     },
   },
   {
-    day: { de: 'Mittwoch', en: 'Wednesday', ru: 'Среда' },
+    day: { de: 'Mittwoch', en: 'Wednesday', ru: 'Среда', it: 'Mercoledì' },
     time: '17:00 - 20:00',
     location: {
       de: 'Beachanlage Zizishausen',
       en: 'Beach courts Zizishausen',
       ru: 'Пляжные площадки Zizishausen',
+      it: 'Impianto beach Zizishausen',
     },
   },
 ];
@@ -79,5 +84,15 @@ export const scheduleLabels = {
     viewAll: 'Подробнее',
     season: 'Сезон',
     note: 'Возможны изменения. По вопросам обращайтесь к нам.',
+  },
+  it: {
+    title: 'Orari allenamenti 2026',
+    hallTitle: 'Allenamenti in palestra',
+    beachTitle: 'Beach volley',
+    hallLink: '/hall',
+    beachLink: '/beach',
+    viewAll: 'Dettagli',
+    season: 'Stagione',
+    note: 'Soggetto a modifiche. Contattaci per domande.',
   },
 };

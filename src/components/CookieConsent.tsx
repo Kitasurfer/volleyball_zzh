@@ -20,6 +20,11 @@ const messages: Record<Language, { text: string; button: string }> = {
       'Мы используем только технически необходимые cookie (например, чтобы запомнить язык и обеспечить работу сайта). Продолжая пользоваться сайтом, вы соглашаетесь с этим.',
     button: 'Понятно',
   },
+  it: {
+    text:
+      'Utilizziamo solo cookie tecnicamente necessari (ad esempio per ricordare la tua lingua e garantire il funzionamento del sito). Continuando a usare questo sito accetti questo.',
+    button: 'OK',
+  },
 };
 
 const CookieConsent = () => {

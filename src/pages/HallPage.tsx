@@ -2,6 +2,7 @@ import React from 'react';
 import { Calendar, Clock, MapPin, Home, Users, Dumbbell } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { LightboxImage } from '../components/LightboxImage';
+import { Seo } from '../components/Seo';
 import { hallSchedule2026 } from '../data/schedule';
 
 const HallPage: React.FC = () => {
@@ -17,7 +18,7 @@ const HallPage: React.FC = () => {
         { title: 'Einrichtungen', text: 'Umkleideräume, Duschen, Trainingsgeräte', icon: Users },
       ],
       scheduleTitle: 'Trainingszeiten 2026',
-      scheduleSubtitle: 'Hallenvolleyball',
+      scheduleSubtitle: 'Hallenvolleyball (Oktober - April)',
     },
     en: {
       title: 'Bettwiesenhalle Unterensingen',
@@ -28,7 +29,7 @@ const HallPage: React.FC = () => {
         { title: 'Facilities', text: 'Locker rooms, showers, training equipment', icon: Users },
       ],
       scheduleTitle: 'Training Schedule 2026',
-      scheduleSubtitle: 'Indoor Volleyball',
+      scheduleSubtitle: 'Indoor Volleyball (October - April)',
     },
     ru: {
       title: 'Зал Bettwiesenhalle Unterensingen',
@@ -39,11 +40,38 @@ const HallPage: React.FC = () => {
         { title: 'Удобства', text: 'Раздевалки, душевые, тренажеры', icon: Users },
       ],
       scheduleTitle: 'Расписание тренировок 2026',
-      scheduleSubtitle: 'Волейбол в зале',
+      scheduleSubtitle: 'Волейбол в зале (октябрь - апрель)',
+    },
+    it: {
+      title: 'Bettwiesenhalle Unterensingen',
+      description:
+        'La nostra palestra a Unterensingen – attrezzatura moderna per allenamenti professionali',
+      sections: [
+        {
+          title: 'Attrezzatura',
+          text: 'Campi da pallavolo professionali con tecnologia moderna',
+          icon: Dumbbell,
+        },
+        {
+          title: 'Indirizzo',
+          text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+          icon: MapPin,
+        },
+        {
+          title: 'Servizi',
+          text: 'Spogliatoi, docce, attrezzi per l’allenamento',
+          icon: Users,
+        },
+      ],
+      scheduleTitle: 'Orari allenamenti 2026',
+      scheduleSubtitle: 'Pallavolo indoor (ottobre - aprile)',
     },
   };
 
   const t = content[language];
+
+  const seoTitle = t.title;
+  const seoDescription = t.description;
 
   // Transform schedule data for current language
   const scheduleItems = hallSchedule2026.map((item) => ({
@@ -54,6 +82,7 @@ const HallPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20">
+      <Seo title={seoTitle} description={seoDescription} />
       <div className="container mx-auto px-6 lg:px-12">
         <div className="text-center mb-12">
           <h1 className="text-h1 font-bold text-primary-900 mb-4">{t.title}</h1>

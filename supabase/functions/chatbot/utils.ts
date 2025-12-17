@@ -7,8 +7,11 @@ const isGreetingOrSmallTalk = (question: string): boolean => {
     'привет', 'здравствуй', 'добрый день', 'добрый вечер', 'доброе утро',
     'hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening',
     'hallo', 'guten tag', 'guten morgen', 'guten abend',
+    'ciao', 'salve', 'buongiorno', 'buon pomeriggio', 'buonasera',
     'спасибо', 'thanks', 'thank you', 'danke',
+    'grazie',
     'пока', 'bye', 'goodbye', 'tschüss', 'auf wiedersehen',
+    'arrivederci', 'a presto',
   ];
 
   return greetings.some(

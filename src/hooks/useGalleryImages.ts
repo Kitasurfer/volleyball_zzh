@@ -36,12 +36,14 @@ const FALLBACK_IMAGE_TITLE: Record<Language, string> = {
   de: 'Foto',
   en: 'Photo',
   ru: 'Фото',
+  it: 'Foto',
 };
 
 const FALLBACK_ALBUM_TITLE: Record<Language, string> = {
   de: 'Album',
   en: 'Album',
   ru: 'Альбом',
+  it: 'Album',
 };
 
 export const useGalleryImages = (): UseGalleryImagesResult => {

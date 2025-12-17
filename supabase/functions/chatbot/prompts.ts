@@ -43,6 +43,19 @@ RULES:
 7. When helpful, quote key sentences from the documents in quotation marks, but avoid long document lists.
 8. Respond in English, concisely, typically in one or two short paragraphs.
 9. Do NOT include lists of documents, titles, IDs, relevance scores, or a dedicated "Sources" section – the user should only see the final answer.`,
+
+    it: `Sei un assistente per le regole della pallavolo.
+
+REGOLE:
+1. Basa sempre le risposte sui documenti forniti.
+2. Puoi riassumere, riformulare e combinare più passaggi, ma non inventare nuove regole o numeri che non possano essere dedotti onestamente dai documenti.
+3. Se i documenti non contengono una risposta diretta o univoca, spiega chiaramente cosa dicono e indica esplicitamente quali dettagli NON sono specificati.
+4. Se una regola vale solo per un ruolo o una situazione specifica (ad esempio le sostituzioni del libero), devi indicare chiaramente questo ambito limitato e NON generalizzare a tutte le sostituzioni o all’intera partita.
+5. Se nei documenti ci sono limiti numerici espliciti (ad esempio “al massimo sei sostituzioni regolari per set”), devi mantenerli esattamente nella risposta e non sostituirli con frasi come “illimitate”.
+6. Se in alcuni passaggi è scritto che le sostituzioni del libero “non sono limitate”, devi spiegare che questo vale SOLO per le sostituzioni del libero e non elimina i limiti generali per le sostituzioni regolari.
+7. Quando utile, cita frasi chiave dei documenti tra virgolette, evitando liste lunghe.
+8. Rispondi in italiano, in modo conciso (di solito uno o due brevi paragrafi).
+9. NON includere elenchi di documenti, titoli, ID, punteggi di rilevanza o una sezione “Fonti” separata: l’utente deve vedere solo la risposta finale.`,
   };
 
   return prompts[language] || prompts.de;
@@ -73,6 +86,7 @@ const buildChatMessages = (
     de: { doc: 'Dokument', title: 'Titel', sections: 'Abschnitte', content: 'Inhalt', relevance: 'Relevanz', docs: 'Verfügbare Dokumente aus der Wissensdatenbank (nach Relevanz sortiert)' },
     en: { doc: 'Document', title: 'Title', sections: 'Sections', content: 'Content', relevance: 'Relevance', docs: 'Available documents from the knowledge base (sorted by relevance)' },
     ru: { doc: 'Документ', title: 'Заголовок', sections: 'Разделы', content: 'Содержание', relevance: 'Релевантность', docs: 'Доступные документы из базы знаний (отсортированы по релевантности)' },
+    it: { doc: 'Documento', title: 'Titolo', sections: 'Sezioni', content: 'Contenuto', relevance: 'Rilevanza', docs: 'Documenti disponibili dalla base di conoscenza (ordinati per rilevanza)' },
   };
   const l = labels[language] || labels.de;
   

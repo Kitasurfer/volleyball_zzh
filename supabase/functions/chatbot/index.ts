@@ -18,6 +18,59 @@ import {
 import type { Citation, RequestBody, KnowledgePayload } from './types.ts';
 
 
+const requireAdmin = async (req: Request): Promise<Response | null> => {
+  const authHeader = req.headers.get('authorization');
+
+  if (!authHeader) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return new Response(
+      JSON.stringify({ error: 'Server misconfigured' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  if (token && token === serviceRoleKey) {
+    return null;
+  }
+
+  const userResponse = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/user`, {
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: authHeader,
+    },
+  });
+
+  if (!userResponse.ok) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  const user = await userResponse.json();
+  const role = user?.app_metadata?.role ?? null;
+
+  if (role !== 'admin') {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
+  }
+
+  return null;
+};
+
+
 // Main handler
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
@@ -27,6 +80,19 @@ Deno.serve(async (req: Request) => {
 
   // Debug endpoint to check Qdrant data
   const url = new URL(req.url);
+
+  const isDebugEndpoint =
+    url.pathname.endsWith('/debug') ||
+    url.pathname.endsWith('/debug-flow') ||
+    url.pathname.endsWith('/debug-search');
+
+  if (isDebugEndpoint) {
+    const authError = await requireAdmin(req);
+    if (authError) {
+      return authError;
+    }
+  }
+
   if (url.pathname.endsWith('/debug') && req.method === 'GET') {
     try {
       const collection = getCollectionName();
@@ -184,6 +250,7 @@ Deno.serve(async (req: Request) => {
         ru: 'Привет! Я помощник клуба SKV Unterensingen Volleyball. Чем могу помочь? Спросите меня о правилах волейбола, расписании тренировок или информации о клубе.',
         de: 'Hallo! Ich bin der Assistent von SKV Unterensingen Volleyball. Wie kann ich Ihnen helfen? Fragen Sie mich nach Volleyballregeln, Trainingszeiten oder Vereinsinformationen.',
         en: 'Hello! I am the SKV Unterensingen Volleyball assistant. How can I help you? Ask me about volleyball rules, training schedules, or club information.',
+        it: 'Ciao! Sono l’assistente del club SKV Unterensingen Volleyball. Come posso aiutarti? Chiedimi delle regole della pallavolo, degli orari di allenamento o informazioni sul club.',
       };
 
       return new Response(
@@ -264,6 +331,7 @@ Deno.serve(async (req: Request) => {
         ru: 'К сожалению, в моей базе знаний нет документов с ответом на этот вопрос. Попробуйте переформулировать вопрос или спросите о правилах волейбола, расписании тренировок или информации о клубе.',
         de: 'Leider gibt es in meiner Wissensdatenbank keine Dokumente mit einer Antwort auf diese Frage. Versuchen Sie, die Frage umzuformulieren, oder fragen Sie nach Volleyballregeln, Trainingszeiten oder Vereinsinformationen.',
         en: 'Unfortunately, there are no documents in my knowledge base with an answer to this question. Try rephrasing your question, or ask about volleyball rules, training schedules, or club information.',
+        it: 'Purtroppo nella mia base di conoscenza non ci sono documenti con una risposta a questa domanda. Prova a riformulare la domanda oppure chiedimi delle regole della pallavolo, degli orari di allenamento o informazioni sul club.',
       };
 
       return new Response(

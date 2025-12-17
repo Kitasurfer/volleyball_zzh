@@ -1,4 +1,6 @@
-export type Language = 'de' | 'en' | 'ru';
+export const SUPPORTED_LANGUAGES = ['de', 'en', 'ru', 'it'] as const;
+
+export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
 export interface Translation {
   nav: {
@@ -19,6 +21,7 @@ export interface Translation {
   footer: {
     about: string;
     contact: string;
+    quickLinks: string;
     followUs: string;
     copyright: string;
   };

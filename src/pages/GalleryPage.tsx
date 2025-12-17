@@ -5,6 +5,7 @@ import { useGalleryImages } from '../hooks/useGalleryImages';
 import GalleryFilters from '../components/gallery/GalleryFilters';
 import GalleryAlbumGrid from '../components/gallery/GalleryAlbumGrid';
 import GalleryLightbox from '../components/gallery/GalleryLightbox';
+import { Seo } from '../components/Seo';
 
 const GalleryPage: React.FC = () => {
   const { language } = useLanguage();
@@ -63,9 +64,41 @@ const GalleryPage: React.FC = () => {
       navigationHelp:
         'Используйте стрелки или кнопки для навигации по галерее.',
     },
+    it: {
+      filters: {
+        all: 'Tutti',
+        spieltage: 'Spieltage',
+        events: 'Eventi',
+        beach: 'Beach',
+        training: 'Allenamenti',
+      },
+      eventLabel: 'Evento',
+      photosLabel: 'Foto',
+      loading: 'Caricamento galleria…',
+      errorPrefix: 'Errore nel caricamento della galleria:',
+      empty: 'Non ci sono ancora immagini in galleria.',
+      navigationHelp:
+        'Usa le frecce della tastiera o i pulsanti per navigare nella galleria.',
+    },
   };
 
   const t = content[language];
+
+  const seoTitle = language === 'de'
+    ? 'Galerie – SKV Unterensingen Volleyball'
+    : language === 'ru'
+    ? 'Галерея — SKV Unterensingen Volleyball'
+    : language === 'it'
+    ? 'Galleria – SKV Unterensingen Volleyball'
+    : 'Gallery – SKV Unterensingen Volleyball';
+
+  const seoDescription = language === 'de'
+    ? 'Fotos von Spieltagen, Events, Beach und Training bei SKV Unterensingen Volleyball.'
+    : language === 'ru'
+    ? 'Фотографии матчей, событий, пляжа и тренировок SKV Unterensingen Volleyball.'
+    : language === 'it'
+    ? 'Foto di partite, eventi, beach e allenamenti di SKV Unterensingen Volleyball.'
+    : 'Photos from match days, events, beach and training at SKV Unterensingen Volleyball.';
 
   const filteredAlbums = useMemo(
     () => (filter === 'all' ? albums : albums.filter((album) => album.category === filter)),
@@ -125,6 +158,7 @@ const GalleryPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-950 via-primary-900/95 to-neutral-900 pt-20 pb-16 text-white">
+      <Seo title={seoTitle} description={seoDescription} imagePath="/images/SKV_Volleyball.png" />
       <div className="container mx-auto px-4 lg:px-8">
         <GalleryFilters filters={t.filters} activeFilter={filter} onFilterChange={setFilter} />
 

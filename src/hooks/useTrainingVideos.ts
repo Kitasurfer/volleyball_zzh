@@ -55,11 +55,13 @@ const FEATURED_SHORTS: {
       de: 'Kurzes Drill: Angriff & Block',
       en: 'Short drill: attack & block',
       ru: 'Короткий дрилл: атака и блок',
+      it: 'Drill breve: attacco e muro',
     },
     descriptions: {
       de: 'Spielnahes Technik-Drill mit Fokus auf Angriff und Block.',
       en: 'Game-like technical drill focusing on attack and block.',
       ru: 'Игровой технический дрилл с фокусом на атаку и блок.',
+      it: 'Drill tecnico in situazione di gioco con focus su attacco e muro.',
     },
   },
   {
@@ -69,11 +71,13 @@ const FEATURED_SHORTS: {
       de: 'Kurzes Drill: Annahme & Defense',
       en: 'Short drill: reception & defense',
       ru: 'Короткий дрилл: приём и защита',
+      it: 'Drill breve: ricezione e difesa',
     },
     descriptions: {
       de: 'Kurze Sequenz mit Fokus auf Annahme und Verteidigung.',
       en: 'Short sequence focusing on serve receive and defense.',
       ru: 'Короткая серия с акцентом на приём подачи и защиту.',
+      it: 'Sequenza breve con focus su ricezione del servizio e difesa.',
     },
   },
   {
@@ -83,11 +87,13 @@ const FEATURED_SHORTS: {
       de: 'Beachvolleyball-Regeln erklärt',
       en: 'Beach Volleyball Rules Explained',
       ru: 'Правила пляжного волейбола',
+      it: 'Regole del beach volley spiegate',
     },
     descriptions: {
       de: 'Video-Erklärung der wichtigsten Beachvolleyball-Regeln für Spieler und Zuschauer.',
       en: 'Video explanation of the key beach volleyball rules for players and spectators.',
       ru: 'Видео-объяснение основных правил пляжного волейбола для игроков и зрителей.',
+      it: 'Video che spiega le principali regole del beach volley per giocatori e spettatori.',
     },
   },
   {
@@ -97,11 +103,13 @@ const FEATURED_SHORTS: {
       de: 'Änderungen der Volleyballregeln 2025',
       en: 'Volleyball Rule Changes 2025',
       ru: 'Изменения правил волейбола 2025',
+      it: 'Cambiamenti delle regole di pallavolo 2025',
     },
     descriptions: {
       de: 'Übersicht über neue und geänderte Volleyballregeln ab der Saison 2025.',
       en: 'Overview of new and changed volleyball rules starting in the 2025 season.',
       ru: 'Обзор новых и изменённых правил волейбола, которые вступают в силу с сезона 2025.',
+      it: 'Panoramica delle nuove regole e delle modifiche a partire dalla stagione 2025.',
     },
   },
   {
@@ -111,11 +119,13 @@ const FEATURED_SHORTS: {
       de: 'Was die neuen Volleyballregeln bedeuten',
       en: 'What to Expect from the New Volleyball Rules',
       ru: 'Чего ждать от новых правил волейбола',
+      it: 'Cosa aspettarsi dalle nuove regole di pallavolo',
     },
     descriptions: {
       de: 'Erklärung, wie sich die neuen FIVB-Regeln auf Spielstil und Taktik auswirken.',
       en: 'Explains how the new FIVB rules will affect playing style and tactics.',
       ru: 'Объяснение того, как новые правила FIVB повлияют на стиль игры и тактику.',
+      it: 'Spiega come le nuove regole FIVB influenzeranno stile di gioco e tattica.',
     },
   },
 ];
@@ -124,6 +134,7 @@ const FALLBACK_TRAINING_VIDEO_TITLE: Record<Language, string> = {
   de: 'Training-Video',
   en: 'Training video',
   ru: 'Тренировочное видео',
+  it: 'Video di allenamento',
 };
 
 const getFeaturedTrainingVideos = (language: Language): TrainingVideo[] =>

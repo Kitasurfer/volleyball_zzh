@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, Mail, Phone, MessageCircle } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
+import { Seo } from '../components/Seo';
 
 const ContactPage: React.FC = () => {
   const { language } = useLanguage();
@@ -97,12 +98,46 @@ const ContactPage: React.FC = () => {
         email: 'Email',
       },
     },
+    it: {
+      title: 'Contatti',
+      subtitle: 'Mettiti in contatto con noi',
+      fastContact: {
+        title: 'Contatto rapido',
+        subtitle: 'Scegli come preferisci contattarci.',
+        call: 'Chiama',
+        email: 'Invia e-mail',
+        whatsapp: 'Messaggio WhatsApp',
+        note: 'Di solito rispondiamo entro 24 ore.',
+      },
+      form: {
+        name: 'Nome',
+        email: 'Email',
+        message: 'Messaggio',
+        submit: 'Invia',
+        success: 'Messaggio inviato con successo!',
+        error: 'Errore durante l’invio. Riprova più tardi.',
+      },
+      info: {
+        club: 'Club',
+        contactPerson: 'Contatto',
+        phone: 'Telefono',
+        trainer: 'Allenatore',
+        gymLocation: 'Palestra',
+        beachLocation: 'Campo beach',
+        address: 'Indirizzo',
+        email: 'Email',
+      },
+    },
   };
 
   const t = content[language];
 
+  const seoTitle = t.title;
+  const seoDescription = t.subtitle;
+
   return (
     <div className="min-h-screen pt-32 pb-20">
+      <Seo title={seoTitle} description={seoDescription} />
       <div className="container mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="text-center mb-16">

@@ -4,16 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "pnpm install --prefer-offline && vite",
-    "dev:all": "pnpm install --prefer-offline && concurrently \"npm run dev\" \"npm run proxy\"",
+    "dev": "vite",
+    "dev:all": "concurrently \"npm run dev\" \"npm run proxy\"",
     "proxy": "node server/league-proxy.cjs",
-    "build": "pnpm install --prefer-offline && rm -rf node_modules/.vite-temp && tsc -b && vite build",
-    "build:prod": "pnpm install --prefer-offline && rm -rf node_modules/.vite-temp && tsc -b && BUILD_MODE=prod vite build",
-    "lint": "pnpm install --prefer-offline && eslint .",
+    "build": "rm -rf node_modules/.vite-temp && tsc -b && vite build",
+    "build:prod": "rm -rf node_modules/.vite-temp && tsc -b && BUILD_MODE=prod vite build",
+    "lint": "eslint .",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "preview": "pnpm install --prefer-offline && vite preview",
+    "preview": "vite preview",
     "install-deps": "pnpm install --prefer-offline",
     "clean": "rm -rf node_modules .pnpm-store pnpm-lock.yaml && pnpm store prune"
   },
@@ -61,6 +61,7 @@
     "react": "^18.3.1",
     "react-day-picker": "8.10.1",
     "react-dom": "^18.3.1",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.54.2",
     "react-resizable-panels": "^2.1.7",
     "react-router-dom": "^6",
@@ -73,6 +74,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@prerenderer/renderer-jsdom": "^1.1.9",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.1",
@@ -93,7 +95,14 @@
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.15.0",
     "vite": "^6.0.1",
+    "vite-plugin-prerender": "^1.0.8",
     "vite-plugin-source-identifier": "1.1.2",
     "vitest": "^1.0.4"
-  }
+  },
+  "pnpm": {
+    "overrides": {
+      "jsdom": "23.2.0"
+    }
+  },
+  "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
 }

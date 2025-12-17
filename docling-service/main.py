@@ -11,10 +11,10 @@ from typing import Optional
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from docling.document_converter import DocumentConverter
-from docling.chunking import HybridChunker
 from docling.datamodel.base_models import InputFormat
 
 logging.basicConfig(level=logging.INFO)
@@ -35,18 +35,16 @@ app.add_middleware(
 )
 
 
-class ChunkResult(BaseModel):
-    text: str
-    headings: list[str] = []
-    page: Optional[int] = None
-    doc_items_refs: list[str] = []
+class DocumentMetadata(BaseModel):
+    pages: int = 0
+    figures: int = 0
+    tables: int = 0
 
 
 class ProcessResult(BaseModel):
-    success: bool
-    filename: str
-    total_chunks: int
-    chunks: list[ChunkResult]
+    markdown: str
+    metadata: DocumentMetadata
+    images: list[str] = []
     error: Optional[str] = None
 
 
@@ -54,52 +52,15 @@ class ProcessResult(BaseModel):
 converter = DocumentConverter()
 
 
-def extract_headings(chunk) -> list[str]:
-    """Extract heading hierarchy from chunk metadata."""
-    headings = []
+def extract_page_count(result, doc) -> int:
     try:
-        if hasattr(chunk, 'meta') and chunk.meta:
-            # Get headings from chunk metadata
-            if hasattr(chunk.meta, 'headings'):
-                headings = list(chunk.meta.headings) if chunk.meta.headings else []
-            # Alternative: doc_items may contain heading info
-            elif hasattr(chunk.meta, 'doc_items'):
-                for item in chunk.meta.doc_items:
-                    if hasattr(item, 'label') and 'heading' in str(item.label).lower():
-                        if hasattr(item, 'text'):
-                            headings.append(item.text)
+        if hasattr(result, 'input') and result.input is not None and hasattr(result.input, 'page_count'):
+            return int(result.input.page_count)
+        if hasattr(doc, 'pages') and doc.pages:
+            return int(len(doc.pages))
     except Exception as e:
-        logger.warning(f"Error extracting headings: {e}")
-    return headings
-
-
-def extract_page(chunk) -> Optional[int]:
-    """Extract page number from chunk."""
-    try:
-        if hasattr(chunk, 'meta') and chunk.meta:
-            if hasattr(chunk.meta, 'doc_items') and chunk.meta.doc_items:
-                first_item = chunk.meta.doc_items[0]
-                if hasattr(first_item, 'prov') and first_item.prov:
-                    prov = first_item.prov[0] if isinstance(first_item.prov, list) else first_item.prov
-                    if hasattr(prov, 'page_no'):
-                        return prov.page_no
-    except Exception as e:
-        logger.warning(f"Error extracting page: {e}")
-    return None
-
-
-def extract_doc_items_refs(chunk) -> list[str]:
-    """Extract document item references (for linking to images, tables, etc.)."""
-    refs = []
-    try:
-        if hasattr(chunk, 'meta') and chunk.meta:
-            if hasattr(chunk.meta, 'doc_items') and chunk.meta.doc_items:
-                for item in chunk.meta.doc_items:
-                    if hasattr(item, 'self_ref'):
-                        refs.append(item.self_ref)
-    except Exception as e:
-        logger.warning(f"Error extracting refs: {e}")
-    return refs
+        logger.warning(f"Error extracting pages: {e}")
+    return 0
 
 
 @app.get("/health")
@@ -149,57 +110,29 @@ async def process_pdf(
         result = converter.convert(pdf_stream, input_format=InputFormat.PDF)
         
         if not result or not result.document:
-            raise HTTPException(status_code=500, detail="Failed to convert PDF")
-        
+            return JSONResponse(status_code=500, content={"error": "Failed to convert PDF"})
+
         doc = result.document
-        logger.info(f"Document converted, creating chunks...")
-        
-        # Create chunker with hybrid strategy (semantic + size-based)
-        chunker = HybridChunker(
-            tokenizer="sentence-transformers/all-MiniLM-L6-v2",
-            max_tokens=max_tokens,
-            merge_peers=True,  # Merge adjacent chunks of same type
+
+        markdown = doc.export_to_markdown() if hasattr(doc, 'export_to_markdown') else ''
+        if not markdown or len(markdown) < 100:
+            return JSONResponse(status_code=500, content={"error": "Docling returned empty markdown"})
+
+        metadata = DocumentMetadata(
+            pages=extract_page_count(result, doc),
+            figures=len(doc.pictures) if hasattr(doc, 'pictures') and doc.pictures else 0,
+            tables=len(doc.tables) if hasattr(doc, 'tables') and doc.tables else 0,
         )
-        
-        # Generate chunks
-        chunks = list(chunker.chunk(doc))
-        logger.info(f"Generated {len(chunks)} chunks")
-        
-        # Convert to response format
-        chunk_results = []
-        for chunk in chunks:
-            chunk_text = chunk.text if hasattr(chunk, 'text') else str(chunk)
-            
-            if not chunk_text or not chunk_text.strip():
-                continue
-            
-            chunk_results.append(ChunkResult(
-                text=chunk_text.strip(),
-                headings=extract_headings(chunk),
-                page=extract_page(chunk),
-                doc_items_refs=extract_doc_items_refs(chunk),
-            ))
-        
-        logger.info(f"Returning {len(chunk_results)} non-empty chunks")
-        
+
         return ProcessResult(
-            success=True,
-            filename=file.filename,
-            total_chunks=len(chunk_results),
-            chunks=chunk_results,
+            markdown=markdown,
+            metadata=metadata,
+            images=[],
         )
         
-    except HTTPException:
-        raise
     except Exception as e:
         logger.exception(f"Error processing PDF: {e}")
-        return ProcessResult(
-            success=False,
-            filename=file.filename or "unknown",
-            total_chunks=0,
-            chunks=[],
-            error=str(e),
-        )
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.post("/process-url", response_model=ProcessResult)
@@ -229,51 +162,33 @@ async def process_pdf_url(
         # Convert PDF
         pdf_stream = io.BytesIO(content)
         result = converter.convert(pdf_stream, input_format=InputFormat.PDF)
-        
+
         if not result or not result.document:
-            raise HTTPException(status_code=500, detail="Failed to convert PDF")
-        
+            return JSONResponse(status_code=500, content={"error": "Failed to convert PDF"})
+
         doc = result.document
-        
-        chunker = HybridChunker(
-            tokenizer="sentence-transformers/all-MiniLM-L6-v2",
-            max_tokens=max_tokens,
-            merge_peers=True,
+
+        markdown = doc.export_to_markdown() if hasattr(doc, 'export_to_markdown') else ''
+        if not markdown or len(markdown) < 100:
+            return JSONResponse(status_code=500, content={"error": "Docling returned empty markdown"})
+
+        metadata = DocumentMetadata(
+            pages=extract_page_count(result, doc),
+            figures=len(doc.pictures) if hasattr(doc, 'pictures') and doc.pictures else 0,
+            tables=len(doc.tables) if hasattr(doc, 'tables') and doc.tables else 0,
         )
-        
-        chunks = list(chunker.chunk(doc))
-        
-        chunk_results = []
-        for chunk in chunks:
-            chunk_text = chunk.text if hasattr(chunk, 'text') else str(chunk)
-            if not chunk_text or not chunk_text.strip():
-                continue
-            
-            chunk_results.append(ChunkResult(
-                text=chunk_text.strip(),
-                headings=extract_headings(chunk),
-                page=extract_page(chunk),
-                doc_items_refs=extract_doc_items_refs(chunk),
-            ))
-        
+
         return ProcessResult(
-            success=True,
-            filename=filename,
-            total_chunks=len(chunk_results),
-            chunks=chunk_results,
+            markdown=markdown,
+            metadata=metadata,
+            images=[],
         )
         
     except httpx.HTTPError as e:
         raise HTTPException(status_code=400, detail=f"Failed to fetch PDF: {e}")
     except Exception as e:
         logger.exception(f"Error processing PDF from URL: {e}")
-        return ProcessResult(
-            success=False,
-            filename="unknown",
-            total_chunks=0,
-            chunks=[],
-            error=str(e),
-        )
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 if __name__ == "__main__":

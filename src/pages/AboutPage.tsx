@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLanguage } from '../lib/LanguageContext';
 import { LightboxImage } from '../components/LightboxImage';
+import { Seo } from '../components/Seo';
 
 const AboutPage: React.FC = () => {
   const { language } = useLanguage();
@@ -77,6 +78,32 @@ const AboutPage: React.FC = () => {
       ],
       location: 'Расположение: Унтерензинген, Баден-Вюртемберг',
     },
+    it: {
+      title: 'Su SKV Unterensingen Volleyball',
+      sections: [
+        {
+          title: 'Storia e filosofia',
+          text:
+            'Statuto dello Sport- und Kulturverein Unterensingen e.V. (versione del 12.03.2010). Il club ha sede a Unterensingen e persegue scopi esclusivamente e direttamente di pubblica utilità, in particolare attraverso l’offerta di attività sportive e culturali moderne per tutte le età.',
+        },
+        {
+          title: 'Missione',
+          text:
+            'Sviluppiamo i talenti della pallavolo della prossima generazione con metodi di allenamento innovativi, costruendo una comunità inclusiva in cui ogni giocatore può raggiungere il proprio pieno potenziale.',
+        },
+        {
+          title: 'Filosofia di allenamento',
+          text:
+            'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale sviluppati dalla FIVB. Seguiamo il principio "allenati come giochi".',
+        },
+        {
+          title: 'Head coach: Heinrich Treibert',
+          text:
+            'Heinrich Treibert guida i programmi di pallavolo nella regione ed è conosciuto per il suo approccio professionale allo sviluppo dei giocatori, unendo molti anni di esperienza con una profonda comprensione delle dinamiche di squadra.',
+        },
+      ],
+      location: 'Luogo: Unterensingen, Baden-Württemberg',
+    },
   };
 
   const aboutSections = {
@@ -146,6 +173,28 @@ const AboutPage: React.FC = () => {
           'Heinrich Treibert руководит волейбольными программами в регионе и известен своим профессиональным подходом к развитию игроков. Он сочетает многолетний тренерский опыт с глубоким пониманием игровых процессов и командной динамики.',
       },
     ],
+    it: [
+      {
+        title: 'Storia e filosofia',
+        text:
+          'Nel club sportivo e culturale Unterensingen e.V. lo sport significa soprattutto gioia, movimento ed emozioni positive. Riuniamo persone di tutte le età e livelli: ognuno può svilupparsi al proprio ritmo e godersi ogni passo avanti.',
+      },
+      {
+        title: 'La nostra missione – sport con piacere',
+        text:
+          'Aiutiamo le persone a scoprire la pallavolo per sé stesse – con allenamenti moderni, sostegno motivante e un’atmosfera positiva. Per noi non conta solo il risultato, ma anche il piacere di ogni allenamento e di ogni azione.',
+      },
+      {
+        title: 'Filosofia di allenamento',
+        text:
+          'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale sviluppati dalla FIVB. Seguiamo il principio "allenati come giochi".',
+      },
+      {
+        title: 'Head coach: Heinrich Treibert',
+        text:
+          'Heinrich Treibert guida i programmi di pallavolo nella regione ed è conosciuto per il suo approccio professionale allo sviluppo dei giocatori. Combina molti anni di esperienza con una profonda comprensione dei processi di gioco e della dinamica di squadra.',
+      },
+    ],
   } as const;
 
   const t = {
@@ -153,8 +202,12 @@ const AboutPage: React.FC = () => {
     sections: aboutSections[language],
   };
 
+  const seoTitle = t.title;
+  const seoDescription = t.sections[1]?.text ?? t.location;
+
   return (
     <div className="min-h-screen pt-32 pb-20">
+      <Seo title={seoTitle} description={seoDescription} />
       <div className="container mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="text-center mb-16">

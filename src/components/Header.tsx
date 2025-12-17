@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Globe } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
-import { Language } from '../types';
+import { Language, SUPPORTED_LANGUAGES } from '../types';
 import { LightboxImage } from './LightboxImage';
 
 const Header: React.FC = () => {
@@ -30,11 +30,10 @@ const Header: React.FC = () => {
     { to: '/contact', label: t.nav.contact },
   ];
 
-  const languages: { code: Language; label: string }[] = [
-    { code: 'de', label: 'DE' },
-    { code: 'en', label: 'EN' },
-    { code: 'ru', label: 'RU' },
-  ];
+  const languages: { code: Language; label: string }[] = SUPPORTED_LANGUAGES.map((code) => ({
+    code,
+    label: code.toUpperCase(),
+  })) as { code: Language; label: string }[];
 
   return (
     <header

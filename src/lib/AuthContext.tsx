@@ -55,11 +55,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return appMetaRole;
     }
 
-    const userMetaRole = session?.user?.user_metadata?.role;
-    if (typeof userMetaRole === 'string') {
-      return userMetaRole;
-    }
-
     return null;
   }, [session]);
 

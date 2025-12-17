@@ -8,7 +8,7 @@ export default tseslint.config(
   { ignores: ['dist'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -23,8 +23,46 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['supabase/functions/**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        ...globals.browser,
+        ...(globals.deno ?? {}),
+        Deno: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['vite.config.ts'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.node,
     },
   },
 )

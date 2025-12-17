@@ -4,7 +4,9 @@
  * split it into chunks, and store preview + payload files locally so they can be
  * reviewed before uploading to Qdrant.
  */
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { mkdir, writeFile, readFile, rm, readdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { basename, extname, join } from 'node:path';
 import process from 'node:process';
 
@@ -109,6 +111,97 @@ function splitMarkdownIntoChunks(markdown, maxChunkSize = 1500) {
   return chunks;
 }
 
+async function runProcess(command, args) {
+  return await new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve({ stdout, stderr });
+        return;
+      }
+
+      reject(new Error(`Command failed (${code}): ${stderr.slice(0, 400)}`));
+    });
+  });
+}
+
+async function extractPdfTextWithPython(pdfBuffer) {
+  const tempPath = join(tmpdir(), `pdf-${Date.now()}-${Math.random().toString(16).slice(2)}.pdf`);
+  await writeFile(tempPath, pdfBuffer);
+
+  try {
+    const python = [
+      'import json',
+      'import sys',
+      '',
+      'path = sys.argv[1]',
+      'pages = 0',
+      'text = ""',
+      '',
+      'try:',
+      '    import PyPDF2',
+      '    with open(path, "rb") as f:',
+      '        reader = PyPDF2.PdfReader(f)',
+      '        pages = len(reader.pages)',
+      'except Exception:',
+      '    pages = 0',
+      '',
+      'try:',
+      '    from pdfminer.high_level import extract_text',
+      '    text = extract_text(path) or ""',
+      'except Exception:',
+      '    try:',
+      '        import PyPDF2',
+      '        with open(path, "rb") as f:',
+      '            reader = PyPDF2.PdfReader(f)',
+      '            parts = []',
+      '            for page in reader.pages:',
+      '                parts.append(page.extract_text() or "")',
+      '            text = "\\n".join(parts)',
+      '    except Exception:',
+      '        text = ""',
+      '',
+      'sys.stdout.write(json.dumps({"text": text, "pages": pages}))',
+      '',
+    ].join('\n');
+
+    const { stdout } = await runProcess('python3', ['-c', python, tempPath]);
+    const parsed = JSON.parse(stdout);
+    return {
+      text: parsed.text ?? '',
+      pages: Number.isFinite(parsed.pages) ? parsed.pages : 0,
+    };
+  } finally {
+    await rm(tempPath, { force: true });
+  }
+}
+
+async function cleanChunkPreviews(chunksDir) {
+  try {
+    const existing = await readdir(chunksDir);
+    const previewFiles = existing.filter((file) => /^chunk-\d+\.md$/i.test(file));
+    await Promise.all(previewFiles.map((file) => rm(join(chunksDir, file), { force: true })));
+  } catch {
+    // ignore
+  }
+}
+
 async function downloadFile(url) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -179,10 +272,27 @@ async function main() {
   if (isPdf) {
     console.log('Sending file to Docling...');
     const blob = new Blob([sourceInfo.data], { type: sourceInfo.contentType || 'application/pdf' });
-    const doclingResult = await processWithDocling(args.docling, blob, sourceInfo.filename);
-    markdown = doclingResult.markdown;
-    doclingMetadata = doclingResult.metadata || {};
-    console.log(`Docling returned ${markdown.length} characters of markdown.`);
+    try {
+      const doclingResult = await processWithDocling(args.docling, blob, sourceInfo.filename);
+      markdown = doclingResult.markdown;
+      doclingMetadata = doclingResult.metadata || {};
+      console.log(`Docling returned ${markdown.length} characters of markdown.`);
+    } catch (error) {
+      console.warn(`Docling failed: ${error?.message ?? String(error)}`);
+      console.log('Falling back to local PDF text extraction (python3)...');
+      const extracted = await extractPdfTextWithPython(sourceInfo.data);
+      const text = (extracted.text || '').trim();
+      if (!text || text.length < 100) {
+        throw new Error('PDF extraction fallback returned empty text.');
+      }
+      markdown = `# ${args.title}\n\n${text}\n`;
+      doclingMetadata = {
+        pages: extracted.pages || 0,
+        figures: 0,
+        tables: 0,
+      };
+      console.log(`Fallback returned ${markdown.length} characters of text.`);
+    }
   } else {
     console.log('Using plain text/markdown input (Docling skipped).');
     markdown = sourceInfo.data.toString('utf8');
@@ -201,6 +311,7 @@ async function main() {
     : join(OUTPUT_ROOT, slug, language);
   const chunksDir = join(outputDir, 'chunks');
   await mkdir(chunksDir, { recursive: true });
+  await cleanChunkPreviews(chunksDir);
 
   await writeFile(join(outputDir, 'source.md'), markdown, 'utf8');
 
@@ -217,7 +328,7 @@ async function main() {
       title: args.title,
       language,
       content_id: contentId,
-      source_url: args.url,
+      source_url: args.url ?? null,
       chunk_count: chunkPayload.length,
       docling_metadata: doclingMetadata,
       chunks: chunkPayload,
@@ -240,7 +351,7 @@ async function main() {
       content_id: contentId,
       title: args.title,
       language,
-      source_url: args.url,
+      source_file: args.file ?? args.url ?? null,
       chunks: chunkPayload.map(({ chunk_index, text, headings }) => ({ chunk_index, text, headings })),
       metadata: doclingMetadata,
     }, null, 2),

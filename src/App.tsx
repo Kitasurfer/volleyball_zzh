@@ -1,4 +1,5 @@
-import { BrowserRouter as Router } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
 import { AppProviders } from './lib/AppProviders';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -32,6 +33,32 @@ const AdminFallback = () => (
   </div>
 );
 
+function PrerenderReadySignal({ enabled }: { enabled: boolean }) {
+  const location = useLocation();
+
+  useEffect(() => {
+    let timeoutId: number | null = null;
+
+    if (!enabled) return;
+
+    const dispatchReady = () => {
+      document.dispatchEvent(new Event('prerender-ready'));
+    };
+
+    const scheduleDispatch = () => {
+      timeoutId = window.setTimeout(dispatchReady, 0);
+    };
+
+    scheduleDispatch();
+
+    return () => {
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+    };
+  }, [enabled, location.pathname]);
+
+  return null;
+}
+
 /**
  * Main App Component
  * 
@@ -42,9 +69,13 @@ const AdminFallback = () => (
  * - Lazy loaded pages for code splitting
  */
 function App() {
+  const isPrerender =
+    typeof window !== 'undefined' && Boolean((window as unknown as { __PRERENDER_INJECTED?: { prerender?: boolean } }).__PRERENDER_INJECTED?.prerender);
+
   return (
     <AppProviders>
       <Router>
+        <PrerenderReadySignal enabled={isPrerender} />
         <ScrollToTop />
         <div className="flex flex-col min-h-screen bg-background-page">
           <Header />
@@ -52,8 +83,8 @@ function App() {
             <AppRoutes PageFallback={PageFallback} AdminFallback={AdminFallback} />
           </main>
           <Footer />
-          <CookieConsent />
-          <Chatbot />
+          {!isPrerender && <CookieConsent />}
+          {!isPrerender && <Chatbot />}
         </div>
       </Router>
     </AppProviders>

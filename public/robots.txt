@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin
+Disallow: /admin/
+Allow: /admin/login
+Allow: /admin/login/
+
+Sitemap: https://skvunterensingen.netlify.app/sitemap.xml

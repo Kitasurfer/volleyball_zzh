@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/AuthContext';
+import { Seo } from '../../components/Seo';
 
 const AdminLoginPage = () => {
   const location = useLocation();
@@ -33,6 +34,7 @@ const AdminLoginPage = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12">
+      <Seo title="Admin login" description="Admin login" noIndex />
       <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-semibold text-neutral-900">Admin login</h1>

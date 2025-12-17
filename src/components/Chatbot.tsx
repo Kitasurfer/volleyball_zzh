@@ -3,8 +3,8 @@ import { MessageCircle, Send, X } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import type { ChatMessage } from '../types/chatbot';
 import type { ChatbotHistoryItem } from '../lib/chatbot-client';
-import { LinkifiedText } from './LinkifiedText';
 import { invokeChatbot } from '../lib/chatbot-client';
+import { ChatMessageItem } from './chatbot/ChatMessageItem';
 
 const Chatbot: React.FC = () => {
   const { language, t } = useLanguage();
@@ -13,6 +13,7 @@ const Chatbot: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>();
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -22,6 +23,7 @@ const Chatbot: React.FC = () => {
         de: 'Hallo! Ich bin der SKV Unterensingen Volleyball-Assistent. Wie kann ich Ihnen helfen?',
         en: 'Hello! I am the SKV Unterensingen Volleyball assistant. How can I help you?',
         ru: 'Здравствуйте! Я ассистент команды SKV Unterensingen Volleyball. Чем могу помочь?',
+        it: 'Ciao! Sono l’assistente di SKV Unterensingen Volleyball. Come posso aiutarti?',
       };
       const greeting: ChatMessage = {
         id: Date.now().toString(),
@@ -43,6 +45,21 @@ const Chatbot: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleCopyMessage = async (message: ChatMessage) => {
+    if (message.sender !== 'bot') return;
+    if (!navigator?.clipboard) return;
+
+    try {
+      await navigator.clipboard.writeText(message.text);
+      setCopiedMessageId(message.id);
+      window.setTimeout(() => {
+        setCopiedMessageId((current) => (current === message.id ? null : current));
+      }, 2000);
+    } catch (error) {
+      console.error('Copy failed:', error);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -82,9 +99,11 @@ const Chatbot: React.FC = () => {
           .replace(/Источники:?\s*$/gi, '')
           .replace(/Sources:?\s*$/gi, '')
           .replace(/Quellen:?\s*$/gi, '')
+          .replace(/Fonti:?\s*$/gi, '')
           .replace(/\n\s*Источники:?\s*$/gi, '')
           .replace(/\n\s*Sources:?\s*$/gi, '')
           .replace(/\n\s*Quellen:?\s*$/gi, '')
+          .replace(/\n\s*Fonti:?\s*$/gi, '')
           .trim();
       }
 
@@ -92,6 +111,7 @@ const Chatbot: React.FC = () => {
         id: (Date.now() + 1).toString(),
         text: answerText,
         sender: 'bot',
+        citations: data?.citations,
       };
 
       if (data?.sessionId) {
@@ -105,6 +125,7 @@ const Chatbot: React.FC = () => {
         de: 'Entschuldigung, es gab einen Fehler. Bitte versuchen Sie es später erneut.',
         en: 'Sorry, there was an error. Please try again later.',
         ru: 'Извините, произошла ошибка. Пожалуйста, попробуйте позже.',
+        it: 'Spiacente, si è verificato un errore. Per favore riprova più tardi.',
       };
       setMessages((prev) => [
         ...prev,
@@ -133,7 +154,7 @@ const Chatbot: React.FC = () => {
     }
   };
 
-  const handleChatClick = (e: React.MouseEvent) => {
+  const handleChatClick = (_e: React.MouseEvent) => {
     // Полностью отключаем автоматический фокус при клике в области чата
     // Пользователь должен сам решать когда фокусироваться на инпуте
     return;
@@ -176,23 +197,13 @@ const Chatbot: React.FC = () => {
             onClick={handleChatClick}
           >
             {messages.map((message) => (
-              <div
+              <ChatMessageItem
                 key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] px-4 py-2 rounded-lg ${
-                    message.sender === 'user'
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-white text-neutral-900 shadow-sm'
-                  }`}
-                >
-                  <LinkifiedText
-                    text={message.text}
-                    className="text-sm leading-relaxed whitespace-pre-line"
-                  />
-                </div>
-              </div>
+                message={message}
+                t={t.chatbot}
+                onCopy={message.sender === 'bot' ? () => handleCopyMessage(message) : undefined}
+                copied={copiedMessageId === message.id}
+              />
             ))}
             {isLoading && (
               <div className="flex justify-start">

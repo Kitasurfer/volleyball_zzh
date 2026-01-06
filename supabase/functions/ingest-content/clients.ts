@@ -83,6 +83,13 @@ export interface QdrantClient {
     collection: string,
     body: { points: Array<string | number> }
   ) => Promise<unknown>;
+
+  createCollection: (
+    collection: string,
+    vectorSize: number
+  ) => Promise<unknown>;
+
+  collectionExists: (collection: string) => Promise<boolean>;
 }
 
 export const createQdrantClient = (config: QdrantConfig): QdrantClient => {
@@ -104,5 +111,29 @@ export const createQdrantClient = (config: QdrantConfig): QdrantClient => {
         method: 'POST',
         body: JSON.stringify(body),
       }),
+
+    createCollection: (collection, vectorSize) =>
+      qdrantRequest(config, `/collections/${collection}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          vectors: {
+            size: vectorSize,
+            distance: 'Cosine',
+          },
+        }),
+      }),
+
+    collectionExists: async (collection) => {
+      try {
+        const url = `${config.url.replace(/\/$/, '')}/collections/${collection}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: buildQdrantHeaders(config),
+        });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    },
   };
 };

@@ -1,0 +1,124 @@
+{
+  "content_id": "referee-gestures-de",
+  "title": "Schiedsrichterzeichen im Volleyball",
+  "language": "de",
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "text": "Schiedsrichterzeichen: Ausschluss (Rote Karte)\n\nBei einem Ausschluss zeigt der Schiedsrichter die rote Karte. Der Spieler muss das Spielfeld verlassen und darf für den Rest des Satzes nicht mehr spielen. Ein Ausschluss erfolgt bei wiederholtem unsportlichen Verhalten oder bei einem schweren Vergehen.\n\nDas Zeichen: Der Schiedsrichter hält die rote Karte mit ausgestrecktem Arm hoch. Die Karte wird deutlich sichtbar über Kopfhöhe gehalten.",
+      "headings": ["Schiedsrichterzeichen", "Ausschluss"],
+      "media": [
+        {
+          "id": "red-card-gesture",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Red_card.svg/200px-Red_card.svg.png",
+          "type": "image",
+          "title": "Rote Karte - Ausschluss",
+          "description": "Der Schiedsrichter zeigt die rote Karte für einen Ausschluss"
+        }
+      ]
+    },
+    {
+      "chunk_index": 1,
+      "text": "Schiedsrichterzeichen: Verwarnung (Gelbe Karte)\n\nBei einer Verwarnung zeigt der Schiedsrichter die gelbe Karte. Dies ist eine offizielle Warnung an den Spieler oder die Mannschaft. Bei der ersten Verwarnung gibt es keine direkten Konsequenzen, aber bei weiteren Vergehen können Strafen folgen.\n\nDas Zeichen: Der Schiedsrichter hält die gelbe Karte mit ausgestrecktem Arm hoch.",
+      "headings": ["Schiedsrichterzeichen", "Verwarnung"],
+      "media": [
+        {
+          "id": "yellow-card-gesture",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Yellow_card.svg/200px-Yellow_card.svg.png",
+          "type": "image",
+          "title": "Gelbe Karte - Verwarnung",
+          "description": "Der Schiedsrichter zeigt die gelbe Karte für eine Verwarnung"
+        }
+      ]
+    },
+    {
+      "chunk_index": 2,
+      "text": "Schiedsrichterzeichen: Punkt (Ball im Feld)\n\nWenn der Ball im Spielfeld landet und ein Punkt erzielt wird, zeigt der Schiedsrichter mit ausgestrecktem Arm und Zeigefinger auf die Seite der Mannschaft, die den Punkt gewonnen hat.\n\nDas Zeichen: Der Arm wird horizontal zur Seite gestreckt, der Zeigefinger zeigt auf das Spielfeld der Mannschaft, die den Punkt erhält.",
+      "headings": ["Schiedsrichterzeichen", "Punkt"],
+      "media": [
+        {
+          "id": "point-gesture",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/01_authorization_to_serve.png",
+          "type": "image",
+          "title": "Punkt - Ball im Feld",
+          "description": "Schiedsrichter zeigt auf die Seite der punktenden Mannschaft"
+        }
+      ]
+    },
+    {
+      "chunk_index": 3,
+      "text": "Schiedsrichterzeichen: Ball aus (Out)\n\nWenn der Ball außerhalb des Spielfeldes landet, hebt der Schiedsrichter beide Unterarme vertikal mit offenen Handflächen nach außen.\n\nDas Zeichen: Beide Arme werden angewinkelt, die Unterarme zeigen nach oben, die Handflächen sind nach außen gerichtet. Dies signalisiert, dass der Ball das Spielfeld verlassen hat.",
+      "headings": ["Schiedsrichterzeichen", "Ball aus"],
+      "media": [
+        {
+          "id": "out-gesture",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/03_ball_out.png",
+          "type": "image",
+          "title": "Ball aus - Out",
+          "description": "Schiedsrichter signalisiert Ball aus dem Spielfeld"
+        }
+      ]
+    },
+    {
+      "chunk_index": 4,
+      "text": "Schiedsrichterzeichen: Doppelberührung\n\nWenn ein Spieler den Ball zweimal hintereinander berührt (außer beim Block), zeigt der Schiedsrichter zwei Finger (Zeige- und Mittelfinger) nach oben.\n\nDas Zeichen: Der Arm wird angehoben und zwei Finger werden deutlich sichtbar gespreizt nach oben gezeigt.",
+      "headings": ["Schiedsrichterzeichen", "Doppelberührung"],
+      "media": [
+        {
+          "id": "double-touch-gesture",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/09_double_contact.png",
+          "type": "image",
+          "title": "Doppelberührung",
+          "description": "Zwei Finger zeigen eine Doppelberührung an"
+        }
+      ]
+    },
+    {
+      "chunk_index": 5,
+      "text": "Schiedsrichterzeichen: Vier Berührungen\n\nWenn eine Mannschaft den Ball mehr als dreimal berührt, bevor er über das Netz gespielt wird, zeigt der Schiedsrichter vier Finger.\n\nDas Zeichen: Der Arm wird angehoben und vier Finger werden deutlich sichtbar gespreizt nach oben gezeigt.",
+      "headings": ["Schiedsrichterzeichen", "Vier Berührungen"],
+      "media": [
+        {
+          "id": "four-hits-gesture",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/10_four_hits.png",
+          "type": "image",
+          "title": "Vier Berührungen",
+          "description": "Vier Finger zeigen zu viele Berührungen an"
+        }
+      ]
+    },
+    {
+      "chunk_index": 6,
+      "text": "Schiedsrichterzeichen: Netzberührung\n\nWenn ein Spieler das Netz während einer Spielaktion berührt, zeigt der Schiedsrichter auf das Netz mit der entsprechenden Hand.\n\nDas Zeichen: Der Schiedsrichter berührt mit der Hand die Oberkante des Netzes auf der Seite des fehlerhaften Spielers.",
+      "headings": ["Schiedsrichterzeichen", "Netzberührung"],
+      "media": [
+        {
+          "id": "net-touch-gesture",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/14_net_touched.png",
+          "type": "image",
+          "title": "Netzberührung",
+          "description": "Schiedsrichter zeigt Netzberührung an"
+        }
+      ]
+    },
+    {
+      "chunk_index": 7,
+      "text": "Schiedsrichterzeichen: Disqualifikation (Rote + Gelbe Karte zusammen)\n\nBei einer Disqualifikation zeigt der Schiedsrichter beide Karten (rot und gelb) zusammen in einer Hand. Der Spieler muss das Spielfeld und den Wettkampfbereich verlassen und darf für den Rest des Spiels nicht mehr teilnehmen.\n\nDas Zeichen: Beide Karten werden zusammen in einer Hand über Kopfhöhe gehalten. Dies ist die schwerste Strafe im Volleyball.",
+      "headings": ["Schiedsrichterzeichen", "Disqualifikation"],
+      "media": [
+        {
+          "id": "disqualification-gesture",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Red_card.svg/200px-Red_card.svg.png",
+          "type": "image",
+          "title": "Disqualifikation",
+          "description": "Rote und gelbe Karte zusammen für Disqualifikation"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "figures": 8,
+    "pages": 1,
+    "tables": 0
+  }
+}

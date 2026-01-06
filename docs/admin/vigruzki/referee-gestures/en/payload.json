@@ -1,0 +1,124 @@
+{
+  "content_id": "referee-gestures-en",
+  "title": "Volleyball Referee Hand Signals",
+  "language": "en",
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "text": "Referee Signals: Expulsion (Red Card)\n\nFor an expulsion, the referee shows the red card. The player must leave the playing area and cannot play for the rest of the set. An expulsion occurs for repeated unsportsmanlike conduct or a serious offense.\n\nThe signal: The referee holds the red card with an extended arm above head height. The card must be clearly visible to everyone.",
+      "headings": ["Referee Signals", "Expulsion"],
+      "media": [
+        {
+          "id": "red-card-gesture-en",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Red_card.svg/200px-Red_card.svg.png",
+          "type": "image",
+          "title": "Red Card - Expulsion",
+          "description": "The referee shows the red card for player expulsion"
+        }
+      ]
+    },
+    {
+      "chunk_index": 1,
+      "text": "Referee Signals: Warning (Yellow Card)\n\nFor a warning, the referee shows the yellow card. This is an official warning to the player or team. The first warning has no direct consequences, but further offenses may result in penalties.\n\nThe signal: The referee holds the yellow card with an extended arm above head height.",
+      "headings": ["Referee Signals", "Warning"],
+      "media": [
+        {
+          "id": "yellow-card-gesture-en",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Yellow_card.svg/200px-Yellow_card.svg.png",
+          "type": "image",
+          "title": "Yellow Card - Warning",
+          "description": "The referee shows the yellow card for a warning"
+        }
+      ]
+    },
+    {
+      "chunk_index": 2,
+      "text": "Referee Signals: Point (Ball In)\n\nWhen the ball lands inside the court and a point is scored, the referee points with an extended arm and index finger toward the side of the team that won the point.\n\nThe signal: The arm is extended horizontally to the side, with the index finger pointing at the court of the team receiving the point.",
+      "headings": ["Referee Signals", "Point"],
+      "media": [
+        {
+          "id": "point-gesture-en",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/01_authorization_to_serve.png",
+          "type": "image",
+          "title": "Point - Ball In",
+          "description": "Referee points to the side of the scoring team"
+        }
+      ]
+    },
+    {
+      "chunk_index": 3,
+      "text": "Referee Signals: Ball Out\n\nWhen the ball lands outside the court, the referee raises both forearms vertically with open palms facing outward.\n\nThe signal: Both arms are bent at the elbows, forearms pointing upward, palms facing outward. This signals that the ball has left the playing field.",
+      "headings": ["Referee Signals", "Ball Out"],
+      "media": [
+        {
+          "id": "out-gesture-en",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/03_ball_out.png",
+          "type": "image",
+          "title": "Ball Out",
+          "description": "Referee signals the ball is out of bounds"
+        }
+      ]
+    },
+    {
+      "chunk_index": 4,
+      "text": "Referee Signals: Double Contact\n\nWhen a player touches the ball twice in succession (except during a block), the referee shows two fingers (index and middle) pointing upward.\n\nThe signal: The arm is raised and two fingers are clearly spread and visible.",
+      "headings": ["Referee Signals", "Double Contact"],
+      "media": [
+        {
+          "id": "double-touch-gesture-en",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/09_double_contact.png",
+          "type": "image",
+          "title": "Double Contact",
+          "description": "Two fingers indicate a double contact fault"
+        }
+      ]
+    },
+    {
+      "chunk_index": 5,
+      "text": "Referee Signals: Four Hits\n\nWhen a team touches the ball more than three times before sending it over the net, the referee shows four fingers.\n\nThe signal: The arm is raised and four fingers are clearly spread and visible.",
+      "headings": ["Referee Signals", "Four Hits"],
+      "media": [
+        {
+          "id": "four-hits-gesture-en",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/10_four_hits.png",
+          "type": "image",
+          "title": "Four Hits",
+          "description": "Four fingers indicate too many contacts"
+        }
+      ]
+    },
+    {
+      "chunk_index": 6,
+      "text": "Referee Signals: Net Touch\n\nWhen a player touches the net during a playing action, the referee points to the net with the corresponding hand.\n\nThe signal: The referee touches the top of the net on the side of the offending player.",
+      "headings": ["Referee Signals", "Net Touch"],
+      "media": [
+        {
+          "id": "net-touch-gesture-en",
+          "url": "https://www.fivb.com/-/media/2020/fivb%20corporate/volleyball/rules/hand%20signals/14_net_touched.png",
+          "type": "image",
+          "title": "Net Touch",
+          "description": "Referee indicates a net touch fault"
+        }
+      ]
+    },
+    {
+      "chunk_index": 7,
+      "text": "Referee Signals: Disqualification (Red + Yellow Cards Together)\n\nFor a disqualification, the referee shows both cards (red and yellow) together in one hand. The player must leave the playing area and competition zone and cannot participate for the rest of the match.\n\nThe signal: Both cards are held together in one hand above head height. This is the most severe penalty in volleyball.",
+      "headings": ["Referee Signals", "Disqualification"],
+      "media": [
+        {
+          "id": "disqualification-gesture-en",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Red_card.svg/200px-Red_card.svg.png",
+          "type": "image",
+          "title": "Disqualification",
+          "description": "Red and yellow cards together for disqualification"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "figures": 8,
+    "pages": 1,
+    "tables": 0
+  }
+}

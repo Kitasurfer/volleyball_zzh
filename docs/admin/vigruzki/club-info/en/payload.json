@@ -1,0 +1,70 @@
+{
+  "content_id": "club-info-en",
+  "title": "SKV Unterensingen Club Information",
+  "language": "en",
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "text": "Training Hall: Bettwiesenhalle Unterensingen\n\nAddress: Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen\n\nEquipment: Professional volleyball courts with state-of-the-art technology. The hall is equipped with everything needed for quality training.\n\nFacilities: Locker rooms, showers, training equipment.\n\nSeason: Indoor volleyball runs from October to April.",
+      "headings": ["Club Information", "Bettwiesenhalle Hall"],
+      "media": [
+        {
+          "id": "hall-location-en",
+          "url": "https://placehold.co/400x300/3b82f6/ffffff?text=Bettwiesenhalle",
+          "type": "image",
+          "title": "Bettwiesenhalle Unterensingen",
+          "description": "Our training hall in Unterensingen"
+        }
+      ]
+    },
+    {
+      "chunk_index": 1,
+      "text": "Indoor Training Schedule 2026\n\nMonday: 20:00 - 22:00\nLocation: Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen\n\nIndoor volleyball runs from October to April. This is the main season for indoor training.",
+      "headings": ["Club Information", "Indoor Schedule"],
+      "media": []
+    },
+    {
+      "chunk_index": 2,
+      "text": "Beach Volleyball: Beach Courts Zizishausen\n\nAddress: Beach courts Zizishausen\n\nEquipment: Professional beach facility with 3 courts. Training takes place on sand in the open air.\n\nSeason: Beach volleyball runs from April to September.\n\nBeach volleyball develops agility, endurance, and tactical thinking on the sand.",
+      "headings": ["Club Information", "Beach Volleyball"],
+      "media": [
+        {
+          "id": "beach-location-en",
+          "url": "https://placehold.co/400x300/f59e0b/ffffff?text=Beach+Zizishausen",
+          "type": "image",
+          "title": "Beach Courts Zizishausen",
+          "description": "Our beach courts for training"
+        }
+      ]
+    },
+    {
+      "chunk_index": 3,
+      "text": "Beach Volleyball Training Schedule 2026\n\nMonday: 17:00 - 20:00\nLocation: Beach courts Zizishausen\n\nWednesday: 17:00 - 20:00\nLocation: Beach courts Zizishausen\n\nBeach volleyball runs from April to September. Outdoor training on sand courts.",
+      "headings": ["Club Information", "Beach Schedule"],
+      "media": []
+    },
+    {
+      "chunk_index": 4,
+      "text": "Contact Information SKV Unterensingen\n\nClub: SKV Unterensingen Volleyball\nTeam: SG TSV Zizishausen/SKV Unterensingen\n\nFor questions about training, schedules, or joining the club, contact us through the contact form on the website.\n\nWebsite: https://skvunterensingen.netlify.app",
+      "headings": ["Club Information", "Contact"],
+      "media": []
+    },
+    {
+      "chunk_index": 5,
+      "text": "Directions to Bettwiesenhalle\n\nAddress: Schulstraße 43, 72669 Unterensingen\n\nBy car: The hall is located in the center of Unterensingen, parking is available nearby.\n\nPublic transport: Bus stop near the hall.\n\nThe hall is easy to find at Schulstraße 43.",
+      "headings": ["Club Information", "Directions to Hall"],
+      "media": []
+    },
+    {
+      "chunk_index": 6,
+      "text": "Directions to Beach Courts Zizishausen\n\nLocation: Beach courts Zizishausen\n\nThe beach courts are located in Zizishausen. It is a professional facility with 3 courts for beach volleyball.\n\nTraining takes place outdoors from April to September.",
+      "headings": ["Club Information", "Directions to Beach"],
+      "media": []
+    }
+  ],
+  "metadata": {
+    "figures": 2,
+    "pages": 1,
+    "tables": 0
+  }
+}

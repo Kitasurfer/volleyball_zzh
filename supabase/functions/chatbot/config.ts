@@ -35,10 +35,10 @@ const getCerebrasConfig = () => ({
 });
 
 const getCollectionName = () => ensureEnv('QDRANT_COLLECTION', false) ?? 'content_vectors';
-const searchLimit = 10; // How many to fetch from Qdrant
-const maxCitations = 5; // How many to show to user
+const searchLimit = 20; // Increased search limit
+const maxCitations = 5; 
 const maxOutputTokens = Number(ensureEnv('CHAT_MAX_OUTPUT_TOKENS', false) ?? '1200');
-const minRelevanceScore = Number(ensureEnv('CHAT_MIN_SCORE', false) ?? '0.25');
+const minRelevanceScore = Number(ensureEnv('CHAT_MIN_SCORE', false) ?? '0.25'); // Balanced threshold to filter low-relevance docs
 
 export {
   corsHeaders,

@@ -1,0 +1,187 @@
+{
+  "content": {
+    "count": 6,
+    "samples": [
+      {
+        "id": "aa3e544f-31b5-4892-ad26-84a0fff735f6",
+        "title": "Regeländerungen zur Saison 2025/2026",
+        "slug": "regelaenderungen-2025-2026",
+        "language": "de"
+      },
+      {
+        "id": "7226b5b9-e2b6-425a-85da-55fed4a77790",
+        "title": "Правила пляжного волейбола",
+        "slug": "pravila-plyazhnogo-voleybola",
+        "language": "ru"
+      },
+      {
+        "id": "42a90cd9-4a24-42a0-9d2f-a8f20538c05d",
+        "title": "Beachvolleyball Regeln",
+        "slug": "beachvolleyball-regeln",
+        "language": "de"
+      }
+    ],
+    "info": {
+      "id": "a1b2c3d4-e5f6-4a5b-bc6d-7e8f9a0b1c2d",
+      "title": "Жесты судей в волейболе",
+      "slug": "referee-gestures-v1",
+      "language": "ru",
+      "status": "published"
+    }
+  },
+  "recentJobs": [
+    {
+      "id": "86bfd322-7339-404a-890c-b7efa00bf97a",
+      "content_id": "a1b2c3d4-e5f6-4a5b-bc6d-7e8f9a0b1c2d",
+      "status": "failed",
+      "error": "Qdrant request failed (404): 404 page not found\n",
+      "payload": null,
+      "started_at": "2025-12-28T11:39:32.052+00:00",
+      "completed_at": "2025-12-28T11:39:33.382+00:00",
+      "created_at": "2025-12-28T10:06:13.66702+00:00"
+    },
+    {
+      "id": "bcc61f32-4705-4768-b9f0-39573c7f1b73",
+      "content_id": "3adb76fc-44ea-4792-a1ee-ddf4a2bf113a",
+      "status": "failed",
+      "error": "Qdrant request failed (404): 404 page not found\n",
+      "payload": {},
+      "started_at": "2025-12-28T10:15:00.111+00:00",
+      "completed_at": "2025-12-28T10:15:00.875+00:00",
+      "created_at": "2025-11-25T08:34:26.206787+00:00"
+    },
+    {
+      "id": "2a68c084-5e7c-4b08-a979-9d99c6e685c9",
+      "content_id": "aa3e544f-31b5-4892-ad26-84a0fff735f6",
+      "status": "completed",
+      "error": null,
+      "payload": {
+        "reason": "auto_initial_index"
+      },
+      "started_at": "2025-11-09T17:12:05.964789+00:00",
+      "completed_at": "2025-11-09T17:12:15.009177+00:00",
+      "created_at": "2025-11-09T13:16:02.500315+00:00"
+    },
+    {
+      "id": "41f232a2-d56b-4066-994b-a245b510dd94",
+      "content_id": "7226b5b9-e2b6-425a-85da-55fed4a77790",
+      "status": "completed",
+      "error": null,
+      "payload": {
+        "reason": "auto_initial_index"
+      },
+      "started_at": "2025-11-09T17:12:15.630681+00:00",
+      "completed_at": "2025-11-09T17:12:17.504449+00:00",
+      "created_at": "2025-11-09T13:16:02.500315+00:00"
+    },
+    {
+      "id": "afb884f2-8155-4d30-b20f-6440d1367fab",
+      "content_id": "42a90cd9-4a24-42a0-9d2f-a8f20538c05d",
+      "status": "completed",
+      "error": null,
+      "payload": {
+        "reason": "auto_initial_index"
+      },
+      "started_at": "2025-11-09T17:12:17.806005+00:00",
+      "completed_at": "2025-11-09T17:12:19.408308+00:00",
+      "created_at": "2025-11-09T13:16:02.500315+00:00"
+    },
+    {
+      "id": "aec23b11-3375-4a03-8370-f85491190a1b",
+      "content_id": "6718ff80-e021-4851-8660-0f2b5a2b8b7e",
+      "status": "completed",
+      "error": null,
+      "payload": {
+        "reason": "auto_initial_index"
+      },
+      "started_at": "2025-11-09T17:12:19.733345+00:00",
+      "completed_at": "2025-11-09T17:12:23.883341+00:00",
+      "created_at": "2025-11-09T13:16:02.500315+00:00"
+    }
+  ],
+  "qdrantTests": [
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.eu-west-1-0.aws.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.eu-west-1-0.aws.cloud.qdrant.io/health",
+      "keyName": "Env Key",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.eu-west-1-0.aws.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.eu-west-1-0.aws.cloud.qdrant.io/health",
+      "keyName": "Doc Key (jU)",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.eu-west-1-0.aws.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.eu-west-1-0.aws.cloud.qdrant.io/health",
+      "keyName": "Doc Key (nU)",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.europe-west3-0.gcp.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.europe-west3-0.gcp.cloud.qdrant.io/health",
+      "keyName": "Env Key",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.europe-west3-0.gcp.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.europe-west3-0.gcp.cloud.qdrant.io/health",
+      "keyName": "Doc Key (jU)",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.europe-west3-0.gcp.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.europe-west3-0.gcp.cloud.qdrant.io/health",
+      "keyName": "Doc Key (nU)",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.us-east4-0.gcp.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.us-east4-0.gcp.cloud.qdrant.io/health",
+      "keyName": "Env Key",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.us-east4-0.gcp.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.us-east4-0.gcp.cloud.qdrant.io/health",
+      "keyName": "Doc Key (jU)",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    },
+    {
+      "base": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.us-east4-0.gcp.cloud.qdrant.io",
+      "testUrl": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.us-east4-0.gcp.cloud.qdrant.io/health",
+      "keyName": "Doc Key (nU)",
+      "status": 404,
+      "ok": false,
+      "raw": "404 page not found\n"
+    }
+  ],
+  "pointsResult": {
+    "url": "https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.eu-west-1-0.aws.cloud.qdrant.io:6333/v1/collections/content_vectors/points/scroll",
+    "status": 404,
+    "data": null,
+    "raw": "404 page not found\n"
+  },
+  "env": {
+    "qdrantUrl": "https://f1aa8cc...6333",
+    "qdrantKey": "eyJhbGciOiJIUzI...3aac",
+    "collection": "content_vectors"
+  }
+}

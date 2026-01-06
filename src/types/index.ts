@@ -34,6 +34,37 @@ export interface Translation {
     sources: string;
     noSources: string;
     downloadSource: string;
+    // Voice input
+    voiceInput: string;
+    voiceListening: string;
+    voiceNotSupported: string;
+    voiceError: string;
+    // History
+    history: string;
+    historyEmpty: string;
+    historyLoad: string;
+    historyClear: string;
+    historyClearConfirm: string;
+    // Search
+    search: string;
+    searchPlaceholder: string;
+    searchNoResults: string;
+    searchResults: string;
+    // Reactions
+    helpful: string;
+    notHelpful: string;
+    thanksFeedback: string;
+    // Language
+    changeLanguage: string;
+    // Quick questions
+    quickQuestions: string;
+    suggestedQuestions: string;
+    // Errors & retry
+    errorRetry: string;
+    errorRateLimit: string;
+    retrying: string;
+    // Moderation
+    messageBlocked: string;
   };
   admin: {
     nav: {

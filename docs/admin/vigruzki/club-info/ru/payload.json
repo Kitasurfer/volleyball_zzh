@@ -1,0 +1,70 @@
+{
+  "content_id": "club-info-ru",
+  "title": "Информация о клубе SKV Unterensingen",
+  "language": "ru",
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "text": "Зал для тренировок: Bettwiesenhalle Unterensingen\n\nАдрес: Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen\n\nОборудование: Профессиональные волейбольные площадки с современными технологиями. Зал оснащён всем необходимым для качественных тренировок.\n\nУдобства: Раздевалки, душевые, тренажеры.\n\nСезон: Волейбол в зале проходит с октября по апрель.",
+      "headings": ["Информация о клубе", "Зал Bettwiesenhalle"],
+      "media": [
+        {
+          "id": "hall-location",
+          "url": "https://placehold.co/400x300/3b82f6/ffffff?text=Bettwiesenhalle",
+          "type": "image",
+          "title": "Bettwiesenhalle Unterensingen",
+          "description": "Наш тренировочный зал в Унтерензингене"
+        }
+      ]
+    },
+    {
+      "chunk_index": 1,
+      "text": "Расписание тренировок в зале 2026\n\nПонедельник: 20:00 - 22:00\nМесто: Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen\n\nВолейбол в зале проходит с октября по апрель. Это основной сезон для тренировок в помещении.",
+      "headings": ["Информация о клубе", "Расписание зала"],
+      "media": []
+    },
+    {
+      "chunk_index": 2,
+      "text": "Пляжный волейбол: Beachanlage Zizishausen\n\nАдрес: Beachanlage Zizishausen (пляжные площадки в Цицисхаузене)\n\nОборудование: Профессиональная пляжная площадка с 3 площадками. Тренировки проходят на песке под открытым небом.\n\nСезон: Пляжный волейбол проходит с апреля по сентябрь.\n\nПляжный волейбол развивает ловкость, выносливость и тактическое мышление на песке.",
+      "headings": ["Информация о клубе", "Пляжный волейбол"],
+      "media": [
+        {
+          "id": "beach-location",
+          "url": "https://placehold.co/400x300/f59e0b/ffffff?text=Beach+Zizishausen",
+          "type": "image",
+          "title": "Beachanlage Zizishausen",
+          "description": "Пляжные площадки для тренировок"
+        }
+      ]
+    },
+    {
+      "chunk_index": 3,
+      "text": "Расписание пляжного волейбола 2026\n\nПонедельник: 17:00 - 20:00\nМесто: Beachanlage Zizishausen (пляжные площадки Zizishausen)\n\nСреда: 17:00 - 20:00\nМесто: Beachanlage Zizishausen (пляжные площадки Zizishausen)\n\nПляжный волейбол проходит с апреля по сентябрь. Тренировки на открытом воздухе на песчаных площадках.",
+      "headings": ["Информация о клубе", "Расписание пляжного волейбола"],
+      "media": []
+    },
+    {
+      "chunk_index": 4,
+      "text": "Контактная информация SKV Unterensingen\n\nКлуб: SKV Unterensingen Volleyball\nКоманда: SG TSV Zizishausen/SKV Unterensingen\n\nДля вопросов о тренировках, расписании или вступлении в клуб свяжитесь с нами через контактную форму на сайте.\n\nСайт: https://skvunterensingen.netlify.app",
+      "headings": ["Информация о клубе", "Контакты"],
+      "media": []
+    },
+    {
+      "chunk_index": 5,
+      "text": "Как добраться до Bettwiesenhalle\n\nАдрес: Schulstraße 43, 72669 Unterensingen\n\nНа машине: Зал находится в центре Унтерензингена, есть парковка рядом.\n\nОбщественный транспорт: Автобусная остановка рядом с залом.\n\nЗал легко найти по адресу Schulstraße 43.",
+      "headings": ["Информация о клубе", "Как добраться до зала"],
+      "media": []
+    },
+    {
+      "chunk_index": 6,
+      "text": "Как добраться до пляжных площадок Zizishausen\n\nМесто: Beachanlage Zizishausen\n\nПляжные площадки находятся в Цицисхаузене. Это профессиональная площадка с 3 полями для пляжного волейбола.\n\nТренировки проходят на открытом воздухе с апреля по сентябрь.",
+      "headings": ["Информация о клубе", "Как добраться до пляжа"],
+      "media": []
+    }
+  ],
+  "metadata": {
+    "figures": 2,
+    "pages": 1,
+    "tables": 0
+  }
+}

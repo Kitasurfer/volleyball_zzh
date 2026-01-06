@@ -4,6 +4,7 @@ import { useLanguage } from '../lib/LanguageContext';
 import { LightboxImage } from '../components/LightboxImage';
 import { Seo } from '../components/Seo';
 import { beachSchedule2026 } from '../data/schedule';
+import { WeatherWidget } from '../components/beach/WeatherWidget';
 
 const BeachPage: React.FC = () => {
   const { language } = useLanguage();
@@ -165,6 +166,11 @@ const BeachPage: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Weather Widget */}
+        <div className="max-w-2xl mx-auto mt-12">
+          <WeatherWidget />
         </div>
       </div>
     </div>

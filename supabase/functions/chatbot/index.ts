@@ -5,6 +5,7 @@ import { fetchEmbedding, searchKnowledgeBase, mapQdrantResultToCitation } from '
 import { enrichWithSubstitutionCitations } from './substitutions.ts';
 import { buildSystemPrompt, buildChatMessages } from './prompts.ts';
 import { isGreetingOrSmallTalk, cleanAnswer } from './utils.ts';
+import { routeQuestion, getRouterInstructions } from './router.ts';
 import {
   corsHeaders,
   ensureEnv,
@@ -96,25 +97,36 @@ Deno.serve(async (req: Request) => {
   if (url.pathname.endsWith('/debug') && req.method === 'GET') {
     try {
       const collection = getCollectionName();
+      const qdrantUrl = ensureEnv('QDRANT_URL');
+      const qdrantKey = ensureEnv('QDRANT_API_KEY', false);
       
       // Get collection info
-      const infoResponse = await fetch(`${ensureEnv('QDRANT_URL')}/collections/${collection}`, {
-        headers: ensureEnv('QDRANT_API_KEY', false) ? { 'api-key': ensureEnv('QDRANT_API_KEY', false)! } : {},
+      const infoResponse = await fetch(`${qdrantUrl}/collections/${collection}`, {
+        headers: qdrantKey ? { 'api-key': qdrantKey } : {},
       });
-      const info = await infoResponse.json();
+      const infoText = await infoResponse.text();
+      let info = null;
+      try { info = JSON.parse(infoText); } catch (e) { info = { raw: infoText.substring(0, 200) }; }
       
       // Sample some points
-      const scrollResponse = await fetch(`${ensureEnv('QDRANT_URL')}/collections/${collection}/points/scroll`, {
+      const scrollResponse = await fetch(`${qdrantUrl}/collections/${collection}/points/scroll`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(ensureEnv('QDRANT_API_KEY', false) ? { 'api-key': ensureEnv('QDRANT_API_KEY', false)! } : {}),
+          ...(qdrantKey ? { 'api-key': qdrantKey } : {}),
         },
         body: JSON.stringify({ limit: 5, with_payload: true }),
       });
-      const scroll = await scrollResponse.json();
+      const scrollText = await scrollResponse.text();
+      let scroll = null;
+      try { scroll = JSON.parse(scrollText); } catch (e) { scroll = { raw: scrollText.substring(0, 200) }; }
       
-      return new Response(JSON.stringify({ collection, info, sample: scroll }, null, 2), {
+      return new Response(JSON.stringify({ 
+        collection, 
+        qdrantUrl: qdrantUrl?.substring(0, 20) + '...',
+        info, 
+        sample: scroll 
+      }, null, 2), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     } catch (error) {
@@ -237,6 +249,15 @@ Deno.serve(async (req: Request) => {
     console.log('Question:', body.question);
     console.log('Language:', language);
 
+    // Router Agent - анализирует и обогащает запрос с учётом истории чата
+    const chatHistory = body.history?.map(h => ({ role: h.role, content: h.content }));
+    const routerResult = await routeQuestion(body.question, language, chatHistory);
+    console.log('[Router] Result:', JSON.stringify(routerResult, null, 2));
+    
+    // Используем обогащённый вопрос для поиска
+    const searchQuestion = routerResult.enrichedQuestion;
+    const routerInstructions = getRouterInstructions(routerResult, language);
+
     if (!body.question || body.question.trim() === '') {
       return new Response(
         JSON.stringify({ error: { code: 'INVALID_REQUEST', message: 'Question is required' } }),
@@ -247,10 +268,10 @@ Deno.serve(async (req: Request) => {
     // Handle greetings without RAG
     if (isGreetingOrSmallTalk(body.question) && (!body.history || body.history.length === 0)) {
       const greetingResponses: Record<string, string> = {
-        ru: 'Привет! Я помощник клуба SKV Unterensingen Volleyball. Чем могу помочь? Спросите меня о правилах волейбола, расписании тренировок или информации о клубе.',
-        de: 'Hallo! Ich bin der Assistent von SKV Unterensingen Volleyball. Wie kann ich Ihnen helfen? Fragen Sie mich nach Volleyballregeln, Trainingszeiten oder Vereinsinformationen.',
-        en: 'Hello! I am the SKV Unterensingen Volleyball assistant. How can I help you? Ask me about volleyball rules, training schedules, or club information.',
-        it: 'Ciao! Sono l’assistente del club SKV Unterensingen Volleyball. Come posso aiutarti? Chiedimi delle regole della pallavolo, degli orari di allenamento o informazioni sul club.',
+        ru: 'Привет! Я помощник клуба SKV Unterensingen Volleyball. Чем могу помочь? Спросите меня о правилах волейбола, расписании тренировок, погоде для пляжного волейбола или информации о клубе.',
+        de: 'Hallo! Ich bin der Assistent von SKV Unterensingen Volleyball. Wie kann ich Ihnen helfen? Fragen Sie mich nach Volleyballregeln, Trainingszeiten, Wetter für Beachvolleyball oder Vereinsinformationen.',
+        en: 'Hello! I am the SKV Unterensingen Volleyball assistant. How can I help you? Ask me about volleyball rules, training schedules, weather for beach volleyball, or club information.',
+        it: "Ciao! Sono l'assistente del club SKV Unterensingen Volleyball. Come posso aiutarti? Chiedimi delle regole della pallavolo, degli orari di allenamento, del meteo per il beach volley o informazioni sul club.",
       };
 
       return new Response(
@@ -265,11 +286,28 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Handle direct answers from Router (e.g., weather)
+    if (routerResult.directAnswer && !routerResult.needsKnowledgeBase) {
+      console.log('[Router] Using direct answer (weather/etc)');
+      return new Response(
+        JSON.stringify({
+          data: {
+            answer: routerResult.directAnswer,
+            citations: [],
+            sessionId: body.sessionId,
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Generate embedding and search knowledge base
     let citations: Citation[] = [];
     
     try {
-      const embedding = await fetchEmbedding(body.question);
+      // Используем обогащённый вопрос от Router Agent для поиска
+      const embedding = await fetchEmbedding(searchQuestion);
+      console.log('[Search] Using enriched question:', searchQuestion);
       const results = await searchKnowledgeBase(embedding, language);
 
       console.log('Raw results from Qdrant:', results.length);
@@ -347,8 +385,9 @@ Deno.serve(async (req: Request) => {
     }
 
     // Generate answer using Cerebras
-    const messages = buildChatMessages(body.question, language, citations, body.history);
+    const messages = buildChatMessages(body.question, language, citations, body.history, routerInstructions);
     console.log('Calling Cerebras for chat completion...');
+    console.log('[Router] Instructions added:', routerInstructions ? 'yes' : 'no');
 
     const cerebrasConfig = getCerebrasConfig();
     const rawAnswer = await generateCerebrasChat(cerebrasConfig, messages, {

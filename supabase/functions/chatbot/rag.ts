@@ -33,39 +33,50 @@ const fetchEmbedding = async (text: string): Promise<number[]> => {
   return embedding;
 };
 
-// Search Qdrant knowledge base - searches WITHOUT language filter to find all relevant docs
+// Search Qdrant knowledge base - WITH language filter to return only docs in requested language
 const searchKnowledgeBase = async (
   vector: number[],
-  _language?: string // Language param kept for API compatibility but not used for filtering
+  language?: string
 ): Promise<QdrantSearchResult[]> => {
   const qdrant = getQdrantClient();
   const collection = getCollectionName();
 
-  // Search without language filter - semantic search finds relevant content regardless of language
-  console.log(`Searching Qdrant collection "${collection}" (no language filter)`);
+  console.log(`Searching Qdrant collection "${collection}" with language filter: ${language || 'none'}`);
   console.log(`Vector length: ${vector.length}, searchLimit: ${searchLimit}`);
 
   try {
-    const response = await qdrant.search(collection, {
+    const searchParams: any = {
       vector,
-      limit: searchLimit * 2, // Get more results since we're not filtering
+      limit: searchLimit,
       with_payload: true,
-    });
+    };
 
-    console.log('Qdrant response:', JSON.stringify(response).substring(0, 500));
+    // Add language filter if specified
+    if (language) {
+      searchParams.filter = {
+        must: [
+          {
+            key: 'language',
+            match: { value: language }
+          }
+        ]
+      };
+    }
 
+    const response = await qdrant.search(collection, searchParams);
+
+    console.log('Qdrant response status:', response ? 'success' : 'failed');
+    
     const results = response?.result ?? [];
 
-    console.log(`Found ${results.length} results`);
+    console.log(`Found ${results.length} results from Qdrant`);
     if (results.length > 0) {
-      console.log('Top 3:', results.slice(0, 3).map((r: QdrantSearchResult) => {
+      results.forEach((r: QdrantSearchResult, i: number) => {
         const payload = (r.payload || {}) as KnowledgePayload;
-        return {
-          score: r.score.toFixed(3),
-          lang: payload.language,
-          title: payload.title?.substring(0, 40),
-        };
-      }));
+        console.log(`Result ${i + 1}: score=${r.score.toFixed(4)}, title="${payload.title}", lang=${payload.language}, content_id=${payload.content_id}`);
+      });
+    } else {
+      console.log('No results found in Qdrant for this vector.');
     }
 
     return results;

@@ -30,6 +30,7 @@ export interface KnowledgePayload {
   download_url?: string;
   language?: string;
   origin?: unknown;
+  content_id?: string;
 }
 
 export interface HistoryMessage {

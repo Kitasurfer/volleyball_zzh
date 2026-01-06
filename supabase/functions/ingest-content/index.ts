@@ -688,6 +688,47 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Create collection endpoint: POST /ingest-content/create-collection
+  if (url.pathname.endsWith('/create-collection') && req.method === 'POST') {
+    try {
+      const qdrant = getQdrantClient();
+      const collection = getCollectionName();
+      const vectorSize = 1536; // OpenAI text-embedding-3-small dimension
+      
+      console.log(`Creating collection: ${collection} with vector size ${vectorSize}`);
+      
+      const exists = await qdrant.collectionExists(collection);
+      if (exists) {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: 'Collection already exists',
+          collection,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
+      
+      await qdrant.createCollection(collection, vectorSize);
+      
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: 'Collection created',
+        collection,
+        vectorSize,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    } catch (error) {
+      console.error('Create collection error:', error);
+      return new Response(JSON.stringify({ error: String(error) }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+  }
+
   // Direct chunk upload endpoint: POST /ingest-content/upload-chunks
   if (url.pathname.endsWith('/upload-chunks') && req.method === 'POST') {
     try {
@@ -702,6 +743,16 @@ Deno.serve(async (req: Request) => {
       }
       
       console.log(`Direct upload: ${chunks.length} chunks for content_id ${content_id}`);
+      
+      // Ensure collection exists
+      const qdrant = getQdrantClient();
+      const collection = getCollectionName();
+      const exists = await qdrant.collectionExists(collection);
+      if (!exists) {
+        console.log(`Collection ${collection} does not exist, creating...`);
+        await qdrant.createCollection(collection, 1536);
+        console.log(`Collection ${collection} created`);
+      }
       
       // Generate embeddings and upsert to Qdrant
       const validChunks = chunks.filter((c: any) => c.text && c.text.trim().length > 50);
@@ -723,6 +774,7 @@ Deno.serve(async (req: Request) => {
             title: title || 'Uploaded Document',
             snippet: chunkSnippetFromQdrant(chunk.text),
             headings: chunk.headings,
+            media: chunk.media || [],
             source_file,
             type: 'rules',
           },

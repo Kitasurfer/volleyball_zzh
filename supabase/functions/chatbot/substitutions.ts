@@ -9,21 +9,21 @@ const hasSubstitutionKeyword = (text: string): boolean => {
     'auswechslung', 'auswechslungen',
     'substitution', 'substitutions',
     'sostituzione', 'sostituzioni',
+    'жест', 'жесты', 'сигнал',
+    'schiedsrichterzeichen', 'handzeichen',
+    'referee signals', 'referee gestures',
   ];
   return keywords.some((kw) => q.includes(kw));
 };
 
 const buildSubstitutionQuery = (language: string): string => {
   if (language === 'ru') {
-    return 'Ограничения на количество обычных замен в классическом волейболе (правило 15.6: не более шести обычных замен за партию).';
+    return 'Официальные жесты и сигналы судей в волейболе (аут, мяч в поле, удаление, заслон).';
   }
   if (language === 'en') {
-    return 'Limits on the number of regular substitutions in indoor volleyball (rule 15.6: at most six regular substitutions per set).';
+    return 'Official referee signals and gestures in volleyball (out, ball in, expulsion, screening).';
   }
-  if (language === 'it') {
-    return 'Limiti sul numero di sostituzioni regolari nella pallavolo indoor (regola 15.6: al massimo sei sostituzioni regolari per set).';
-  }
-  return 'Begrenzungen für die Anzahl regulärer Auswechslungen im Volleyball (Regel 15.6: höchstens sechs reguläre Auswechslungen pro Satz).';
+  return 'Offizielle Schiedsrichterzeichen im Volleyball (Aus, Ball in, Hinausstellung, Sichtblock).';
 };
 
 const enrichWithSubstitutionCitations = async (
@@ -40,18 +40,7 @@ const enrichWithSubstitutionCitations = async (
 
     const extra = results
       .filter((item) => item.score >= minRelevanceScore)
-      .map((item) => mapQdrantResultToCitation(item) as Citation)
-      .filter((cit) => {
-        const s = (cit.snippet || '').toLowerCase();
-        return (
-          s.includes('шест') ||
-          s.includes('sechs') ||
-          s.includes('six') ||
-          s.includes(' sei ') ||
-          s.includes(' 6 ') ||
-          s.includes('\n6')
-        );
-      });
+      .map((item) => mapQdrantResultToCitation(item) as Citation);
 
     if (extra.length === 0) return citations;
 

@@ -1,0 +1,70 @@
+{
+  "content_id": "club-info-de",
+  "title": "Informationen über SKV Unterensingen",
+  "language": "de",
+  "chunks": [
+    {
+      "chunk_index": 0,
+      "text": "Trainingshalle: Bettwiesenhalle Unterensingen\n\nAdresse: Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen\n\nAusstattung: Professionelle Volleyballfelder mit modernster Technik. Die Halle ist mit allem ausgestattet, was für qualitativ hochwertiges Training benötigt wird.\n\nEinrichtungen: Umkleideräume, Duschen, Trainingsgeräte.\n\nSaison: Hallenvolleyball findet von Oktober bis April statt.",
+      "headings": ["Vereinsinformationen", "Bettwiesenhalle"],
+      "media": [
+        {
+          "id": "hall-location-de",
+          "url": "https://placehold.co/400x300/3b82f6/ffffff?text=Bettwiesenhalle",
+          "type": "image",
+          "title": "Bettwiesenhalle Unterensingen",
+          "description": "Unsere Trainingshalle in Unterensingen"
+        }
+      ]
+    },
+    {
+      "chunk_index": 1,
+      "text": "Trainingszeiten Halle 2026\n\nMontag: 20:00 - 22:00\nOrt: Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen\n\nHallenvolleyball findet von Oktober bis April statt. Dies ist die Hauptsaison für Indoor-Training.",
+      "headings": ["Vereinsinformationen", "Trainingszeiten Halle"],
+      "media": []
+    },
+    {
+      "chunk_index": 2,
+      "text": "Beach Volleyball: Beachanlage Zizishausen\n\nAdresse: Beachanlage Zizishausen\n\nAusstattung: Professionelle Beachanlage mit 3 Feldern. Training findet auf Sand unter freiem Himmel statt.\n\nSaison: Beachvolleyball findet von April bis September statt.\n\nBeachvolleyball fördert Beweglichkeit, Ausdauer und taktisches Denken im Sand.",
+      "headings": ["Vereinsinformationen", "Beach Volleyball"],
+      "media": [
+        {
+          "id": "beach-location-de",
+          "url": "https://placehold.co/400x300/f59e0b/ffffff?text=Beach+Zizishausen",
+          "type": "image",
+          "title": "Beachanlage Zizishausen",
+          "description": "Unsere Beachanlage für Training"
+        }
+      ]
+    },
+    {
+      "chunk_index": 3,
+      "text": "Trainingszeiten Beach Volleyball 2026\n\nMontag: 17:00 - 20:00\nOrt: Beachanlage Zizishausen\n\nMittwoch: 17:00 - 20:00\nOrt: Beachanlage Zizishausen\n\nBeachvolleyball findet von April bis September statt. Training im Freien auf Sandplätzen.",
+      "headings": ["Vereinsinformationen", "Trainingszeiten Beach"],
+      "media": []
+    },
+    {
+      "chunk_index": 4,
+      "text": "Kontaktinformationen SKV Unterensingen\n\nVerein: SKV Unterensingen Volleyball\nMannschaft: SG TSV Zizishausen/SKV Unterensingen\n\nFür Fragen zu Training, Trainingszeiten oder Vereinsbeitritt kontaktieren Sie uns über das Kontaktformular auf der Website.\n\nWebsite: https://skvunterensingen.netlify.app",
+      "headings": ["Vereinsinformationen", "Kontakt"],
+      "media": []
+    },
+    {
+      "chunk_index": 5,
+      "text": "Anfahrt zur Bettwiesenhalle\n\nAdresse: Schulstraße 43, 72669 Unterensingen\n\nMit dem Auto: Die Halle befindet sich im Zentrum von Unterensingen, Parkplätze sind vorhanden.\n\nÖffentliche Verkehrsmittel: Bushaltestelle in der Nähe der Halle.\n\nDie Halle ist leicht zu finden unter der Adresse Schulstraße 43.",
+      "headings": ["Vereinsinformationen", "Anfahrt Halle"],
+      "media": []
+    },
+    {
+      "chunk_index": 6,
+      "text": "Anfahrt zur Beachanlage Zizishausen\n\nOrt: Beachanlage Zizishausen\n\nDie Beachanlage befindet sich in Zizishausen. Es ist eine professionelle Anlage mit 3 Feldern für Beachvolleyball.\n\nTraining findet im Freien von April bis September statt.",
+      "headings": ["Vereinsinformationen", "Anfahrt Beach"],
+      "media": []
+    }
+  ],
+  "metadata": {
+    "figures": 2,
+    "pages": 1,
+    "tables": 0
+  }
+}

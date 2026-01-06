@@ -5,7 +5,7 @@ import { createRequire } from 'module'
 import sourceIdentifierPlugin from 'vite-plugin-source-identifier'
 
 const require = createRequire(import.meta.url)
-const vitePrerender: any = require('vite-plugin-prerender')
+const vitePrerender = require('vite-plugin-prerender') as typeof import('vite-plugin-prerender')
 
 function createPrerenderPlugin() {
   const PuppeteerRenderer = vitePrerender.PuppeteerRenderer

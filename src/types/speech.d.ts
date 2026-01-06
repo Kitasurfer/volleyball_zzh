@@ -62,8 +62,8 @@ declare global {
     webkitSpeechRecognition: SpeechRecognitionConstructor;
   }
   
-  var SpeechRecognition: SpeechRecognitionConstructor;
-  var webkitSpeechRecognition: SpeechRecognitionConstructor;
+  const SpeechRecognition: SpeechRecognitionConstructor;
+  const webkitSpeechRecognition: SpeechRecognitionConstructor;
 }
 
 export {};

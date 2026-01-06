@@ -41,8 +41,8 @@ const translations = {
 // Contextual recommendations based on keywords
 const getContextualRecommendations = (messages: ChatMessage[], language: Language): Recommendation[] => {
   const allText = messages
-    .filter(m => m.role === 'user')
-    .map(m => m.content.toLowerCase())
+    .filter(m => m.sender === 'user')
+    .map(m => m.text.toLowerCase())
     .join(' ');
 
   const recommendations: Recommendation[] = [];

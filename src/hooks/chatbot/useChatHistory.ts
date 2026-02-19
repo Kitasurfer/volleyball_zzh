@@ -115,7 +115,7 @@ export function useChatHistory(): UseChatHistoryReturn {
       return updated;
     });
 
-    return currentConversationId || `conv_${Date.now()}`;
+    return currentConversationId || '';
   }, [currentConversationId]);
 
   const loadConversation = useCallback((id: string): ChatMessage[] | null => {

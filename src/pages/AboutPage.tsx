@@ -20,12 +20,13 @@ const AboutPage: React.FC = () => {
         },
         {
           title: 'Trainingsphilosophie',
-          text: 'Unser Trainingsansatz basiert auf international anerkannten Methoden, die von der FIVB entwickelt wurden. Wir folgen dem Prinzip "trainiere wie du spielst".',
+          text:
+            'Unser Trainingsansatz basiert auf international anerkannten Methoden und intensiven Spielsimulationen. Wir folgen dem Prinzip "trainiere wie du spielst".',
         },
         {
-          title: 'Chef-Trainer: Heinrich Treibert',
+          title: 'Übungsleiter: Heinrich Treubert',
           text:
-            'Heinrich Treibert leitet die Volleyballprogramme in der Region und ist für seinen professionellen Ansatz in der Spielerentwicklung bekannt. Er verbindet langjährige Trainererfahrung mit einem tiefen Verständnis für Spielprozesse und Teamdynamik.',
+            'Heinrich Treubert ist unser Übungsleiter und verbindet langjährige Trainererfahrung mit einem tiefen Verständnis für Spielprozesse und Teamdynamik.',
         },
       ],
       location: 'Standort: Unterensingen, Baden-Württemberg',
@@ -44,12 +45,13 @@ const AboutPage: React.FC = () => {
         },
         {
           title: 'Training Philosophy',
-          text: 'Our training approach is based on internationally recognized methods developed by the FIVB. We follow the principle "train like you play".',
+          text:
+            'Our training approach is built on internationally recognized methods and intensive game simulations. We follow the principle "train like you play".',
         },
         {
-          title: 'Head Coach: Heinrich Treibert',
+          title: 'Lead Instructor: Heinrich Treubert',
           text:
-            'Heinrich Treibert leads the volleyball programs in the region and is known for his professional approach to player development. He combines many years of coaching experience with a deep understanding of game processes and team dynamics.',
+            'Heinrich Treubert serves as our lead instructor, combining many years of coaching experience with a deep understanding of game flow and team dynamics.',
         },
       ],
       location: 'Location: Unterensingen, Baden-Württemberg',
@@ -68,12 +70,13 @@ const AboutPage: React.FC = () => {
         },
         {
           title: 'Тренировочная философия',
-          text: 'Наш тренировочный подход основан на международно признанных методах, разработанных FIVB. Мы следуем принципу "тренируйся как играешь".',
+          text:
+            'Наш тренировочный подход основан на международно признанных методиках и интенсивных игровых симуляциях. Мы следуем принципу "тренируйся как играешь".',
         },
         {
-          title: 'Главный тренер: Heinrich Treibert',
+          title: 'Главный инструктор: Heinrich Treubert',
           text:
-            'Heinrich Treibert руководит волейбольными программами в регионе и известен своим профессиональным подходом к развитию игроков. Он сочетает многолетний тренерский опыт с глубоким пониманием игровых процессов и командной динамики.',
+            'Heinrich Treubert — наш главный инструктор, который сочетает многолетний тренерский опыт с глубоким пониманием игровых процессов и командной динамики.',
         },
       ],
       location: 'Расположение: Унтерензинген, Баден-Вюртемберг',
@@ -94,12 +97,12 @@ const AboutPage: React.FC = () => {
         {
           title: 'Filosofia di allenamento',
           text:
-            'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale sviluppati dalla FIVB. Seguiamo il principio "allenati come giochi".',
+            'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale e su intense simulazioni di gioco. Seguiamo il principio "allenati come giochi".',
         },
         {
-          title: 'Head coach: Heinrich Treibert',
+          title: 'Capo istruttore: Heinrich Treubert',
           text:
-            'Heinrich Treibert guida i programmi di pallavolo nella regione ed è conosciuto per il suo approccio professionale allo sviluppo dei giocatori, unendo molti anni di esperienza con una profonda comprensione delle dinamiche di squadra.',
+            'Heinrich Treubert è il nostro capo istruttore e unisce molti anni di esperienza da allenatore a una profonda comprensione dei flussi di gioco e della dinamica di squadra.',
         },
       ],
       location: 'Luogo: Unterensingen, Baden-Württemberg',
@@ -111,7 +114,7 @@ const AboutPage: React.FC = () => {
       {
         title: 'Geschichte und Philosophie',
         text:
-          'Im Sport- und Kulturverein Unterensingen e.V. bedeutet Sport vor allem Freude, Bewegung und positive Emotionen. Bei uns kann jeder dem Alltag entfliehen, neue Energie tanken und Spaß am Spiel und am Miteinander erleben. Wir bringen Menschen aller Altersklassen und Leistungsstufen zusammen. Uns ist wichtig, dass sich jeder als Teil des Teams fühlt, sich in seinem eigenen Tempo entwickelt und jeden Fortschritt genießt. Sport für Körper, Kopf und Seele – so verstehen wir unsere Philosophie. Gemeinsam aktiv. Gemeinsam stark. Gemeinsam Unterensingen.',
+          'Im Sport- und Kulturverein Unterensingen e.V. bedeutet Sport vor allem Freude, Bewegung und positive Emotionen. Bei uns kann jeder dem Alltag entfliehen, neue Energie tanken und Spaß am Spiel und am Miteinander erleben. Wir bringen Menschen aller Altersklassen, Leistungsstufen und Nationalitäten zusammen. Vielfalt verstehen wir als Stärke – unterschiedliche Kulturen und Hintergründe bereichern unser Vereinsleben. Uns ist wichtig, dass sich jeder als Teil des Teams fühlt, sich in seinem eigenen Tempo entwickelt und jeden Fortschritt genießt. Sport für Körper, Kopf und Seele – so verstehen wir unsere Philosophie. Gemeinsam aktiv. Gemeinsam stark. Gemeinsam Unterensingen.',
       },
       {
         title: 'Unsere Mission – Sport mit Spaß',
@@ -121,19 +124,19 @@ const AboutPage: React.FC = () => {
       {
         title: 'Trainingsphilosophie',
         text:
-          'Unser Trainingsansatz basiert auf international anerkannten Methoden, die von der FIVB entwickelt wurden. Wir folgen dem Prinzip "trainiere wie du spielst".',
+          'Unser Trainingsansatz basiert auf international anerkannten Methoden und intensiven Spielsimulationen. Wir folgen dem Prinzip "trainiere wie du spielst".',
       },
       {
-        title: 'Chef-Trainer: Heinrich Treibert',
+        title: 'Übungsleiter: Heinrich Treubert',
         text:
-          'Heinrich Treibert leitet die Volleyballprogramme in der Region und ist für seinen professionellen Ansatz in der Spielerentwicklung bekannt. Er verbindet langjährige Trainererfahrung mit einem tiefen Verständnis für Spielprozesse und Teamdynamik.',
+          'Heinrich Treubert ist unser Übungsleiter und verbindet langjährige Trainererfahrung mit einem tiefen Verständnis für Spielprozesse und Teamdynamik.',
       },
     ],
     en: [
       {
         title: 'History and Philosophy',
         text:
-          'At the Sports and Culture Club Unterensingen e.V., sports are about joy, movement, and positive emotions. Here, everyone can take a break from everyday life, recharge and enjoy the game and the community. We unite people of all ages and skill levels. It matters to us that everyone feels part of the team, develops at their own pace, and enjoys every step of progress. Sports for the body, mind, and soul — that’s our philosophy. Active together. Strong together. Together Unterensingen.',
+          'At the Sports and Culture Club Unterensingen e.V., sport means joy, movement, and positive emotions above all. Here, everyone can escape everyday life, recharge, and enjoy the game and being together. We bring together people of all ages, performance levels, and nationalities. We see diversity as a strength — different cultures and backgrounds enrich our club life. It is important to us that everyone feels part of the team, develops at their own pace, and enjoys every bit of progress. Sport for body, mind, and soul — that is how we understand our philosophy. Active together. Strong together. Together Unterensingen.',
       },
       {
         title: 'Our Mission – Sport with Enjoyment',
@@ -143,19 +146,19 @@ const AboutPage: React.FC = () => {
       {
         title: 'Training Philosophy',
         text:
-          'Our training approach is based on internationally recognized methods developed by the FIVB. We follow the principle "train like you play".',
+          'Our training approach is built on internationally recognized methods and intensive game simulations. We follow the principle "train like you play".',
       },
       {
-        title: 'Head Coach: Heinrich Treibert',
+        title: 'Lead Instructor: Heinrich Treubert',
         text:
-          'Heinrich Treibert leads the volleyball programs in the region and is known for his professional approach to player development. He combines many years of coaching experience with a deep understanding of game processes and team dynamics.',
+          'Heinrich Treubert serves as our lead instructor, combining many years of coaching experience with a deep understanding of game flow and team dynamics.',
       },
     ],
     ru: [
       {
         title: 'История и философия',
         text:
-          'В спортивном и культурном клубе Унтерензингена e.V. спорт — это удовольствие, движение и яркие эмоции. У нас каждый может отвлечься от повседневных забот, зарядиться энергией и получить радость от игры и общения. Мы объединяем людей всех возрастов и уровней подготовки. Нам важно, чтобы каждый чувствовал себя частью команды, развивался в своём темпе и наслаждался каждым шагом вперёд. Спорт для тела, головы и души — так мы видим свою философию. Вместе активные. Вместе сильные. Вместе — Унтерензинген.',
+          'В спортивном и культурном клубе Unterensingen e.V. спорт — это прежде всего радость, движение и позитивные эмоции. У нас каждый может отвлечься от повседневных забот, зарядиться энергией и получить удовольствие от игры и общения. Мы объединяем людей всех возрастов, уровней мастерства и национальностей. Разнообразие мы считаем нашей силой — разные культуры и истории делают жизнь клуба богаче. Нам важно, чтобы каждый чувствовал себя частью команды, развивался в своём темпе и радовался каждому прогрессу. Спорт для тела, ума и души — так мы понимаем нашу философию. Вместе активные. Вместе сильные. Вместе — Унтерензинген.',
       },
       {
         title: '⭐ Наша миссия — спорт с удовольствием',
@@ -165,19 +168,19 @@ const AboutPage: React.FC = () => {
       {
         title: 'Тренировочная философия',
         text:
-          'Наш тренировочный подход основан на международно признанных методах, разработанных FIVB. Мы следуем принципу "тренируйся как играешь".',
+          'Наш тренировочный подход основан на международно признанных методиках и интенсивных игровых симуляциях. Мы следуем принципу "тренируйся как играешь".',
       },
       {
-        title: 'Главный тренер: Heinrich Treibert',
+        title: 'Главный инструктор: Heinrich Treubert',
         text:
-          'Heinrich Treibert руководит волейбольными программами в регионе и известен своим профессиональным подходом к развитию игроков. Он сочетает многолетний тренерский опыт с глубоким пониманием игровых процессов и командной динамики.',
+          'Heinrich Treubert — наш главный инструктор, который сочетает многолетний тренерский опыт с глубоким пониманием игровых процессов и командной динамики.',
       },
     ],
     it: [
       {
         title: 'Storia e filosofia',
         text:
-          'Nel club sportivo e culturale Unterensingen e.V. lo sport significa soprattutto gioia, movimento ed emozioni positive. Riuniamo persone di tutte le età e livelli: ognuno può svilupparsi al proprio ritmo e godersi ogni passo avanti.',
+          'Nel club sportivo e culturale Unterensingen e.V. lo sport significa soprattutto gioia, movimento ed emozioni positive. Qui ognuno può staccare dalla routine quotidiana, ricaricarsi e godersi il gioco e lo stare insieme. Riuniamo persone di tutte le età, livelli e nazionalità. Consideriamo la diversità una forza: culture e background differenti arricchiscono la vita del nostro club. Per noi è importante che tutti si sentano parte della squadra, si sviluppino al proprio ritmo e apprezzino ogni progresso. Sport per il corpo, la mente e l’anima: è così che interpretiamo la nostra filosofia. Attivi insieme. Forti insieme. Insieme Unterensingen.',
       },
       {
         title: 'La nostra missione – sport con piacere',
@@ -187,12 +190,12 @@ const AboutPage: React.FC = () => {
       {
         title: 'Filosofia di allenamento',
         text:
-          'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale sviluppati dalla FIVB. Seguiamo il principio "allenati come giochi".',
+          'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale e su intense simulazioni di gioco. Seguiamo il principio "allenati come giochi".',
       },
       {
-        title: 'Head coach: Heinrich Treibert',
+        title: 'Capo istruttore: Heinrich Treubert',
         text:
-          'Heinrich Treibert guida i programmi di pallavolo nella regione ed è conosciuto per il suo approccio professionale allo sviluppo dei giocatori. Combina molti anni di esperienza con una profonda comprensione dei processi di gioco e della dinamica di squadra.',
+          'Heinrich Treubert è il nostro capo istruttore e unisce molti anni di esperienza da allenatore a una profonda comprensione dei flussi di gioco e della dinamica di squadra.',
       },
     ],
   } as const;

@@ -14,10 +14,10 @@ const TrainingPage: React.FC = () => {
   const content = {
     de: {
       title: 'Training & Videos',
-      description: 'Professionelle Trainingsmethoden basierend auf FIVB-Standards',
+      description: 'Professionelle, aktuelle Trainingsmethoden nach internationalen Standards',
       philosophy: 'Trainingsphilosophie',
       philosophyText:
-        'Unser Trainingsansatz basiert auf international anerkannten Methoden, die von der FIVB entwickelt wurden. Wir folgen dem Prinzip "trainiere wie du spielst" - unsere Übungen spiegeln echte Spielsituationen wider.',
+        'Unser Trainingsansatz basiert auf international anerkannten Methoden und aktuellen Best Practices. Wir folgen dem Prinzip "trainiere wie du spielst" – unsere Übungen spiegeln echte Spielsituationen wider.',
       principles: [
         'Technische Grundlagen perfektionieren',
         'Strategisches Denken entwickeln',
@@ -32,10 +32,10 @@ const TrainingPage: React.FC = () => {
     },
     en: {
       title: 'Training & Videos',
-      description: 'Professional training methods based on FIVB standards',
+      description: 'Professional, up-to-date training methods aligned with international standards',
       philosophy: 'Training Philosophy',
       philosophyText:
-        'Our training approach is based on internationally recognized methods developed by the FIVB. We follow the principle "train like you play" - our exercises mirror real game situations.',
+        'Our training approach is built on internationally recognized methods and current best practices. We follow the principle "train like you play" – our exercises mirror real game situations.',
       principles: [
         'Perfect technical fundamentals',
         'Develop strategic thinking',
@@ -50,10 +50,10 @@ const TrainingPage: React.FC = () => {
     },
     ru: {
       title: 'Тренировки и видео',
-      description: 'Профессиональные методики на основе стандартов FIVB',
+      description: 'Профессиональные и актуальные методики по международным стандартам',
       philosophy: 'Тренировочная философия',
       philosophyText:
-        'Наш тренировочный подход основан на международно признанных методах, разработанных FIVB. Мы следуем принципу "тренируйся как играешь" - наши упражнения отражают реальные игровые ситуации.',
+        'Наш тренировочный подход основан на международно признанных методиках и актуальных best practices. Мы следуем принципу "тренируйся как играешь" – наши упражнения отражают реальные игровые ситуации.',
       principles: [
         'Оттачивание технических основ',
         'Развитие стратегического мышления',
@@ -68,10 +68,10 @@ const TrainingPage: React.FC = () => {
     },
     it: {
       title: 'Allenamenti e video',
-      description: 'Metodi di allenamento professionali basati sugli standard FIVB',
+      description: 'Metodi di allenamento professionali e aggiornati secondo gli standard internazionali',
       philosophy: 'Filosofia di allenamento',
       philosophyText:
-        'Il nostro approccio all’allenamento si basa su metodi riconosciuti a livello internazionale sviluppati dalla FIVB. Seguiamo il principio "allenati come giochi" – i nostri esercizi rispecchiano situazioni di gioco reali.',
+        'Il nostro approccio all’allenamento si fonda su metodi riconosciuti a livello internazionale e sulle migliori pratiche attuali. Seguiamo il principio "allenati come giochi" – i nostri esercizi rispecchiano situazioni di gioco reali.',
       principles: [
         'Perfezionare le basi tecniche',
         'Sviluppare il pensiero tattico',

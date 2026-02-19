@@ -12,6 +12,10 @@ const HallPage: React.FC = () => {
     de: {
       title: 'Bettwiesenhalle Unterensingen',
       description: 'Unser Trainingsort in Unterensingen - moderne Ausstattung für professionelles Training',
+      mapTitle: 'Anfahrt & Karte',
+      addressLabel: 'Adresse',
+      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      mapCta: 'Route in Google Maps öffnen',
       sections: [
         { title: 'Ausstattung', text: 'Professionelle Volleyballfelder mit modernster Technik', icon: Dumbbell },
         { title: 'Adresse', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen', icon: MapPin },
@@ -23,6 +27,10 @@ const HallPage: React.FC = () => {
     en: {
       title: 'Bettwiesenhalle Unterensingen',
       description: 'Our training venue in Unterensingen - modern equipment for professional training',
+      mapTitle: 'Directions & Map',
+      addressLabel: 'Address',
+      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      mapCta: 'Open in Google Maps',
       sections: [
         { title: 'Equipment', text: 'Professional volleyball courts with state-of-the-art technology', icon: Dumbbell },
         { title: 'Address', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen', icon: MapPin },
@@ -34,6 +42,10 @@ const HallPage: React.FC = () => {
     ru: {
       title: 'Зал Bettwiesenhalle Unterensingen',
       description: 'Наш тренировочный зал в Унтерензингене — современное оборудование для профессиональных тренировок',
+      mapTitle: 'Адрес и карта',
+      addressLabel: 'Адрес',
+      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      mapCta: 'Открыть маршрут в Google Maps',
       sections: [
         { title: 'Оборудование', text: 'Профессиональные волейбольные площадки с современными технологиями', icon: Dumbbell },
         { title: 'Адрес', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen', icon: MapPin },
@@ -46,6 +58,10 @@ const HallPage: React.FC = () => {
       title: 'Bettwiesenhalle Unterensingen',
       description:
         'La nostra palestra a Unterensingen – attrezzatura moderna per allenamenti professionali',
+      mapTitle: 'Indirizzo e mappa',
+      addressLabel: 'Indirizzo',
+      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      mapCta: 'Apri in Google Maps',
       sections: [
         {
           title: 'Attrezzatura',
@@ -171,6 +187,41 @@ const HallPage: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Map Section */}
+        <div className="mt-16">
+          <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow-lg border border-neutral-100 overflow-hidden">
+            <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-primary-50 to-white">
+              <h2 className="text-xl font-semibold text-primary-900">{t.mapTitle}</h2>
+              <p className="text-sm text-neutral-600">{t.addressLabel}: {t.address}</p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-5">
+              <div className="p-6 space-y-3 lg:col-span-2">
+                <p className="text-body text-neutral-800 font-semibold">{t.address}</p>
+                <a
+                  href="https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
+                >
+                  {t.mapCta} →
+                </a>
+              </div>
+              <div className="lg:col-span-3 h-80 w-full border-l border-neutral-100">
+                <iframe
+                  src="https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Hall location map"
+                ></iframe>
+              </div>
             </div>
           </div>
         </div>

@@ -6,6 +6,8 @@ import { Seo } from '../components/Seo';
 import { beachSchedule2026 } from '../data/schedule';
 import { WeatherWidget } from '../components/beach/WeatherWidget';
 
+const BEACH_FACILITY_MAP_URL = 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen&output=embed';
+
 const BeachPage: React.FC = () => {
   const { language } = useLanguage();
 
@@ -13,41 +15,73 @@ const BeachPage: React.FC = () => {
     de: {
       title: 'Beach Volleyball',
       description: 'Outdoor-Training auf Sand',
-      text: 'Beachvolleyball fördert Beweglichkeit, Ausdauer und taktisches Denken im Sand. Unsere Beachanlage bietet optimale Bedingungen für Training und Spaß.',
+      text: 'Beachvolleyball – Sonne, Sand und Action. Schnelle Ballwechsel, Bewegung im Sand und echtes Teamplay. Wir spielen 2x2 und 3x3 – Mixed-Teams sind herzlich willkommen. Im Mittelpunkt stehen Dynamik und Spaß am Spiel.',
       scheduleTitle: 'Trainingszeiten 2026',
       scheduleSubtitle: 'Beachvolleyball (April - September)',
       features: [
         { icon: Sun, title: 'Outdoor', text: 'Training unter freiem Himmel' },
         { icon: Waves, title: 'Sandplätze', text: 'Professionelle Beachanlage mit 3 Feldern' },
       ],
+      facility: {
+        title: 'Beachvolleyball-Anlage',
+        operatedBy: 'Die Beachvolleyball-Anlagen werden vom TSV Zizishausen betrieben.',
+        usage: 'Unsere Teams nutzen die Plätze im Rahmen einer partnerschaftlichen Kooperation.',
+        addressLabel: 'Adresse',
+        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        mapLabel: 'Karte',
+        linkIntro: 'Weitere Informationen zur Anlage finden Sie hier:',
+        linkText: 'Zur TSV-Zizishausen-Seite',
+      },
     },
     en: {
       title: 'Beach Volleyball',
       description: 'Outdoor training on sand',
-      text: 'Beach volleyball develops agility, endurance, and tactical thinking on the sand. Our beach facility offers optimal conditions for training and fun.',
+      text:
+        'Beach volleyball means sun, sand, and action. Fast rallies, movement in the sand, and real teamwork. We play 2x2 and 3x3, and mixed teams are warmly welcome. The focus is on dynamism and the joy of the game.',
       scheduleTitle: 'Training Schedule 2026',
       scheduleSubtitle: 'Beach Volleyball (April - September)',
       features: [
         { icon: Sun, title: 'Outdoor', text: 'Training in the open air' },
         { icon: Waves, title: 'Sand Courts', text: 'Professional beach facility with 3 courts' },
       ],
+      facility: {
+        title: 'Beach Volleyball Facility',
+        operatedBy: 'The beach volleyball courts are operated by TSV Zizishausen.',
+        usage: 'Our teams use the courts as part of a collaborative partnership.',
+        addressLabel: 'Address',
+        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        mapLabel: 'Map',
+        linkIntro: 'Find more information about the facility here:',
+        linkText: 'Visit the TSV Zizishausen page',
+      },
     },
     ru: {
       title: 'Пляжный волейбол',
       description: 'Тренировки на песке',
-      text: 'Пляжный волейбол развивает ловкость, выносливость и тактическое мышление на песке. Наша площадка предлагает оптимальные условия для тренировок и отдыха.',
+      text:
+        'Пляжный волейбол — это солнце, песок и драйв. Быстрые розыгрыши, движение по песку и настоящее командное взаимодействие. Играем 2х2 и 3х3, смешанные команды всегда приветствуются. В центре внимания — динамика и удовольствие от игры.',
       scheduleTitle: 'Расписание тренировок 2026',
       scheduleSubtitle: 'Пляжный волейбол (апрель - сентябрь)',
       features: [
         { icon: Sun, title: 'На открытом воздухе', text: 'Тренировки под открытым небом' },
         { icon: Waves, title: 'Песчаные площадки', text: 'Профессиональная пляжная площадка с 3 площадками' },
       ],
+      facility: {
+        title: 'Пляжный комплекс',
+        operatedBy: 'Площадки пляжного волейбола управляются TSV Zizishausen.',
+        usage: 'Наши команды используют эти площадки в рамках партнёрского сотрудничества.',
+        addressLabel: 'Адрес',
+        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        mapLabel: 'Карта',
+        linkIntro: 'Подробнее о площадке:',
+        linkText: 'Сайт TSV Zizishausen',
+      },
     },
     it: {
       title: 'Beach Volleyball',
       description: 'Allenamenti all’aperto sulla sabbia',
       text:
-        'Il beach volley sviluppa agilità, resistenza e pensiero tattico sulla sabbia. Il nostro impianto beach offre condizioni ottimali per allenamento e divertimento.',
+        'Beach volley: sole, sabbia e azione. Scambi veloci, movimento sulla sabbia e vero gioco di squadra. Giochiamo 2x2 e 3x3, le squadre miste sono sempre benvenute. Al centro ci sono dinamica ed entusiasmo per il gioco.',
       scheduleTitle: 'Orari allenamenti 2026',
       scheduleSubtitle: 'Beach volley (aprile - settembre)',
       features: [
@@ -58,6 +92,16 @@ const BeachPage: React.FC = () => {
           text: 'Impianto beach professionale con 3 campi',
         },
       ],
+      facility: {
+        title: 'Impianto di beach volley',
+        operatedBy: 'I campi da beach volley sono gestiti dal TSV Zizishausen.',
+        usage: 'Le nostre squadre utilizzano i campi nell’ambito di una collaborazione partner.',
+        addressLabel: 'Indirizzo',
+        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        mapLabel: 'Mappa',
+        linkIntro: "Ulteriori informazioni sull'impianto:",
+        linkText: 'Vai al sito TSV Zizishausen',
+      },
     },
   };
 
@@ -165,6 +209,46 @@ const BeachPage: React.FC = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* Facility Info */}
+        <div className="mt-16 max-w-4xl mx-auto space-y-6">
+          <div className="bg-white rounded-2xl shadow-lg border border-amber-100 p-8 space-y-4">
+            <h2 className="text-2xl font-semibold text-primary-900">{t.facility.title}</h2>
+            <p className="text-neutral-700">{t.facility.operatedBy}</p>
+            <p className="text-neutral-700">{t.facility.usage}</p>
+            <div>
+              <p className="text-sm uppercase tracking-wide text-neutral-500">{t.facility.addressLabel}</p>
+              <p className="text-body text-neutral-900 font-medium">{t.facility.address}</p>
+            </div>
+            <div>
+              <p className="text-sm uppercase tracking-wide text-neutral-500">{t.facility.mapLabel}</p>
+              <p className="text-neutral-900 font-medium">Auf d. Insel 1, 72622 Nürtingen (TSV Zizishausen)</p>
+            </div>
+            <div className="pt-2">
+              <p className="text-neutral-700">{t.facility.linkIntro}</p>
+              <a
+                href="https://skvunterensingen.de/volleyball/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 mt-2 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
+              >
+                {t.facility.linkText} →
+              </a>
+            </div>
+          </div>
+          <div className="w-full h-80 bg-neutral-100 rounded-2xl overflow-hidden shadow-lg border border-amber-100">
+            <iframe
+              src={BEACH_FACILITY_MAP_URL}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Beach volleyball map"
+            ></iframe>
           </div>
         </div>
 

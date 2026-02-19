@@ -3,6 +3,16 @@ import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, Download, Info } from 'l
 import { Button, Dialog, DialogClose, DialogContent } from '../ui';
 import type { GalleryImage } from '../../hooks/useGalleryImages';
 
+type LocationBlock = {
+  title: string;
+  addressLabel: string;
+  address: string;
+  mapLabel: string;
+  mapEmbed: string;
+  mapLink: string;
+  cta: string;
+};
+
 interface GalleryLightboxProps {
   open: boolean;
   images: GalleryImage[];
@@ -11,6 +21,7 @@ interface GalleryLightboxProps {
   onPrevious: () => void;
   onNext: () => void;
   navigationHelp: string;
+  locationBlock?: LocationBlock | null;
 }
 
 const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
@@ -21,6 +32,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   onPrevious,
   onNext,
   navigationHelp,
+  locationBlock,
 }) => {
   const [zoom, setZoom] = useState(1);
   const [showInfo, setShowInfo] = useState(false);
@@ -219,6 +231,37 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                 </figcaption>
               )}
             </figure>
+          )}
+
+          {/* Location block inside lightbox */}
+          {locationBlock && (
+            <div className="absolute left-6 bottom-24 z-30 w-[320px] max-w-[90vw] space-y-3 rounded-xl border border-white/15 bg-black/70 p-4 shadow-lg backdrop-blur">
+              <div className="space-y-1">
+                <h3 className="text-lg font-semibold text-white">{locationBlock.title}</h3>
+                <p className="text-[11px] uppercase tracking-wide text-white/60">{locationBlock.addressLabel}</p>
+                <p className="text-sm font-medium text-white leading-snug">{locationBlock.address}</p>
+              </div>
+              <a
+                href={locationBlock.mapLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-accent-200 hover:text-accent-100 text-sm font-semibold transition-colors"
+              >
+                {locationBlock.cta} →
+              </a>
+              <div className="h-36 w-full overflow-hidden rounded-lg border border-white/10 bg-black/40">
+                <iframe
+                  src={locationBlock.mapEmbed}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title={locationBlock.title}
+                ></iframe>
+              </div>
+            </div>
           )}
 
           {/* Navigation Arrows */}

@@ -14,6 +14,7 @@ const GalleryPage: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const { images, albums, loading, error } = useGalleryImages();
   const [activeImages, setActiveImages] = useState<GalleryImage[]>([]);
+  const [selectedAlbumCategory, setSelectedAlbumCategory] = useState<string | null>(null);
 
   const content = {
     de: {
@@ -31,6 +32,26 @@ const GalleryPage: React.FC = () => {
       empty: 'Noch keine Bilder in der Galerie.',
       navigationHelp:
         'Nutzen Sie die Pfeiltasten oder Buttons, um durch die Galerie zu navigieren.',
+      locationBlocks: {
+        beach: {
+          title: 'Beachvolleyball – Anfahrt & Karte',
+          addressLabel: 'Adresse',
+          address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+          mapLabel: 'Karte',
+          mapEmbed: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen',
+          cta: 'Route in Google Maps öffnen',
+        },
+        hall: {
+          title: 'Halle – Anfahrt & Karte',
+          addressLabel: 'Adresse',
+          address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+          mapLabel: 'Karte',
+          mapEmbed: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen',
+          cta: 'Route in Google Maps öffnen',
+        },
+      },
     },
     en: {
       filters: {
@@ -47,6 +68,26 @@ const GalleryPage: React.FC = () => {
       empty: 'No images in the gallery yet.',
       navigationHelp:
         'Use the arrow keys or buttons to navigate the gallery.',
+      locationBlocks: {
+        beach: {
+          title: 'Beach volleyball – directions & map',
+          addressLabel: 'Address',
+          address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+          mapLabel: 'Map',
+          mapEmbed: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen',
+          cta: 'Open in Google Maps',
+        },
+        hall: {
+          title: 'Indoor gym – directions & map',
+          addressLabel: 'Address',
+          address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+          mapLabel: 'Map',
+          mapEmbed: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen',
+          cta: 'Open in Google Maps',
+        },
+      },
     },
     ru: {
       filters: {
@@ -63,6 +104,26 @@ const GalleryPage: React.FC = () => {
       empty: 'В галерее пока нет изображений.',
       navigationHelp:
         'Используйте стрелки или кнопки для навигации по галерее.',
+      locationBlocks: {
+        beach: {
+          title: 'Пляжный волейбол — адрес и карта',
+          addressLabel: 'Адрес',
+          address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+          mapLabel: 'Карта',
+          mapEmbed: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen',
+          cta: 'Открыть маршрут в Google Maps',
+        },
+        hall: {
+          title: 'Зал — адрес и карта',
+          addressLabel: 'Адрес',
+          address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+          mapLabel: 'Карта',
+          mapEmbed: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen',
+          cta: 'Открыть маршрут в Google Maps',
+        },
+      },
     },
     it: {
       filters: {
@@ -79,6 +140,26 @@ const GalleryPage: React.FC = () => {
       empty: 'Non ci sono ancora immagini in galleria.',
       navigationHelp:
         'Usa le frecce della tastiera o i pulsanti per navigare nella galleria.',
+      locationBlocks: {
+        beach: {
+          title: 'Beach volley — indirizzo e mappa',
+          addressLabel: 'Indirizzo',
+          address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+          mapLabel: 'Mappa',
+          mapEmbed: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen',
+          cta: 'Apri in Google Maps',
+        },
+        hall: {
+          title: 'Palestra — indirizzo e mappa',
+          addressLabel: 'Indirizzo',
+          address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+          mapLabel: 'Mappa',
+          mapEmbed: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen&output=embed',
+          mapLink: 'https://www.google.com/maps?q=Schulstraße+43,+72669+Unterensingen',
+          cta: 'Apri in Google Maps',
+        },
+      },
     },
   };
 
@@ -115,11 +196,13 @@ const GalleryPage: React.FC = () => {
     (albumId: string) => {
       const albumImages = images.filter((img) => img.albumId === albumId);
       if (!albumImages.length) return;
+      const album = albums.find((a) => a.id === albumId);
+      setSelectedAlbumCategory(album?.category ?? null);
       setActiveImages(albumImages);
       setCurrentIndex(0);
       setIsDialogOpen(true);
     },
-    [images],
+    [images, albums],
   );
 
   const handleDialogChange = useCallback((open: boolean) => {
@@ -156,6 +239,13 @@ const GalleryPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [isDialogOpen, showNext, showPrevious]);
 
+  const locationBlock = useMemo(() => {
+    const category = isDialogOpen && selectedAlbumCategory ? selectedAlbumCategory : filter;
+    if (category === 'beach') return t.locationBlocks?.beach;
+    if (category === 'training') return t.locationBlocks?.hall;
+    return null;
+  }, [filter, isDialogOpen, selectedAlbumCategory, t.locationBlocks]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-950 via-primary-900/95 to-neutral-900 pt-20 pb-16 text-white">
       <Seo title={seoTitle} description={seoDescription} imagePath="/images/SKV_Volleyball.png" />
@@ -185,6 +275,38 @@ const GalleryPage: React.FC = () => {
             onAlbumOpen={handleAlbumOpen}
           />
         )}
+
+        {locationBlock && (
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-white/5 p-6 rounded-2xl border border-white/10 shadow-lg shadow-black/20">
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold text-white">{locationBlock.title}</h2>
+              <div className="space-y-1">
+                <p className="text-xs uppercase tracking-wide text-white/60">{locationBlock.addressLabel}</p>
+                <p className="text-body font-semibold text-white">{locationBlock.address}</p>
+              </div>
+              <a
+                href={locationBlock.mapLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-accent-300 hover:text-accent-100 font-semibold transition-colors"
+              >
+                {locationBlock.cta} →
+              </a>
+            </div>
+            <div className="w-full h-72 bg-neutral-900 rounded-xl overflow-hidden shadow-lg border border-white/10">
+              <iframe
+                src={locationBlock.mapEmbed}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title={locationBlock.title}
+              ></iframe>
+            </div>
+          </div>
+        )}
       </div>
 
       <GalleryLightbox
@@ -195,6 +317,7 @@ const GalleryPage: React.FC = () => {
         onPrevious={showPrevious}
         onNext={showNext}
         navigationHelp={t.navigationHelp}
+        locationBlock={locationBlock}
       />
     </div>
   );

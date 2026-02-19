@@ -273,6 +273,20 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  const handleClearAllHistory = () => {
+    clearAllHistory();
+    setMessages([]);
+    setSessionId(undefined);
+  };
+
+  const handleDeleteConversation = (id: string) => {
+    deleteConversation(id);
+    if (currentConversationId === id) {
+      setMessages([]);
+      setSessionId(undefined);
+    }
+  };
+
   const handleNewConversation = () => {
     setMessages([]);
     setCurrentConversationId(null);
@@ -359,8 +373,8 @@ const Chatbot: React.FC = () => {
               conversations={conversations}
               currentConversationId={currentConversationId}
               onLoadConversation={handleLoadConversation}
-              onDeleteConversation={deleteConversation}
-              onClearAll={clearAllHistory}
+              onDeleteConversation={handleDeleteConversation}
+              onClearAll={handleClearAllHistory}
               onClose={() => setShowHistory(false)}
               t={t.chatbot}
             />

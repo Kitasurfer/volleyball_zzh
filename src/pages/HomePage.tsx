@@ -33,12 +33,12 @@ const HomePage: React.FC = () => {
         { icon: Calendar, label: 'Gegründet', value: `${CLUB_FOUNDING_YEAR}` },
         { icon: Calendar, label: 'In diesem Jahr werden wir', value: `${clubAgeThisYear} Jahre alt` },
         { icon: Users, label: 'Altersgruppe', value: '12-80 Jahre' },
-        { icon: Trophy, label: 'Spezialisierung', value: 'Volleyball' },
+        { icon: Trophy, label: 'Abteilung', value: 'Volleyball' },
       ],
       about: {
         title: 'Über SKV Unterensingen Volleyball',
-        text: 'Wir entwickeln Volleyball-Talente durch innovative Trainingsmethoden, während wir eine inklusive Gemeinschaft aufbauen, in der jeder Spieler sein volles Potenzial erreichen kann.',
-        philosophy: 'Unsere Philosophie: "Trainiere wie du spielst" - basierend auf FIVB-Methoden.',
+        text: 'Wir sind im Volleyball breit aufgestellt und mit Leidenschaft dabei. Für uns stehen die Freude am Spiel, Teamgeist und eine starke Gemeinschaft im Mittelpunkt. Ob ambitioniert oder einfach aus Spaß – bei uns ist jeder willkommen, der Volleyball liebt.',
+        philosophy: 'Unsere Philosophie: "Trainiere wie du spielst".',
       },
       sections: [
         {
@@ -48,7 +48,8 @@ const HomePage: React.FC = () => {
         },
         {
           title: 'Beach Volleyball',
-          description: 'Outdoor-Programme auf Sand',
+          description:
+            'In Kooperation mit dem TSV Zizishausen. Unsere Teams nutzen die Beachvolleyball-Anlagen des TSV im Rahmen einer partnerschaftlichen Zusammenarbeit.',
           link: '/beach',
         },
         {
@@ -102,12 +103,12 @@ const HomePage: React.FC = () => {
         { icon: Calendar, label: 'Founded', value: `${CLUB_FOUNDING_YEAR}` },
         { icon: Calendar, label: 'This year we turn', value: `${clubAgeThisYear} years` },
         { icon: Users, label: 'Age Group', value: '12-80 years' },
-        { icon: Trophy, label: 'Specialization', value: 'Volleyball' },
+        { icon: Trophy, label: 'Department', value: 'Volleyball' },
       ],
       about: {
         title: 'About SKV Unterensingen Volleyball',
-        text: 'We develop volleyball talents through innovative training methods while building an inclusive community where every player can reach their full potential.',
-        philosophy: 'Our philosophy: "Train like you play" - based on FIVB methods.',
+        text: 'We are widely active in volleyball and bring full passion to everything we do. The joy of the game, team spirit, and a strong community are at the heart of our club. Whether you pursue ambitious goals or simply play for fun, everyone who loves volleyball is welcome.',
+        philosophy: 'Our philosophy: "Train like you play".',
       },
       sections: [
         {
@@ -117,7 +118,8 @@ const HomePage: React.FC = () => {
         },
         {
           title: 'Beach Volleyball',
-          description: 'Outdoor programs on sand',
+          description:
+            'In cooperation with TSV Zizishausen. Our teams use the TSV beach volleyball facilities as part of this partnership.',
           link: '/beach',
         },
         {
@@ -171,12 +173,12 @@ const HomePage: React.FC = () => {
         { icon: Calendar, label: 'Основана', value: `${CLUB_FOUNDING_YEAR}` },
         { icon: Calendar, label: 'В этом году нам', value: `${clubAgeThisYear} лет` },
         { icon: Users, label: 'Возраст', value: '12-80 лет' },
-        { icon: Trophy, label: 'Специализация', value: 'Волейбол' },
+        { icon: Trophy, label: 'Отделение', value: 'Волейбол' },
       ],
       about: {
         title: 'О команде SKV Unterensingen Volleyball',
-        text: 'Мы развиваем таланты волейбола через инновационные методы тренировок, создавая инклюзивное сообщество, где каждый игрок может раскрыть свой потенциал.',
-        philosophy: 'Наша философия: "Тренируйся как играешь" - на основе методов FIVB.',
+        text: 'Мы широко развиваем волейбол и делаем это с полной отдачей. Радость игры, командный дух и сильное сообщество — в центре нашего клуба. Будь то амбициозные цели или игра ради удовольствия, каждый, кто любит волейбол, у нас желанный гость.',
+        philosophy: 'Наша философия: "Тренируйся как играешь".',
       },
       sections: [
         {
@@ -186,7 +188,8 @@ const HomePage: React.FC = () => {
         },
         {
           title: 'Пляжный волейбол',
-          description: 'Программы на открытом воздухе',
+          description:
+            'В сотрудничестве с TSV Zizishausen. Наши команды используют пляжные площадки TSV в рамках партнёрского сотрудничества.',
           link: '/beach',
         },
         {
@@ -240,12 +243,12 @@ const HomePage: React.FC = () => {
         { icon: Calendar, label: 'Fondato', value: `${CLUB_FOUNDING_YEAR}` },
         { icon: Calendar, label: 'Quest’anno compiamo', value: `${clubAgeThisYear} anni` },
         { icon: Users, label: 'Fascia di età', value: '12-80 anni' },
-        { icon: Trophy, label: 'Specializzazione', value: 'Pallavolo' },
+        { icon: Trophy, label: 'Reparto', value: 'Pallavolo' },
       ],
       about: {
         title: 'Su SKV Unterensingen Volleyball',
-        text: 'Sviluppiamo talenti della pallavolo con metodi di allenamento innovativi, creando una comunità inclusiva in cui ogni giocatore può raggiungere il proprio pieno potenziale.',
-        philosophy: 'La nostra filosofia: "Allenati come giochi" - basata sui metodi FIVB.',
+        text: 'Siamo ampiamente attivi nella pallavolo e la viviamo con grande passione. La gioia del gioco, lo spirito di squadra e una comunità forte sono al centro del nostro club. Che tu abbia obiettivi ambiziosi o giochi solo per divertimento, chiunque ami la pallavolo è il benvenuto.',
+        philosophy: 'La nostra filosofia: "Allenati come giochi".',
       },
       sections: [
         {
@@ -255,7 +258,8 @@ const HomePage: React.FC = () => {
         },
         {
           title: 'Beach Volleyball',
-          description: 'Programmi all’aperto sulla sabbia',
+          description:
+            'In collaborazione con il TSV Zizishausen. Le nostre squadre utilizzano gli impianti di beach volley del TSV nell’ambito di questa partnership.',
           link: '/beach',
         },
         {
@@ -341,13 +345,13 @@ const HomePage: React.FC = () => {
       <Seo
         title={seoTitle}
         description={seoDescription}
-        imagePath="/images/volleyball_team_group_photo_dramatic_lighting.jpg"
+        imagePath="https://kxwmkvtxkaczuonnnxlj.supabase.co/storage/v1/object/public/media-public/uploads/1771522090149-yh71uj.jpg"
       />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-primary-950">
         <div className="absolute inset-0">
           <img
-            src="/images/volleyball_team_group_photo_dramatic_lighting.jpg"
+            src="https://kxwmkvtxkaczuonnnxlj.supabase.co/storage/v1/object/public/media-public/uploads/1771522090149-yh71uj.jpg"
             alt=""
             aria-hidden="true"
             className="h-full w-full object-cover object-center opacity-40"
@@ -358,12 +362,16 @@ const HomePage: React.FC = () => {
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/80">
             {t.hero.badge}
           </div>
-          <div className="space-y-6">
-            <h1 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <div className="space-y-6 rounded-2xl bg-white/10 px-6 py-5 shadow-lg shadow-primary-900/30 backdrop-blur">
+            <h1 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)]">
               {t.hero.title}
             </h1>
-            <p className="text-lg text-neutral-100/90 sm:text-xl lg:text-2xl">{t.hero.subtitle}</p>
-            <p className="mx-auto max-w-3xl text-base text-neutral-100/80 sm:text-lg">{t.hero.description}</p>
+            <p className="text-lg text-neutral-50 sm:text-xl lg:text-2xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+              {t.hero.subtitle}
+            </p>
+            <p className="mx-auto max-w-3xl text-base text-neutral-50 sm:text-lg drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+              {t.hero.description}
+            </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg" variant="accent" className="group px-8 text-base font-semibold shadow-lg shadow-accent-500/40">

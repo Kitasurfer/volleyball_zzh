@@ -35,4 +35,23 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        env:
+          # Vite frontend config
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_FUNCTIONS_URL: ${{ vars.VITE_SUPABASE_FUNCTIONS_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+          # Supabase / functions
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Qdrant
+          QDRANT_URL: ${{ vars.QDRANT_URL }}
+          QDRANT_COLLECTION: ${{ vars.QDRANT_COLLECTION }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+          # Other services
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          DOCLING_SERVICE_URL: ${{ vars.DOCLING_SERVICE_URL }}
+          VLW_API_KEY: ${{ secrets.VLW_API_KEY }}
+          CHAT_MAX_OUTPUT_TOKENS: ${{ vars.CHAT_MAX_OUTPUT_TOKENS }}
+          CHAT_MIN_SCORE: ${{ vars.CHAT_MIN_SCORE }}
         run: pnpm run build

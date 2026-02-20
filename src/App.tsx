@@ -9,15 +9,6 @@ import { AppRoutes } from './routes/AppRoutes';
 import ScrollToTop from './components/ScrollToTop';
 import CookieConsent from './components/CookieConsent';
 
-// Lazy load pages for code splitting
-const AdminLayout = () => null;
-const AdminOverviewPage = () => null;
-const AdminContentPage = () => null;
-const AdminMediaPage = () => null;
-const AdminVectorJobsPage = () => null;
-const AdminChatsPage = () => null;
-const AdminAlbumsPage = () => null;
-
 /**
  * Fallback component shown while loading
  */

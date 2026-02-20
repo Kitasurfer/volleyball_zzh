@@ -1,10 +1,15 @@
 import React from 'react';
 
-const searilizeError = (error: any) => {
+const isDev =
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV === true) ||
+  process.env.NODE_ENV === 'development';
+
+const formatError = (error: unknown) => {
   if (error instanceof Error) {
-    return error.message + '\n' + error.stack;
+    return isDev ? `${error.message}\n${error.stack ?? ''}` : error.message;
   }
-  return JSON.stringify(error, null, 2);
+
+  return isDev ? JSON.stringify(error, null, 2) : 'Unexpected error';
 };
 
 export class ErrorBoundary extends React.Component<
@@ -25,7 +30,9 @@ export class ErrorBoundary extends React.Component<
       return (
         <div className="p-4 border border-red-500 rounded">
           <h2 className="text-red-500">Something went wrong.</h2>
-          <pre className="mt-2 text-sm">{searilizeError(this.state.error)}</pre>
+          <pre className="mt-2 text-sm whitespace-pre-wrap break-words">
+            {formatError(this.state.error)}
+          </pre>
         </div>
       );
     }

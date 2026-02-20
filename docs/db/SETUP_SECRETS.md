@@ -4,7 +4,7 @@
 
 1. **league-results функция задеплоена** (версия 9) — таблицы лиг теперь работают
 2. **Qdrant кластер создан**: `f1aa8cca-cede-4a92-ad87-7b2a3d837696`
-3. **Cerebras API ключ получен**: `csk-fk9mfwnx3kr25xrvcwp3n9wtmxdnwpv9x4tpec6rn4tn6em2`
+3. **Cerebras API ключ получен**: `<CEREBRAS_API_KEY>`
 
 ---
 
@@ -26,18 +26,18 @@
 
 ### 2. Добавить секреты в Supabase
 
-Откройте: https://supabase.com/dashboard/project/kxwmkvtxkaczuonnnxlj/settings/functions
+Откройте: https://supabase.com/dashboard/project/<YOUR_SUPABASE_PROJECT>/settings/functions
 
 Нажмите **Add secret** и добавьте каждый секрет:
 
 ```bash
 # Qdrant Vector Database
-QDRANT_URL=https://f1aa8cca-cede-4a92-ad87-7b2a3d837696.europe-west3-0.gcp.cloud.qdrant.io
-QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.xYn-tKa27SHNMIYMdfCzd5tItuZTneoocPMnU7NXk5A
+QDRANT_URL=https://<YOUR_QDRANT_CLUSTER>.cloud.qdrant.io
+QDRANT_API_KEY=<YOUR_QDRANT_API_KEY>
 QDRANT_COLLECTION=content_vectors
 
 # Cerebras AI
-CEREBRAS_API_KEY=csk-fk9mfwnx3kr25xrvcwp3n9wtmxdnwpv9x4tpec6rn4tn6em2
+CEREBRAS_API_KEY=<YOUR_CEREBRAS_API_KEY>
 CEREBRAS_BASE_URL=https://api.cerebras.ai
 CEREBRAS_CHAT_MODEL=llama3.1-8b
 CEREBRAS_EMBED_MODEL=embedding-english-v1
@@ -52,8 +52,8 @@ CEREBRAS_EMBED_MODEL=embedding-english-v1
 После добавления секретов:
 
 ```bash
-curl -X POST "https://kxwmkvtxkaczuonnnxlj.functions.supabase.co/ingest-content" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4d21rdnR4a2FjenVvbm5ueGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NDUwNzQsImV4cCI6MjA3ODAyMTA3NH0.L_wiWNZbDL9Nhf1A_ynY_-SLn1F2uSBQRELxeQghI7I"
+curl -X POST "https://<YOUR_SUPABASE_PROJECT>.functions.supabase.co/ingest-content" \
+  -H "Authorization: Bearer <YOUR_SUPABASE_SERVICE_ROLE_KEY>"
 ```
 
 **Ожидаемый результат**: `{"processed": 4}`
@@ -85,8 +85,8 @@ ORDER BY vj.created_at DESC;
 ### 5. Тестировать чат-бот
 
 ```bash
-curl -X POST "https://kxwmkvtxkaczuonnnxlj.functions.supabase.co/chatbot" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4d21rdnR4a2FjenVvbm5ueGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NDUwNzQsImV4cCI6MjA3ODAyMTA3NH0.L_wiWNZbDL9Nhf1A_ynY_-SLn1F2uSBQRELxeQghI7I" \
+curl -X POST "https://<YOUR_SUPABASE_PROJECT>.functions.supabase.co/chatbot" \
+  -H "Authorization: Bearer <YOUR_SUPABASE_SERVICE_ROLE_KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "question": "Was sind die Regeländerungen für 2025/2026?",
@@ -99,8 +99,8 @@ curl -X POST "https://kxwmkvtxkaczuonnnxlj.functions.supabase.co/chatbot" \
 ### 6. Проверить таблицы лиг
 
 ```bash
-curl "https://kxwmkvtxkaczuonnnxlj.functions.supabase.co/league-results" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4d21rdnR4a2FjenVvbm5ueGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NDUwNzQsImV4cCI6MjA3ODAyMTA3NH0.L_wiWNZbDL9Nhf1A_ynY_-SLn1F2uSBQRELxeQghI7I"
+curl "https://<YOUR_SUPABASE_PROJECT>.functions.supabase.co/league-results" \
+  -H "Authorization: Bearer <YOUR_SUPABASE_SERVICE_ROLE_KEY>"
 ```
 
 **Ожидаемый результат**: JSON с `standings`, `schedule`, `team`, `lastUpdated`

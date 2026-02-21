@@ -36,7 +36,7 @@ jobs:
           PNPM_STORE_DIR: .pnpm-store
           PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
           PNPM_WORKERS: 1
-        run: PNPM_LOG_LEVEL=debug pnpm install --frozen-lockfile --reporter ndjson --workspace-root
+        run: PNPM_LOG_LEVEL=debug pnpm install --frozen-lockfile --reporter ndjson
 
       - name: Build
         env:

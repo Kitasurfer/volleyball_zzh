@@ -31,12 +31,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
 
-      - name: Install dependencies (no scripts, verbose, local store, single worker)
-        env:
-          PNPM_STORE_DIR: .pnpm-store
-          PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
-          PNPM_WORKERS: 1
-        run: PNPM_LOG_LEVEL=debug pnpm install --frozen-lockfile --ignore-scripts --reporter ndjson
+      - name: Clear pnpm store
+        run: pnpm store prune
+
+      - name: Install dependencies (no scripts)
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build
         env:

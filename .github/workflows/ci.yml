@@ -31,7 +31,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
 
-      - name: Install dependencies (verbose)
+      - name: Install dependencies (verbose, local store)
+        env:
+          PNPM_STORE_DIR: .pnpm-store
+          PNPM_HOME: /home/runner/setup-pnpm/node_modules/.bin
         run: PNPM_LOG_LEVEL=debug pnpm install --frozen-lockfile --reporter ndjson
 
       - name: Build

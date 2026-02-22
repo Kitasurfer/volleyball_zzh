@@ -33,7 +33,9 @@ jobs:
       - name: Clear pnpm store
         run: pnpm store prune
 
-      - name: Install dependencies
+      - name: Install dependencies (single worker)
+        env:
+          PNPM_WORKERS: 1
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build

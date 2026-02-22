@@ -3,13 +3,10 @@
   command = "pnpm install --frozen-lockfile && pnpm run build"
   publish = "dist"
 
-[build.environment]
+ [build.environment]
   NETLIFY_USE_PNPM = "true"
   PNPM_VERSION = "9.11.0"
   NODE_VERSION = "20.11.1"
-  VITE_SUPABASE_URL = "https://<YOUR_SUPABASE_PROJECT>.supabase.co"
-  VITE_SUPABASE_FUNCTIONS_URL = "https://<YOUR_SUPABASE_PROJECT>.functions.supabase.co"
-  VITE_SUPABASE_ANON_KEY = "<YOUR_SUPABASE_ANON_KEY>"
 
 [[redirects]]
   from = "/*"

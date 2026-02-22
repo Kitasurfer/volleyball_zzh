@@ -18,6 +18,8 @@ const BeachPage: React.FC = () => {
       text: 'Beachvolleyball – Sonne, Sand und Action. Schnelle Ballwechsel, Bewegung im Sand und echtes Teamplay. Wir spielen 2x2 und 3x3 – Mixed-Teams sind herzlich willkommen. Im Mittelpunkt stehen Dynamik und Spaß am Spiel.',
       scheduleTitle: 'Trainingszeiten 2026',
       scheduleSubtitle: 'Beachvolleyball (April - September)',
+      rentalNote:
+        'Unsere Beachvolleyballfelder können gemietet werden. Bei Fragen oder Reservierungen kontaktieren Sie bitte Heinrich Treubert unter +49 179 9785541.',
       features: [
         { icon: Sun, title: 'Outdoor', text: 'Training unter freiem Himmel' },
         { icon: Waves, title: 'Sandplätze', text: 'Professionelle Beachanlage mit 3 Feldern' },
@@ -40,6 +42,8 @@ const BeachPage: React.FC = () => {
         'Beach volleyball means sun, sand, and action. Fast rallies, movement in the sand, and real teamwork. We play 2x2 and 3x3, and mixed teams are warmly welcome. The focus is on dynamism and the joy of the game.',
       scheduleTitle: 'Training Schedule 2026',
       scheduleSubtitle: 'Beach Volleyball (April - September)',
+      rentalNote:
+        'Our beach volleyball courts can be rented. For questions or reservations, please contact Heinrich Treubert at +49 179 9785541.',
       features: [
         { icon: Sun, title: 'Outdoor', text: 'Training in the open air' },
         { icon: Waves, title: 'Sand Courts', text: 'Professional beach facility with 3 courts' },
@@ -62,6 +66,8 @@ const BeachPage: React.FC = () => {
         'Пляжный волейбол — это солнце, песок и драйв. Быстрые розыгрыши, движение по песку и настоящее командное взаимодействие. Играем 2х2 и 3х3, смешанные команды всегда приветствуются. В центре внимания — динамика и удовольствие от игры.',
       scheduleTitle: 'Расписание тренировок 2026',
       scheduleSubtitle: 'Пляжный волейбол (апрель - сентябрь)',
+      rentalNote:
+        'Наши площадки для пляжного волейбола можно арендовать. По вопросам или бронированию свяжитесь с Генрихом Тройбертом по телефону +49 179 9785541.',
       features: [
         { icon: Sun, title: 'На открытом воздухе', text: 'Тренировки под открытым небом' },
         { icon: Waves, title: 'Песчаные площадки', text: 'Профессиональная пляжная площадка с 3 площадками' },
@@ -84,6 +90,8 @@ const BeachPage: React.FC = () => {
         'Beach volley: sole, sabbia e azione. Scambi veloci, movimento sulla sabbia e vero gioco di squadra. Giochiamo 2x2 e 3x3, le squadre miste sono sempre benvenute. Al centro ci sono dinamica ed entusiasmo per il gioco.',
       scheduleTitle: 'Orari allenamenti 2026',
       scheduleSubtitle: 'Beach volley (aprile - settembre)',
+      rentalNote:
+        'I nostri campi da beach volley possono essere affittati. Per domande o prenotazioni contatta Heinrich Treubert al numero +49 179 9785541.',
       features: [
         { icon: Sun, title: 'All’aperto', text: 'Allenamenti all’aria aperta' },
         {
@@ -229,7 +237,7 @@ const BeachPage: React.FC = () => {
             <div className="pt-2">
               <p className="text-neutral-700">{t.facility.linkIntro}</p>
               <a
-                href="https://skvunterensingen.de/volleyball/"
+                href="https://www.tsv-zizishausen.de/"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 mt-2 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
@@ -255,6 +263,10 @@ const BeachPage: React.FC = () => {
         {/* Weather Widget */}
         <div className="max-w-2xl mx-auto mt-12">
           <WeatherWidget />
+        </div>
+
+        <div className="max-w-3xl mx-auto mt-8 px-6 text-center">
+          <p className="text-neutral-800 font-medium">{t.rentalNote}</p>
         </div>
       </div>
     </div>

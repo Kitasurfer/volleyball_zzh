@@ -30,11 +30,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
 
-      - name: Install dependencies (single worker, constrained)
-        env:
-          PNPM_WORKERS: 1
-          PNPM_NETWORK_CONCURRENCY: 1
-        run: pnpm install --frozen-lockfile --ignore-scripts --child-concurrency=1 --network-concurrency=1
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build
         env:

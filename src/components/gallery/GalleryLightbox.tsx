@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, Download, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, Download } from 'lucide-react';
 import { Button, Dialog, DialogClose, DialogContent } from '../ui';
 import type { GalleryImage } from '../../hooks/useGalleryImages';
 
@@ -35,7 +35,6 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   locationBlock,
 }) => {
   const [zoom, setZoom] = useState(1);
-  const [showInfo, setShowInfo] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -54,7 +53,6 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   useEffect(() => {
     if (!open) {
       setZoom(1);
-      setShowInfo(false);
     }
   }, [open]);
 
@@ -126,15 +124,6 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
           {/* Top Controls */}
           <div className="absolute left-6 right-6 top-6 z-40 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowInfo(!showInfo)}
-                className="h-10 w-10 rounded-full bg-black/40 text-white hover:bg-black/60"
-                title="Toggle info"
-              >
-                <Info className="h-5 w-5" />
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -212,31 +201,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
               />
 
               {/* Info Overlay */}
-              {showInfo && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-8 text-white">
-                  <h3 className="text-2xl font-semibold">{currentImage.title}</h3>
-                  <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/60">
-                    {currentImage.albumTitle && (
-                      <span>Album: {currentImage.albumTitle}</span>
-                    )}
-                    {currentImage.eventDate && (
-                      <span>Date: {new Date(currentImage.eventDate).toLocaleDateString()}</span>
-                    )}
-                    {currentImage.category && (
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs uppercase">
-                        {currentImage.category}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {!showInfo && (
-                <figcaption className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-center text-white">
-                  <h3 className="text-xl font-semibold">{currentImage.title}</h3>
-                  <p className="mt-2 text-xs text-white/60">{navigationHelp}</p>
-                </figcaption>
-              )}
+              <figcaption className="sr-only">{navigationHelp}</figcaption>
             </figure>
           )}
 

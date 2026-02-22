@@ -32,6 +32,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Debug environment variables
+        run: |
+          echo "VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}"
+          echo "VITE_SUPABASE_FUNCTIONS_URL: ${{ vars.VITE_SUPABASE_FUNCTIONS_URL }}"
+          echo "VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}"
+          echo "QDRANT_URL: ${{ vars.QDRANT_URL }}"
+          echo "DOCLING_SERVICE_URL: ${{ vars.DOCLING_SERVICE_URL }}"
+          echo "VITE_SUPABASE_ANON_KEY set: $([ -z '${{ secrets.VITE_SUPABASE_ANON_KEY }}' ] && echo 'NO' || echo 'YES')"
+          echo "SUPABASE_SERVICE_ROLE_KEY set: $([ -z '${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}' ] && echo 'NO' || echo 'YES')"
+          echo "QDRANT_API_KEY set: $([ -z '${{ secrets.QDRANT_API_KEY }}' ] && echo 'NO' || echo 'YES')"
+          echo "CEREBRAS_API_KEY set: $([ -z '${{ secrets.CEREBRAS_API_KEY }}' ] && echo 'NO' || echo 'YES')"
+          echo "VLW_API_KEY set: $([ -z '${{ secrets.VLW_API_KEY }}' ] && echo 'NO' || echo 'YES')"
+
       - name: Build
         env:
           # Vite frontend config

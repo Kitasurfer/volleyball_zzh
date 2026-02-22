@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.18.1
+          cache: 'pnpm'
 
       - name: Check Node and pnpm versions
         run: |
@@ -32,8 +33,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
-        env:
-          PNPM_NODE_WORKERS: "0"
 
       - name: Build
         env:

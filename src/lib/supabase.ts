@@ -3,6 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Debug env in prod (temporary)
+console.log('VITE_SUPABASE_URL=', supabaseUrl);
+console.log('VITE_SUPABASE_ANON_KEY set=', Boolean(supabaseAnonKey));
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase credentials are missing. Check your environment variables.');
 }

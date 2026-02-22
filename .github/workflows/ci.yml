@@ -15,11 +15,10 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Setup Node
+      - name: Setup Node (no cache to avoid pnpm worker crash)
         uses: actions/setup-node@v4
         with:
           node-version: 20.11.1
-          cache: pnpm
 
       - name: Check Node and pnpm versions
         run: |

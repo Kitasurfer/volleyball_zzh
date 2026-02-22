@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
         env:
-          PNPM_WORKERS: 0
+          PNPM_NODE_WORKERS: "0"
 
       - name: Build
         env:

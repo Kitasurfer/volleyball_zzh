@@ -15,6 +15,8 @@ const GalleryPage: React.FC = () => {
   const { images, albums, loading, error } = useGalleryImages();
   const [activeImages, setActiveImages] = useState<GalleryImage[]>([]);
   const [selectedAlbumCategory, setSelectedAlbumCategory] = useState<string | null>(null);
+  const [isPageLocationCollapsed, setIsPageLocationCollapsed] = useState(true);
+  const [isPageMapOpen, setIsPageMapOpen] = useState(false);
 
   const content = {
     de: {
@@ -277,34 +279,74 @@ const GalleryPage: React.FC = () => {
         )}
 
         {locationBlock && (
-          <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-white/5 p-6 rounded-2xl border border-white/10 shadow-lg shadow-black/20">
-            <div className="space-y-3">
-              <h2 className="text-xl font-semibold text-white">{locationBlock.title}</h2>
-              <div className="space-y-1">
-                <p className="text-xs uppercase tracking-wide text-white/60">{locationBlock.addressLabel}</p>
-                <p className="text-body font-semibold text-white">{locationBlock.address}</p>
+          <div className="relative mt-10 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/20">
+            {isPageLocationCollapsed ? (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsPageLocationCollapsed(false)}
+                  className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition"
+                >
+                  {locationBlock.mapLabel || 'Karte anzeigen'}
+                </button>
               </div>
-              <a
-                href={locationBlock.mapLink}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-accent-300 hover:text-accent-100 font-semibold transition-colors"
-              >
-                {locationBlock.cta} →
-              </a>
-            </div>
-            <div className="w-full h-72 bg-neutral-900 rounded-xl overflow-hidden shadow-lg border border-white/10">
-              <iframe
-                src={locationBlock.mapEmbed}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title={locationBlock.title}
-              ></iframe>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <h2 className="text-xl font-semibold text-white">{locationBlock.title}</h2>
+                      <div className="space-y-1">
+                        <p className="text-xs uppercase tracking-wide text-white/60">{locationBlock.addressLabel}</p>
+                        <p className="text-body font-semibold text-white">{locationBlock.address}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsPageLocationCollapsed(true);
+                        setIsPageMapOpen(false);
+                      }}
+                      className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={locationBlock.mapLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-accent-300 hover:text-accent-100 font-semibold transition-colors"
+                    >
+                      {locationBlock.cta} →
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setIsPageMapOpen((prev) => !prev)}
+                      className="ml-auto inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20"
+                    >
+                      {isPageMapOpen ? 'Karte ausblenden' : 'Karte anzeigen'}
+                    </button>
+                  </div>
+                </div>
+
+                {isPageMapOpen && (
+                  <div className="w-full h-72 bg-neutral-900 rounded-xl overflow-hidden shadow-lg border border-white/10">
+                    <iframe
+                      src={locationBlock.mapEmbed}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={locationBlock.title}
+                    ></iframe>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

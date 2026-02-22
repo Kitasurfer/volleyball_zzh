@@ -39,6 +39,8 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   const [imageLoading, setImageLoading] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [isLocationCollapsed, setIsLocationCollapsed] = useState(true);
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
   const currentImage = images[currentIndex];
 
@@ -68,6 +70,11 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.5, 3));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.5, 1));
+
+  // If collapsed, ensure map is hidden
+  useEffect(() => {
+    if (isLocationCollapsed) setIsMapOpen(false);
+  }, [isLocationCollapsed]);
 
   const handleDownload = async () => {
     if (!currentImage) return;
@@ -235,33 +242,69 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
           {/* Location block inside lightbox */}
           {locationBlock && (
-            <div className="absolute left-6 bottom-24 z-30 w-[320px] max-w-[90vw] space-y-3 rounded-xl border border-white/15 bg-black/70 p-4 shadow-lg backdrop-blur">
-              <div className="space-y-1">
-                <h3 className="text-lg font-semibold text-white">{locationBlock.title}</h3>
-                <p className="text-[11px] uppercase tracking-wide text-white/60">{locationBlock.addressLabel}</p>
-                <p className="text-sm font-medium text-white leading-snug">{locationBlock.address}</p>
-              </div>
-              <a
-                href={locationBlock.mapLink}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 text-accent-200 hover:text-accent-100 text-sm font-semibold transition-colors"
-              >
-                {locationBlock.cta} →
-              </a>
-              <div className="h-36 w-full overflow-hidden rounded-lg border border-white/10 bg-black/40">
-                <iframe
-                  src={locationBlock.mapEmbed}
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title={locationBlock.title}
-                ></iframe>
-              </div>
-            </div>
+            <>
+              {isLocationCollapsed && (
+                <div className="absolute bottom-24 right-4 z-30">
+                  <button
+                    type="button"
+                    onClick={() => setIsLocationCollapsed(false)}
+                    className="inline-flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white shadow-lg ring-1 ring-white/20 backdrop-blur"
+                  >
+                    {locationBlock.mapLabel || 'Karte anzeigen'}
+                  </button>
+                </div>
+              )}
+
+              {!isLocationCollapsed && (
+                <div className="absolute left-4 right-4 bottom-24 z-30 mx-auto w-[340px] max-w-[92vw] space-y-3 rounded-xl border border-white/15 bg-black/70 p-4 shadow-lg backdrop-blur">
+                  <div className="flex items-start gap-2">
+                    <div className="space-y-1 flex-1">
+                      <h3 className="text-lg font-semibold text-white">{locationBlock.title}</h3>
+                      <p className="text-[11px] uppercase tracking-wide text-white/60">{locationBlock.addressLabel}</p>
+                      <p className="text-sm font-medium text-white leading-snug">{locationBlock.address}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsLocationCollapsed(true)}
+                      className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={locationBlock.mapLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-accent-200 hover:text-accent-100 text-sm font-semibold transition-colors"
+                    >
+                      {locationBlock.cta} →
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setIsMapOpen((prev) => !prev)}
+                      className="ml-auto inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20"
+                    >
+                      {isMapOpen ? 'Karte ausblenden' : 'Karte anzeigen'}
+                    </button>
+                  </div>
+                  {isMapOpen && (
+                    <div className="h-36 w-full overflow-hidden rounded-lg border border-white/10 bg-black/40">
+                      <iframe
+                        src={locationBlock.mapEmbed}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title={locationBlock.title}
+                      ></iframe>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
 
           {/* Navigation Arrows */}

@@ -12,19 +12,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm (use version from package.json)
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20.18.1
-          cache: 'pnpm'
 
-      - name: Check Node and pnpm versions
+      - name: Install pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.4 --activate
+          pnpm --version
+
+      - name: Check versions
         run: |
           node --version
           pnpm --version
+          which pnpm
 
       - name: Install system dependencies for Puppeteer
         run: |

@@ -30,15 +30,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
 
-      - name: Clear pnpm store and cache
-        run: |
-          pnpm store drop
-          rm -rf ~/.pnpm-store
-          rm -rf node_modules
-          rm -rf pnpm-lock.yaml
+      - name: Clear pnpm store
+        run: pnpm store prune
 
-      - name: Install dependencies (regenerate lockfile)
-        run: pnpm install --ignore-scripts
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build
         env:

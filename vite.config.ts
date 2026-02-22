@@ -6,23 +6,20 @@ import sourceIdentifierPlugin from 'vite-plugin-source-identifier'
 
 const require = createRequire(import.meta.url)
 const vitePrerender = require('vite-plugin-prerender')
+const JSDOMRenderer = require('@prerenderer/renderer-jsdom')
 
 function createPrerenderPlugin() {
-  const PuppeteerRenderer = vitePrerender.PuppeteerRenderer
-
   return vitePrerender({
     staticDir: path.join(__dirname, 'dist'),
     server: {
       host: '127.0.0.1',
     },
     routes: ['/', '/about', '/gallery', '/hall', '/beach', '/training', '/competitions', '/contact'],
-    renderer: new PuppeteerRenderer({
-      headless: true,
+    renderer: new JSDOMRenderer({
       renderAfterDocumentEvent: 'prerender-ready',
       inject: {
         prerender: true,
       },
-      maxConcurrentRoutes: 1,
     }),
   })
 }

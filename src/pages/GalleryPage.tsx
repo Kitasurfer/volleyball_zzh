@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../lib/LanguageContext';
 import type { GalleryImage } from '../hooks/useGalleryImages';
 import { useGalleryImages } from '../hooks/useGalleryImages';
@@ -9,6 +10,7 @@ import { Seo } from '../components/Seo';
 
 const GalleryPage: React.FC = () => {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,7 +28,10 @@ const GalleryPage: React.FC = () => {
         events: 'Events',
         beach: 'Beach',
         training: 'Training',
+        action: 'Action',
+        other: 'Andere',
       },
+      seasonLabel: 'Saison',
       eventLabel: 'Event',
       photosLabel: 'Fotos',
       loading: 'Galerie wird geladen…',
@@ -62,7 +67,10 @@ const GalleryPage: React.FC = () => {
         events: 'Events',
         beach: 'Beach',
         training: 'Training',
+        action: 'Action',
+        other: 'Other',
       },
+      seasonLabel: 'Season',
       eventLabel: 'Event',
       photosLabel: 'Photos',
       loading: 'Loading gallery…',
@@ -98,7 +106,10 @@ const GalleryPage: React.FC = () => {
         events: 'События',
         beach: 'Пляж',
         training: 'Тренировки',
+        action: 'Экшен',
+        other: 'Другое',
       },
+      seasonLabel: 'Сезон',
       eventLabel: 'Событие',
       photosLabel: 'Фото',
       loading: 'Загружаем галерею…',
@@ -134,7 +145,10 @@ const GalleryPage: React.FC = () => {
         events: 'Eventi',
         beach: 'Beach',
         training: 'Allenamenti',
+        action: 'Azione',
+        other: 'Altro',
       },
+      seasonLabel: 'Stagione',
       eventLabel: 'Evento',
       photosLabel: 'Foto',
       loading: 'Caricamento galleria…',
@@ -167,6 +181,25 @@ const GalleryPage: React.FC = () => {
 
   const t = content[language];
 
+  const categoryLabels = useMemo(
+    () => ({
+      spieltage: t.filters.spieltage,
+      events: t.filters.events,
+      beach: t.filters.beach,
+      training: t.filters.training,
+      action: t.filters.action,
+      other: t.filters.other,
+    }),
+    [t.filters],
+  );
+
+  const dateLocale = useMemo(() => {
+    if (language === 'ru') return 'ru-RU';
+    if (language === 'it') return 'it-IT';
+    if (language === 'en') return 'en-GB';
+    return 'de-DE';
+  }, [language]);
+
   const seoTitle = language === 'de'
     ? 'Galerie – SKV Unterensingen Volleyball'
     : language === 'ru'
@@ -188,40 +221,41 @@ const GalleryPage: React.FC = () => {
     [filter, albums],
   );
 
+  const categoryCounts = useMemo(() => {
+    const result: Record<string, number> = { all: albums.length };
+    albums.forEach((album) => {
+      result[album.category] = (result[album.category] ?? 0) + 1;
+    });
+    return result;
+  }, [albums]);
+
   useEffect(() => {
     if (!activeImages[currentIndex]) {
       setCurrentIndex(0);
     }
   }, [activeImages, currentIndex]);
 
-  const handleAlbumOpen = useCallback(
-    (albumId: string) => {
-      const albumImages = images.filter((img) => img.albumId === albumId);
-      if (!albumImages.length) return;
-      const album = albums.find((a) => a.id === albumId);
-      setSelectedAlbumCategory(album?.category ?? null);
-      setActiveImages(albumImages);
-      setCurrentIndex(0);
-      setIsDialogOpen(true);
-    },
-    [images, albums],
-  );
+  const handleAlbumOpen = (albumId: string) => {
+    const album = albums.find((item) => item.id === albumId);
+    if (!album) return;
+    navigate(`/gallery/${album.slug}`);
+  };
 
-  const handleDialogChange = useCallback((open: boolean) => {
+  const handleDialogChange = (open: boolean) => {
     setIsDialogOpen(open);
-  }, []);
+  };
 
-  const showPrevious = useCallback(() => {
+  const showPrevious = () => {
     const total = activeImages.length;
     if (!total) return;
     setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
-  }, [activeImages.length]);
+  };
 
-  const showNext = useCallback(() => {
+  const showNext = () => {
     const total = activeImages.length;
     if (!total) return;
     setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
-  }, [activeImages.length]);
+  };
 
   useEffect(() => {
     if (!isDialogOpen) return;
@@ -252,7 +286,7 @@ const GalleryPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-primary-950 via-primary-900/95 to-neutral-900 pt-20 pb-16 text-white">
       <Seo title={seoTitle} description={seoDescription} imagePath="/images/SKV_Volleyball.png" />
       <div className="container mx-auto px-4 lg:px-8">
-        <GalleryFilters filters={t.filters} activeFilter={filter} onFilterChange={setFilter} />
+        <GalleryFilters filters={t.filters} activeFilter={filter} onFilterChange={setFilter} counts={categoryCounts} />
 
         {loading ? (
           <div className="flex min-h-[400px] items-center justify-center text-sm text-white/70">
@@ -272,6 +306,9 @@ const GalleryPage: React.FC = () => {
         ) : (
           <GalleryAlbumGrid
             albums={filteredAlbums}
+            categoryLabels={categoryLabels}
+            dateLocale={dateLocale}
+            seasonLabel={t.seasonLabel}
             eventLabel={t.eventLabel}
             photosLabel={t.photosLabel}
             onAlbumOpen={handleAlbumOpen}

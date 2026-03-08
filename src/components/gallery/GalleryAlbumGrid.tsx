@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
-import { Images as ImagesIcon, Play } from 'lucide-react';
+import { Camera, Calendar, Images as ImagesIcon, ChevronRight } from 'lucide-react';
 import type { GalleryAlbum } from '../../hooks/useGalleryImages';
+
+// Matches any string that ends with an image extension (covers WhatsApp names with dots like 19.49.19)
+const isFilenameLike = (s: string) =>
+  /\.(?:jpg|jpeg|png|webp|gif|bmp|avif|heic)$/i.test(s.trim());
+
+const CATEGORY_STYLE: Record<string, { bg: string; text: string; dot: string }> = {
+  spieltage: { bg: 'bg-amber-500/20 border-amber-500/40', text: 'text-amber-300', dot: 'bg-amber-400' },
+  events:    { bg: 'bg-sky-500/20 border-sky-500/40',     text: 'text-sky-300',   dot: 'bg-sky-400'   },
+  beach:     { bg: 'bg-teal-500/20 border-teal-500/40',   text: 'text-teal-300',  dot: 'bg-teal-400'  },
+  training:  { bg: 'bg-violet-500/20 border-violet-500/40', text: 'text-violet-300', dot: 'bg-violet-400' },
+  action:    { bg: 'bg-rose-500/20 border-rose-500/40',   text: 'text-rose-300',  dot: 'bg-rose-400'  },
+  other:     { bg: 'bg-neutral-500/20 border-neutral-500/30', text: 'text-neutral-300', dot: 'bg-neutral-400' },
+};
 
 interface GalleryAlbumGridProps {
   albums: GalleryAlbum[];
-  title?: string;
-  subtitle?: string;
+  categoryLabels: Record<string, string>;
+  dateLocale: string;
+  seasonLabel: string;
   eventLabel: string;
   photosLabel: string;
   onAlbumOpen: (albumId: string) => void;
@@ -13,7 +27,9 @@ interface GalleryAlbumGridProps {
 
 const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
   albums,
-  eventLabel,
+  categoryLabels,
+  dateLocale,
+  seasonLabel,
   photosLabel,
   onAlbumOpen,
 }) => {
@@ -21,83 +37,94 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
 
   if (!albums.length) return null;
 
-  const handleImageLoad = (albumId: string) => {
-    setLoadedImages((prev) => new Set(prev).add(albumId));
-  };
-
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {albums.map((album) => {
         const isLoaded = loadedImages.has(album.id);
+        const categoryLabel = categoryLabels[album.category] ?? album.category;
+        const style = CATEGORY_STYLE[album.category] ?? CATEGORY_STYLE.other;
+        const rawTitle = album.title?.trim() ?? '';
+        const displayTitle = isFilenameLike(rawTitle) ? null : rawTitle || null;
+
         return (
           <button
             key={album.id}
             type="button"
             onClick={() => onAlbumOpen(album.id)}
-            className="group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 focus:ring-offset-primary-900"
+            className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0d1f35] text-left shadow-[0_2px_16px_rgba(0,0,0,0.3)] transition-all duration-300 hover:-translate-y-1.5 hover:border-white/20 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 focus:ring-offset-[#0f0f1e]"
           >
             {/* Image */}
-            {!isLoaded && album.coverImage && (
-              <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-neutral-700 to-neutral-800" />
-            )}
-            {album.coverImage ? (
-              <img
-                src={album.coverImage.src}
-                alt={album.title}
-                loading="lazy"
-                onLoad={() => handleImageLoad(album.id)}
-                className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
-                  isLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary-800 to-primary-900">
-                <ImagesIcon className="h-12 w-12 text-white/20" />
-              </div>
-            )}
+            <div className="relative aspect-[1.34/1] overflow-hidden bg-[#060f1a]">
+              {!isLoaded && album.coverImage && (
+                <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#0d1f35] to-[#060f1a]" />
+              )}
+              {album.coverImage ? (
+                <img
+                  src={album.coverImage.src}
+                  alt={displayTitle ?? categoryLabel}
+                  loading="lazy"
+                  onLoad={() => setLoadedImages((prev) => new Set(prev).add(album.id))}
+                  className={`absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06] ${
+                    isLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ImagesIcon className="h-10 w-10 text-white/15" />
+                </div>
+              )}
 
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              {/* Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f35]/80 via-transparent to-transparent" />
 
-            {/* Play icon on hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-transform duration-300 group-hover:scale-110">
-                <Play className="h-6 w-6 text-white fill-white ml-1" />
-              </div>
+              {/* Photo count – top right */}
+              <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold text-white/90 backdrop-blur-sm">
+                <Camera className="h-3 w-3" />
+                {album.imageCount}
+              </span>
             </div>
 
-            {/* Content */}
-            <div className="absolute inset-x-0 bottom-0 p-4">
+            {/* Card footer */}
+            <div className="flex flex-1 flex-col gap-2 p-3.5">
               {/* Category badge */}
-              <span className="inline-block rounded-full bg-accent-500/80 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white mb-2">
-                {album.category}
+              <span
+                className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] ${style.bg} ${style.text}`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                {categoryLabel}
               </span>
-              
-              {/* Title */}
-              <h3 className="text-lg font-bold text-white leading-tight mb-2">
-                {album.title}
-              </h3>
 
-              {/* Meta info */}
-              <div className="flex items-center gap-4 text-xs text-white/70">
-                {album.eventDate && (
-                  <span>
-                    {new Date(album.eventDate).toLocaleDateString('de-DE', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <ImagesIcon className="h-3.5 w-3.5" />
-                  {album.imageCount} {photosLabel}
+              {/* Title or empty spacer */}
+              <div className="min-h-[2.5rem] flex-1">
+                {displayTitle ? (
+                  <h3 className="line-clamp-2 text-[14px] font-semibold leading-snug text-white/90">
+                    {displayTitle}
+                  </h3>
+                ) : null}
+              </div>
+
+              {/* Meta row */}
+              <div className="flex items-center justify-between gap-3 text-[10px] font-medium text-white/40">
+                <span className="flex min-w-0 items-center gap-1 truncate">
+                  {album.eventDate ? (
+                    <>
+                      <Calendar className="h-3 w-3" />
+                      {new Date(album.eventDate).toLocaleDateString(dateLocale, {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </>
+                  ) : album.season ? (
+                    `${seasonLabel} ${album.season}`
+                  ) : null}
+                </span>
+                <span className="shrink-0 flex items-center gap-0.5 text-white/30 transition-colors group-hover:text-white/60">
+                  {photosLabel}
+                  <ChevronRight className="h-3 w-3" />
                 </span>
               </div>
             </div>
-
-            {/* Hover border effect */}
-            <div className="absolute inset-0 rounded-xl border-2 border-transparent transition-colors duration-300 group-hover:border-accent-400/50" />
           </button>
         );
       })}

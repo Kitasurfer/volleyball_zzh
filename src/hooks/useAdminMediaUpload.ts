@@ -24,6 +24,14 @@ interface UseAdminMediaUploadResult {
   setLanguage: (value: 'all' | string) => void;
   albumId: 'none' | string;
   setAlbumId: (value: 'none' | string) => void;
+  subalbumId: 'none' | string;
+  setSubalbumId: (value: 'none' | string) => void;
+  caption: string;
+  setCaption: (value: string) => void;
+  isFeaturedGallery: boolean;
+  setIsFeaturedGallery: (value: boolean) => void;
+  isBestOfTournament: boolean;
+  setIsBestOfTournament: (value: boolean) => void;
   uploading: boolean;
   uploadError: string | null;
   uploadSuccess: string | null;
@@ -58,6 +66,10 @@ export const useAdminMediaUpload = (
   const [description, setDescription] = useState('');
   const [language, setLanguage] = useState<'all' | string>('all');
   const [albumId, setAlbumId] = useState<'none' | string>('none');
+  const [subalbumId, setSubalbumId] = useState<'none' | string>('none');
+  const [caption, setCaption] = useState('');
+  const [isFeaturedGallery, setIsFeaturedGallery] = useState(false);
+  const [isBestOfTournament, setIsBestOfTournament] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
@@ -116,8 +128,12 @@ export const useAdminMediaUpload = (
             language: language === 'all' ? null : language,
             media_type: inferMediaType(file),
             album_id: albumId === 'none' ? null : albumId,
+            subalbum_id: subalbumId === 'none' ? null : subalbumId,
             alt_text: langKey ? { [langKey]: baseTitle } : {},
             title_i18n: langKey ? { [langKey]: baseTitle } : {},
+            caption_i18n: langKey && caption ? { [langKey]: caption } : {},
+            is_featured_gallery: isFeaturedGallery,
+            is_best_of_tournament: isBestOfTournament,
           });
 
           if (insertError) {
@@ -140,8 +156,12 @@ export const useAdminMediaUpload = (
           language: language === 'all' ? null : language,
           media_type: mediaType,
           album_id: albumId === 'none' ? null : albumId,
+          subalbum_id: subalbumId === 'none' ? null : subalbumId,
           alt_text: langKey ? { [langKey]: baseTitle } : {},
           title_i18n: langKey ? { [langKey]: baseTitle } : {},
+          caption_i18n: langKey && caption ? { [langKey]: caption } : {},
+          is_featured_gallery: isFeaturedGallery,
+          is_best_of_tournament: isBestOfTournament,
         });
 
         if (insertError) {
@@ -158,6 +178,10 @@ export const useAdminMediaUpload = (
       setDescription('');
       setLanguage('all');
       setAlbumId('none');
+      setSubalbumId('none');
+      setCaption('');
+      setIsFeaturedGallery(false);
+      setIsBestOfTournament(false);
 
       if (options.onUploaded) {
         options.onUploaded();
@@ -186,6 +210,14 @@ export const useAdminMediaUpload = (
     setLanguage,
     albumId,
     setAlbumId,
+    subalbumId,
+    setSubalbumId,
+    caption,
+    setCaption,
+    isFeaturedGallery,
+    setIsFeaturedGallery,
+    isBestOfTournament,
+    setIsBestOfTournament,
     uploading,
     uploadError,
     uploadSuccess,

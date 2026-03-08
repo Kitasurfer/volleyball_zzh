@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { hasSupabaseConfig, supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
 import type { Language } from '../types';
 
@@ -185,6 +185,13 @@ export const useTrainingVideos = (): UseTrainingVideosResult => {
       setError(null);
 
       const featuredVideos = getFeaturedTrainingVideos(language as Language);
+
+      if (!hasSupabaseConfig || !supabase) {
+        setVideos(featuredVideos);
+        setError('Training media from Supabase is unavailable locally because Supabase is not configured.');
+        setLoading(false);
+        return;
+      }
 
       const { data: albumData, error: albumsError } = await supabase
         .from('gallery_albums')

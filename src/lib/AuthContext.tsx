@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { AuthError, Session, User } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { hasSupabaseConfig, supabase } from './supabase';
 
 interface AuthContextValue {
   session: Session | null;
@@ -18,6 +18,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!hasSupabaseConfig || !supabase) {
+      setSession(null);
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
 
     const init = async () => {
@@ -64,10 +70,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role,
     loading,
     signInWithPassword: async (email: string, password: string) => {
+      if (!supabase) {
+        return {
+          name: 'AuthSessionMissingError',
+          message: 'Supabase is not configured for this environment.',
+        } as AuthError;
+      }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       return error ?? null;
     },
     signOut: async () => {
+      if (!supabase) {
+        return;
+      }
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Failed to sign out', error.message);

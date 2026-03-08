@@ -12,6 +12,13 @@ export interface MediaAlbum {
   category: string;
 }
 
+export interface MediaSubalbum {
+  id: string;
+  albumId: string;
+  slug: string;
+  title: string;
+}
+
 export interface MediaAssetSummary {
   id: string;
   title: string | null;
@@ -22,6 +29,10 @@ export interface MediaAssetSummary {
   createdAt: string;
   signedUrl?: string;
   albumId?: string | null;
+  subalbumId?: string | null;
+  caption?: string | null;
+  isFeaturedGallery?: boolean;
+  isBestOfTournament?: boolean;
   hasAltText?: boolean;
   hasTitleI18n?: boolean;
 }

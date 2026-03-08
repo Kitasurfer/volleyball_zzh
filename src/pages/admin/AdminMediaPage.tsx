@@ -14,7 +14,7 @@ const AdminMediaPage = () => {
   const admin = t.admin.media;
   const [filters, setFilters] = useState<FilterState>({ search: '', language: 'all', mediaType: 'all' });
   const { items, loading, error, refresh } = useAdminMediaAssets(filters);
-  const { albums } = useAdminMediaAlbums();
+  const { albums, subalbums } = useAdminMediaAlbums();
   const { deletingId, deleteError, deleteSuccess, handleDelete } = useAdminMediaDelete({ onDeleted: refresh });
 
   return (
@@ -24,7 +24,7 @@ const AdminMediaPage = () => {
         <p className="mt-1 text-sm text-neutral-500">{admin.pageSubtitle}</p>
       </header>
 
-      <AdminMediaUploadForm albums={albums} onUploaded={refresh} />
+      <AdminMediaUploadForm albums={albums} subalbums={subalbums} onUploaded={refresh} />
 
       <MediaFilters onChange={setFilters} />
 

@@ -1,14 +1,15 @@
 import React from 'react';
-import type { MediaAlbum } from '../../../types/admin/media';
+import type { MediaAlbum, MediaSubalbum } from '../../../types/admin/media';
 import { useAdminMediaUpload } from '../../../hooks/useAdminMediaUpload';
 import { useLanguage } from '../../../lib/LanguageContext';
 
 interface AdminMediaUploadFormProps {
   albums: MediaAlbum[];
+  subalbums: MediaSubalbum[];
   onUploaded?: () => void;
 }
 
-const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onUploaded }) => {
+const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, subalbums, onUploaded }) => {
   const { t } = useLanguage();
   const {
     files,
@@ -25,6 +26,14 @@ const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onU
     setLanguage: setMediaLanguage,
     albumId,
     setAlbumId,
+    subalbumId,
+    setSubalbumId,
+    caption,
+    setCaption,
+    isFeaturedGallery,
+    setIsFeaturedGallery,
+    isBestOfTournament,
+    setIsBestOfTournament,
     uploading,
     uploadError,
     uploadSuccess,
@@ -33,6 +42,9 @@ const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onU
 
   const disableSubmit = uploading || (sourceType === 'file' && files.length === 0);
   const ui = t.admin.media.upload;
+  const filteredSubalbums = albumId === 'none'
+    ? subalbums
+    : subalbums.filter((subalbum) => subalbum.albumId === albumId);
 
   return (
     <form
@@ -96,9 +108,24 @@ const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onU
             ))}
           </select>
         </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase text-neutral-500">Subalbum</label>
+          <select
+            value={subalbumId}
+            onChange={(event) => setSubalbumId(event.target.value as 'none' | string)}
+            className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
+          >
+            <option value="none">No subalbum</option>
+            {filteredSubalbums.map((subalbum) => (
+              <option key={subalbum.id} value={subalbum.id}>
+                {subalbum.title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <div>
           <label className="block text-xs font-semibold uppercase text-neutral-500">{ui.titleLabel}</label>
           <input
@@ -106,6 +133,16 @@ const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onU
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder={ui.titlePlaceholder}
+            className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase text-neutral-500">Public caption</label>
+          <input
+            type="text"
+            value={caption}
+            onChange={(event) => setCaption(event.target.value)}
+            placeholder="Caption under the photo"
             className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
           />
         </div>
@@ -119,6 +156,25 @@ const AdminMediaUploadForm: React.FC<AdminMediaUploadFormProps> = ({ albums, onU
             className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none"
           />
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700">
+        <label className="inline-flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isFeaturedGallery}
+            onChange={(event) => setIsFeaturedGallery(event.target.checked)}
+          />
+          Featured in gallery
+        </label>
+        <label className="inline-flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={isBestOfTournament}
+            onChange={(event) => setIsBestOfTournament(event.target.checked)}
+          />
+          Best of tournament
+        </label>
       </div>
 
       <div className="flex items-center justify-between gap-4">

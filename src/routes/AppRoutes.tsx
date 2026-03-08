@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import AboutPage from '../pages/AboutPage';
 import GalleryPage from '../pages/GalleryPage';
+import GalleryAlbumPage from '../pages/GalleryAlbumPage';
 import HallPage from '../pages/HallPage';
 import BeachPage from '../pages/BeachPage';
 import TrainingPage from '../pages/TrainingPage';
@@ -32,6 +33,7 @@ export function AppRoutes({ PageFallback, AdminFallback }: AppRoutesProps) {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
+        <Route path="/gallery/:albumSlug" element={<GalleryAlbumPage />} />
         <Route path="/hall" element={<HallPage />} />
         <Route path="/beach" element={<BeachPage />} />
         <Route path="/training" element={<TrainingPage />} />

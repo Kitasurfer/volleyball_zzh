@@ -1,5 +1,6 @@
 import { useAdminAlbums, LANGUAGES } from '../../hooks/useAdminAlbums';
 import AdminAlbumsList from '../../components/admin/albums/AdminAlbumsList';
+import AdminSubalbumsManager from '../../components/admin/albums/AdminSubalbumsManager';
 import { useLanguage } from '../../lib/LanguageContext';
 import { AdminAlert } from '../../components/admin/common/AdminAlert';
 
@@ -201,6 +202,8 @@ const AdminAlbumsPage = () => {
           </div>
         </form>
       </div>
+
+      <AdminSubalbumsManager albumId={selectedId} />
     </div>
   );
 };

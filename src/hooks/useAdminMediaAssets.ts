@@ -10,8 +10,12 @@ interface SupabaseMediaRow {
   media_type: string;
   storage_path: string;
   album_id: string | null;
+  subalbum_id: string | null;
   alt_text: Record<string, unknown> | null;
   title_i18n: Record<string, unknown> | null;
+  caption_i18n: Record<string, unknown> | null;
+  is_featured_gallery: boolean | null;
+  is_best_of_tournament: boolean | null;
   created_at: string;
 }
 
@@ -62,7 +66,7 @@ export const useAdminMediaAssets = (filters: MediaFilters, options: Options = de
       const query = supabase
         .from('media_assets')
         .select(
-          'id, title, description, language, media_type, storage_path, album_id, alt_text, title_i18n, created_at',
+          'id, title, description, language, media_type, storage_path, album_id, subalbum_id, alt_text, title_i18n, caption_i18n, is_featured_gallery, is_best_of_tournament, created_at',
           { count: 'exact' },
         )
         .order('created_at', { ascending: false });
@@ -137,6 +141,13 @@ export const useAdminMediaAssets = (filters: MediaFilters, options: Options = de
             ? signedUrls[row.storage_path]
             : row.storage_path,
           albumId: row.album_id,
+          subalbumId: row.subalbum_id,
+          caption:
+            row.caption_i18n && typeof row.caption_i18n === 'object'
+              ? String(Object.values(row.caption_i18n as Record<string, unknown>)[0] ?? '')
+              : null,
+          isFeaturedGallery: Boolean(row.is_featured_gallery),
+          isBestOfTournament: Boolean(row.is_best_of_tournament),
           hasAltText: hasAlt,
           hasTitleI18n: hasI18n,
         };

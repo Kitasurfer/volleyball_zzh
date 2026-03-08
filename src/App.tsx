@@ -65,7 +65,12 @@ function App() {
 
   return (
     <AppProviders>
-      <Router>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <PrerenderReadySignal enabled={isPrerender} />
         <ScrollToTop />
         <div className="flex flex-col min-h-screen bg-background-page">

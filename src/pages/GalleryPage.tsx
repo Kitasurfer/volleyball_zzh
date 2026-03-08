@@ -37,6 +37,23 @@ const GalleryPage: React.FC = () => {
       loading: 'Galerie wird geladen…',
       errorPrefix: 'Fehler beim Laden der Galerie:',
       empty: 'Noch keine Bilder in der Galerie.',
+      close: 'Schließen',
+      download: 'Download',
+      zoomIn: 'Vergrößern',
+      zoomOut: 'Verkleinern',
+      previous: 'Zurück',
+      next: 'Weiter',
+      share: 'Teilen',
+      like: 'Like',
+      unlike: 'Unlike',
+      favorite: 'Favorit',
+      unfavorite: 'Favorit entfernen',
+      featured: 'Featured',
+      bestOf: 'Top',
+      photoCounter: 'Foto',
+      untitledPhoto: 'Foto',
+      showMap: 'Karte anzeigen',
+      hideMap: 'Karte ausblenden',
       navigationHelp:
         'Nutzen Sie die Pfeiltasten oder Buttons, um durch die Galerie zu navigieren.',
       locationBlocks: {
@@ -76,6 +93,23 @@ const GalleryPage: React.FC = () => {
       loading: 'Loading gallery…',
       errorPrefix: 'Failed to load gallery:',
       empty: 'No images in the gallery yet.',
+      close: 'Close',
+      download: 'Download',
+      zoomIn: 'Zoom in',
+      zoomOut: 'Zoom out',
+      previous: 'Previous',
+      next: 'Next',
+      share: 'Share',
+      like: 'Like',
+      unlike: 'Unlike',
+      favorite: 'Favorite',
+      unfavorite: 'Remove favorite',
+      featured: 'Featured',
+      bestOf: 'Top',
+      photoCounter: 'Photo',
+      untitledPhoto: 'Photo',
+      showMap: 'Show map',
+      hideMap: 'Hide map',
       navigationHelp:
         'Use the arrow keys or buttons to navigate the gallery.',
       locationBlocks: {
@@ -115,6 +149,23 @@ const GalleryPage: React.FC = () => {
       loading: 'Загружаем галерею…',
       errorPrefix: 'Ошибка при загрузке галереи:',
       empty: 'В галерее пока нет изображений.',
+      close: 'Закрыть',
+      download: 'Скачать',
+      zoomIn: 'Увеличить',
+      zoomOut: 'Уменьшить',
+      previous: 'Назад',
+      next: 'Вперёд',
+      share: 'Поделиться',
+      like: 'Лайк',
+      unlike: 'Убрать лайк',
+      favorite: 'В избранное',
+      unfavorite: 'Убрать из избранного',
+      featured: 'Рекомендуем',
+      bestOf: 'Топ',
+      photoCounter: 'Фото',
+      untitledPhoto: 'Фото',
+      showMap: 'Показать карту',
+      hideMap: 'Скрыть карту',
       navigationHelp:
         'Используйте стрелки или кнопки для навигации по галерее.',
       locationBlocks: {
@@ -154,6 +205,23 @@ const GalleryPage: React.FC = () => {
       loading: 'Caricamento galleria…',
       errorPrefix: 'Errore nel caricamento della galleria:',
       empty: 'Non ci sono ancora immagini in galleria.',
+      close: 'Chiudi',
+      download: 'Scarica',
+      zoomIn: 'Ingrandisci',
+      zoomOut: 'Riduci',
+      previous: 'Precedente',
+      next: 'Successivo',
+      share: 'Condividi',
+      like: 'Mi piace',
+      unlike: 'Rimuovi mi piace',
+      favorite: 'Preferito',
+      unfavorite: 'Rimuovi dai preferiti',
+      featured: 'In evidenza',
+      bestOf: 'Top',
+      photoCounter: 'Foto',
+      untitledPhoto: 'Foto',
+      showMap: 'Mostra mappa',
+      hideMap: 'Nascondi mappa',
       navigationHelp:
         'Usa le frecce della tastiera o i pulsanti per navigare nella galleria.',
       locationBlocks: {
@@ -316,7 +384,7 @@ const GalleryPage: React.FC = () => {
         )}
 
         {locationBlock && (
-          <div className="relative mt-10 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/20">
+          <div className="relative mt-10 rounded-[28px] border border-white/8 bg-white/[0.04] p-6 shadow-[0_16px_50px_rgba(0,0,0,0.18)] backdrop-blur-sm">
             {isPageLocationCollapsed ? (
               <div className="flex justify-end">
                 <button
@@ -324,7 +392,7 @@ const GalleryPage: React.FC = () => {
                   onClick={() => setIsPageLocationCollapsed(false)}
                   className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20 transition"
                 >
-                  {locationBlock.mapLabel || 'Karte anzeigen'}
+                  {locationBlock.mapLabel || t.showMap}
                 </button>
               </div>
             ) : (
@@ -363,7 +431,7 @@ const GalleryPage: React.FC = () => {
                       onClick={() => setIsPageMapOpen((prev) => !prev)}
                       className="ml-auto inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20"
                     >
-                      {isPageMapOpen ? 'Karte ausblenden' : 'Karte anzeigen'}
+                      {isPageMapOpen ? t.hideMap : (locationBlock.mapLabel || t.showMap)}
                     </button>
                   </div>
                 </div>
@@ -397,6 +465,25 @@ const GalleryPage: React.FC = () => {
         onNext={showNext}
         navigationHelp={t.navigationHelp}
         locationBlock={locationBlock}
+        labels={{
+          close: t.close,
+          download: t.download,
+          zoomIn: t.zoomIn,
+          zoomOut: t.zoomOut,
+          previous: t.previous,
+          next: t.next,
+          share: t.share,
+          like: t.like,
+          unlike: t.unlike,
+          favorite: t.favorite,
+          unfavorite: t.unfavorite,
+          featured: t.featured,
+          bestOf: t.bestOf,
+          photoCounter: t.photoCounter,
+          untitled: t.untitledPhoto,
+          showMap: t.showMap,
+          hideMap: t.hideMap,
+        }}
       />
     </div>
   );

@@ -3,6 +3,9 @@ import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut, Download, Heart, Star, S
 import { Button, Dialog, DialogClose, DialogContent } from '../ui';
 import type { GalleryImage } from '../../hooks/useGalleryImages';
 
+const isFilenameLike = (value: string) =>
+  /\.(?:jpg|jpeg|png|webp|gif|bmp|avif|heic)$/i.test(value.trim());
+
 type LocationBlock = {
   title: string;
   addressLabel: string;
@@ -11,6 +14,26 @@ type LocationBlock = {
   mapEmbed: string;
   mapLink: string;
   cta: string;
+};
+
+type GalleryLightboxLabels = {
+  close: string;
+  download: string;
+  zoomIn: string;
+  zoomOut: string;
+  previous: string;
+  next: string;
+  share: string;
+  like: string;
+  unlike: string;
+  favorite: string;
+  unfavorite: string;
+  featured: string;
+  bestOf: string;
+  photoCounter: string;
+  untitled: string;
+  showMap: string;
+  hideMap: string;
 };
 
 interface GalleryLightboxProps {
@@ -29,6 +52,7 @@ interface GalleryLightboxProps {
   likedImageIds?: Set<string>;
   favoriteImageIds?: Set<string>;
   likeCounts?: Record<string, number>;
+  labels?: Partial<GalleryLightboxLabels>;
 }
 
 const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
@@ -46,6 +70,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   likedImageIds,
   favoriteImageIds,
   likeCounts,
+  labels,
 }) => {
   const [zoom, setZoom] = useState(1);
   const [imageLoading, setImageLoading] = useState(true);
@@ -57,6 +82,26 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   const currentImage = images[currentIndex];
   const hasEngagement = Boolean(onLike || onFavorite || onShare);
   const hasThumbnails = images.length > 1;
+  const text: GalleryLightboxLabels = {
+    close: 'Close',
+    download: 'Download',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    previous: 'Previous',
+    next: 'Next',
+    share: 'Share',
+    like: 'Like',
+    unlike: 'Unlike',
+    favorite: 'Save favorite',
+    unfavorite: 'Remove favorite',
+    featured: 'Featured',
+    bestOf: 'Top',
+    photoCounter: 'Photo',
+    untitled: 'Photo',
+    showMap: 'Show map',
+    hideMap: 'Hide map',
+    ...labels,
+  };
 
   useEffect(() => {
     setZoom(1);
@@ -91,7 +136,10 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${currentImage.title.replace(/\s+/g, '_')}.jpg`;
+      const fileNameBase = (currentImage.title || currentImage.subalbumTitle || currentImage.albumTitle || text.untitled)
+        .replace(/\s+/g, '_')
+        .replace(/[^\w\-]+/g, '_');
+      link.download = `${fileNameBase || 'gallery_photo'}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -131,6 +179,18 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   const isLiked = currentImage ? Boolean(likedImageIds?.has(currentImage.id)) : false;
   const isFavorite = currentImage ? Boolean(favoriteImageIds?.has(currentImage.id)) : false;
   const likeCount = currentImage ? (likeCounts?.[currentImage.id] ?? 0) : 0;
+  const rawTitle = currentImage?.title?.trim() ?? '';
+  const safeTitle = rawTitle && !isFilenameLike(rawTitle) ? rawTitle : '';
+  const rawCaption = currentImage?.caption?.trim() ?? '';
+  const safeCaption = rawCaption && !isFilenameLike(rawCaption) ? rawCaption : '';
+  const displayTitle = safeTitle || currentImage?.subalbumTitle || currentImage?.albumTitle || text.untitled;
+  const displayCaption = safeCaption && safeCaption !== safeTitle ? safeCaption : null;
+  const displayMeta = [
+    currentImage?.subalbumTitle || currentImage?.albumTitle || null,
+    currentImage?.eventDate
+      ? new Date(currentImage.eventDate).toLocaleDateString()
+      : null,
+  ].filter(Boolean).join(' • ');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -145,7 +205,8 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                 size="icon"
                 onClick={handleDownload}
                 className="h-10 w-10 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
-                title="Download"
+                title={text.download}
+                aria-label={text.download}
               >
                 <Download className="h-4.5 w-4.5" />
               </Button>
@@ -155,7 +216,8 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                   size="icon"
                   onClick={handleZoomIn}
                   className="h-10 w-10 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
-                  title="Zoom in"
+                  title={text.zoomIn}
+                  aria-label={text.zoomIn}
                 >
                   <ZoomIn className="h-4.5 w-4.5" />
                 </Button>
@@ -165,7 +227,8 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                   size="icon"
                   onClick={handleZoomOut}
                   className="h-10 w-10 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
-                  title="Zoom out"
+                  title={text.zoomOut}
+                  aria-label={text.zoomOut}
                 >
                   <ZoomOut className="h-4.5 w-4.5" />
                 </Button>
@@ -174,13 +237,14 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
             <div className="flex items-center gap-3">
               <span className="rounded-full bg-black/40 px-3 py-1 text-sm font-medium text-white/70 backdrop-blur-sm">
-                {currentIndex + 1} / {images.length}
+                {text.photoCounter} {currentIndex + 1} / {images.length}
               </span>
               <DialogClose asChild>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-10 w-10 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70"
+                  aria-label={text.close}
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -203,7 +267,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
               )}
               <img
                 src={currentImage.src}
-                alt={currentImage.title}
+                alt={displayTitle}
                 onLoad={() => setImageLoading(false)}
                 className="max-h-full max-w-full object-contain transition-all duration-300 ease-out"
                 style={{
@@ -219,6 +283,38 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
             </figure>
           )}
 
+          {currentImage && (
+            <div className="pointer-events-none absolute inset-x-3 bottom-24 z-20 sm:inset-x-4 sm:bottom-24 md:left-6 md:right-auto md:max-w-[420px]">
+              <div className="rounded-2xl border border-white/10 bg-black/55 px-4 py-3 shadow-2xl backdrop-blur-md">
+                <div className="flex flex-wrap items-center gap-2">
+                  {currentImage.isBestOfTournament && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+                      <Star className="h-3 w-3" />
+                      {text.bestOf}
+                    </span>
+                  )}
+                  {currentImage.isFeatured && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white">
+                      <Star className="h-3 w-3" />
+                      {text.featured}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 text-xs font-medium uppercase tracking-[0.18em] text-white/45">
+                  {displayMeta || currentImage.albumTitle || text.untitled}
+                </div>
+                <div className="mt-1 text-base font-semibold leading-snug text-white sm:text-lg">
+                  {displayTitle}
+                </div>
+                {displayCaption && (
+                  <div className="mt-1 text-sm leading-6 text-white/70">
+                    {displayCaption}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Location block */}
           {locationBlock && (
             <>
@@ -229,7 +325,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                     onClick={() => setIsLocationCollapsed(false)}
                     className="inline-flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white shadow-lg ring-1 ring-white/20 backdrop-blur"
                   >
-                    {locationBlock.mapLabel || 'Karte anzeigen'}
+                    {locationBlock.mapLabel || text.showMap}
                   </button>
                 </div>
               )}
@@ -267,7 +363,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                       onClick={() => setIsMapOpen((prev) => !prev)}
                       className="ml-auto inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/20"
                     >
-                      {isMapOpen ? 'Karte ausblenden' : 'Karte anzeigen'}
+                      {isMapOpen ? text.hideMap : (locationBlock.mapLabel || text.showMap)}
                     </button>
                   </div>
                   {isMapOpen && (
@@ -292,27 +388,52 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
           {/* Navigation arrows */}
           {images.length > 1 && (
             <>
-              <div className="absolute left-3 top-1/2 z-30 -translate-y-1/2">
+              <div className="absolute left-3 top-1/2 z-30 hidden -translate-y-1/2 sm:block">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={onPrevious}
                   className="h-12 w-12 rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm hover:bg-black/75"
+                  aria-label={text.previous}
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </Button>
               </div>
-              <div className="absolute right-3 top-1/2 z-30 -translate-y-1/2">
+              <div className="absolute right-3 top-1/2 z-30 hidden -translate-y-1/2 sm:block">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={onNext}
                   className="h-12 w-12 rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm hover:bg-black/75"
+                  aria-label={text.next}
                 >
                   <ChevronRight className="h-6 w-6" />
                 </Button>
               </div>
             </>
+          )}
+
+          {images.length > 1 && (
+            <div className="absolute inset-x-3 bottom-[5.4rem] z-30 flex items-center justify-between sm:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onPrevious}
+                className="h-11 w-11 rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm hover:bg-black/75"
+                aria-label={text.previous}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onNext}
+                className="h-11 w-11 rounded-full border border-white/20 bg-black/55 text-white backdrop-blur-sm hover:bg-black/75"
+                aria-label={text.next}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
           )}
 
           {/* Engagement bar */}
@@ -331,10 +452,11 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                         ? 'bg-rose-500 text-white shadow-[0_0_12px_rgba(244,63,94,0.5)]'
                         : 'text-white/75 hover:bg-white/10 hover:text-white'
                     }`}
-                    aria-label={isLiked ? 'Unlike' : 'Like'}
+                    aria-label={isLiked ? text.unlike : text.like}
                   >
                     <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-                    {likeCount > 0 && <span>{likeCount}</span>}
+                    <span className="hidden sm:inline">{isLiked ? text.unlike : text.like}</span>
+                    <span>{likeCount > 0 ? likeCount : ''}</span>
                   </button>
                 )}
 
@@ -347,9 +469,10 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                         ? 'bg-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.5)]'
                         : 'text-white/75 hover:bg-white/10 hover:text-white'
                     }`}
-                    aria-label={isFavorite ? 'Remove favorite' : 'Save favorite'}
+                    aria-label={isFavorite ? text.unfavorite : text.favorite}
                   >
                     <Star className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
+                    <span className="hidden sm:inline">{isFavorite ? text.unfavorite : text.favorite}</span>
                   </button>
                 )}
 
@@ -358,9 +481,10 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                     type="button"
                     onClick={() => onShare(currentImage)}
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-white/75 transition hover:bg-white/10 hover:text-white"
-                    aria-label="Share"
+                    aria-label={text.share}
                   >
                     <Share2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">{text.share}</span>
                   </button>
                 )}
               </div>

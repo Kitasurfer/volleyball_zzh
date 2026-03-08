@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Heart, Share2, Star, Trophy, ArrowLeft, Camera, Calendar, Images } from 'lucide-react';
 import { Seo } from '../components/Seo';
@@ -40,6 +40,7 @@ const GalleryAlbumPage: React.FC = () => {
   const [activeImages, setActiveImages] = useState<GalleryImage[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const subalbumSectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const content = {
     de: {
@@ -53,6 +54,20 @@ const GalleryAlbumPage: React.FC = () => {
       bestOf: 'Highlights',
       popular: 'Beliebt',
       favorites: 'Meine Favoriten',
+      topBadge: 'Top',
+      featured: 'Featured',
+      like: 'Like',
+      unlike: 'Unlike',
+      favorite: 'Favorit',
+      unfavorite: 'Favorit entfernen',
+      share: 'Teilen',
+      download: 'Download',
+      zoomIn: 'Vergrößern',
+      zoomOut: 'Verkleinern',
+      close: 'Schließen',
+      openPhoto: 'Foto öffnen',
+      photoCounter: 'Foto',
+      untitledPhoto: 'Foto',
       noFavorites: 'Noch keine Favoriten — like ein Foto in der Vollansicht!',
       noPhotos: 'Noch keine Fotos.',
       navigationHelp: 'Pfeiltasten oder Wischen zum Navigieren.',
@@ -68,6 +83,20 @@ const GalleryAlbumPage: React.FC = () => {
       bestOf: 'Highlights',
       popular: 'Popular',
       favorites: 'My favorites',
+      topBadge: 'Top',
+      featured: 'Featured',
+      like: 'Like',
+      unlike: 'Unlike',
+      favorite: 'Favorite',
+      unfavorite: 'Remove favorite',
+      share: 'Share',
+      download: 'Download',
+      zoomIn: 'Zoom in',
+      zoomOut: 'Zoom out',
+      close: 'Close',
+      openPhoto: 'Open photo',
+      photoCounter: 'Photo',
+      untitledPhoto: 'Photo',
       noFavorites: 'No favorites yet — like a photo in fullscreen!',
       noPhotos: 'No photos yet.',
       navigationHelp: 'Use arrow keys or swipe to navigate.',
@@ -83,6 +112,20 @@ const GalleryAlbumPage: React.FC = () => {
       bestOf: 'Лучшие моменты',
       popular: 'Популярное',
       favorites: 'Избранное',
+      topBadge: 'Топ',
+      featured: 'Рекомендуем',
+      like: 'Лайк',
+      unlike: 'Убрать лайк',
+      favorite: 'В избранное',
+      unfavorite: 'Убрать из избранного',
+      share: 'Поделиться',
+      download: 'Скачать',
+      zoomIn: 'Увеличить',
+      zoomOut: 'Уменьшить',
+      close: 'Закрыть',
+      openPhoto: 'Открыть фото',
+      photoCounter: 'Фото',
+      untitledPhoto: 'Фото',
       noFavorites: 'Пока нет — лайкни фото в полноэкранном режиме!',
       noPhotos: 'Фото пока нет.',
       navigationHelp: 'Стрелки или свайп для навигации.',
@@ -98,6 +141,20 @@ const GalleryAlbumPage: React.FC = () => {
       bestOf: 'Momenti salienti',
       popular: 'Popolari',
       favorites: 'I miei preferiti',
+      topBadge: 'Top',
+      featured: 'In evidenza',
+      like: 'Mi piace',
+      unlike: 'Rimuovi mi piace',
+      favorite: 'Preferito',
+      unfavorite: 'Rimuovi dai preferiti',
+      share: 'Condividi',
+      download: 'Scarica',
+      zoomIn: 'Ingrandisci',
+      zoomOut: 'Riduci',
+      close: 'Chiudi',
+      openPhoto: 'Apri foto',
+      photoCounter: 'Foto',
+      untitledPhoto: 'Foto',
       noFavorites: 'Ancora nessuno — metti mi piace in modalità schermo intero!',
       noPhotos: 'Nessuna foto ancora.',
       navigationHelp: 'Usa le frecce o scorri per navigare.',
@@ -117,18 +174,28 @@ const GalleryAlbumPage: React.FC = () => {
       ? subalbums
       : subalbums.filter((s) => s.id === selectedSubalbumId);
 
+  const scopedImages = useMemo(
+    () => visibleSubalbums.flatMap((s) => s.images),
+    [visibleSubalbums],
+  );
+
+  const scopedBestPhotos = useMemo(
+    () => scopedImages.filter((img) => img.isBestOfTournament).slice(0, 12),
+    [scopedImages],
+  );
+
   const favorites = useMemo(
-    () => allImages.filter((img) => favoriteImageIds.has(img.id)).slice(0, 12),
-    [allImages, favoriteImageIds],
+    () => scopedImages.filter((img) => favoriteImageIds.has(img.id)).slice(0, 12),
+    [scopedImages, favoriteImageIds],
   );
 
   const popularPhotos = useMemo(
     () =>
-      [...allImages]
+      [...scopedImages]
         .sort((a, b) => (likeCounts[b.id] ?? 0) - (likeCounts[a.id] ?? 0))
         .filter((img) => (likeCounts[img.id] ?? 0) > 0)
         .slice(0, 12),
-    [allImages, likeCounts],
+    [scopedImages, likeCounts],
   );
 
   const openLightbox = useCallback((images: GalleryImage[], index: number) => {
@@ -159,6 +226,18 @@ const GalleryAlbumPage: React.FC = () => {
     },
     [albumSlug],
   );
+
+  useEffect(() => {
+    if (selectedSubalbumId === 'all') return;
+    const node = subalbumSectionRefs.current[selectedSubalbumId];
+    if (!node) return;
+
+    const timeoutId = window.setTimeout(() => {
+      node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [selectedSubalbumId]);
 
   if (loading) {
     return (
@@ -193,9 +272,11 @@ const GalleryAlbumPage: React.FC = () => {
 
   const categoryAccent = CATEGORY_ACCENT[album.category] ?? 'bg-neutral-600';
 
+  const sectionShellClass = 'rounded-[28px] border border-white/8 bg-white/[0.04] p-5 shadow-[0_16px_50px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6';
+
   /** Photo grid – image-first, clean, no filenames */
   const renderPhotoGrid = (sectionTitle: string, photos: GalleryImage[], showSectionTitle = true) => (
-    <section className="space-y-4">
+    <section className={showSectionTitle ? `${sectionShellClass} space-y-4` : 'space-y-4'}>
       {showSectionTitle && (
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold text-white/90">{sectionTitle}</h3>
@@ -214,23 +295,25 @@ const GalleryAlbumPage: React.FC = () => {
             const isLiked = likedImageIds.has(image.id);
             const isFav = favoriteImageIds.has(image.id);
             const count = likeCounts[image.id] ?? 0;
+            const rawImageTitle = image.title?.trim() ?? '';
+            const safeImageTitle = rawImageTitle && !isFilenameLike(rawImageTitle) ? rawImageTitle : '';
 
             return (
               <div
                 key={image.id}
-                className="group relative overflow-hidden rounded-xl bg-[#060f1a]"
+                className="group relative overflow-hidden rounded-2xl border border-white/8 bg-[#060f1a] shadow-[0_10px_30px_rgba(0,0,0,0.2)] transition duration-300 hover:-translate-y-1 hover:border-white/15 hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
               >
                 {/* Image – click opens lightbox */}
                 <button
                   type="button"
                   onClick={() => openLightbox(photos, index)}
                   className="block w-full cursor-pointer"
-                  aria-label="Open photo"
+                  aria-label={t.openPhoto}
                 >
                   <div className="relative aspect-square overflow-hidden">
                     <img
                       src={image.src}
-                      alt=""
+                      alt={safeImageTitle || image.subalbumTitle || album.title || t.untitledPhoto}
                       loading="lazy"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
                     />
@@ -241,7 +324,13 @@ const GalleryAlbumPage: React.FC = () => {
                     {image.isBestOfTournament && (
                       <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
                         <Trophy className="h-3 w-3" />
-                        Top
+                        {t.topBadge}
+                      </span>
+                    )}
+                    {image.isFeatured && (
+                      <span className="absolute left-2 top-10 flex items-center gap-1 rounded-full bg-sky-500/90 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                        <Star className="h-3 w-3" />
+                        {t.featured}
                       </span>
                     )}
 
@@ -256,7 +345,7 @@ const GalleryAlbumPage: React.FC = () => {
                 </button>
 
                 {/* Action bar – slides up on hover */}
-                <div className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-between gap-1 bg-gradient-to-t from-black/85 to-black/40 px-2.5 py-2 backdrop-blur-sm transition-transform duration-300 group-hover:translate-y-0">
+                <div className="absolute inset-x-0 bottom-0 flex translate-y-0 items-center justify-between gap-1 bg-gradient-to-t from-black/85 to-black/40 px-2.5 py-2 backdrop-blur-sm transition-transform duration-300 sm:translate-y-full sm:group-hover:translate-y-0">
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); void toggleLike(image.id); }}
@@ -265,6 +354,7 @@ const GalleryAlbumPage: React.FC = () => {
                         ? 'bg-rose-500 text-white'
                         : 'bg-white/10 text-white/80 hover:bg-white/20'
                     }`}
+                    aria-label={isLiked ? t.unlike : t.like}
                   >
                     <Heart className={`h-3.5 w-3.5 ${isLiked ? 'fill-current' : ''}`} />
                     {count > 0 ? count : ''}
@@ -278,6 +368,7 @@ const GalleryAlbumPage: React.FC = () => {
                         ? 'bg-amber-500 text-white'
                         : 'bg-white/10 text-white/80 hover:bg-white/20'
                     }`}
+                    aria-label={isFav ? t.unfavorite : t.favorite}
                   >
                     <Star className={`h-3.5 w-3.5 ${isFav ? 'fill-current' : ''}`} />
                   </button>
@@ -286,6 +377,7 @@ const GalleryAlbumPage: React.FC = () => {
                     type="button"
                     onClick={(e) => { e.stopPropagation(); void handleShare(image); }}
                     className="flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white/80 transition hover:bg-white/20"
+                    aria-label={t.share}
                   >
                     <Share2 className="h-3.5 w-3.5" />
                   </button>
@@ -307,7 +399,7 @@ const GalleryAlbumPage: React.FC = () => {
       />
 
       {/* Hero banner */}
-      <div className="relative mb-8 h-56 overflow-hidden sm:h-72">
+      <div className="relative mb-8 h-64 overflow-hidden border-b border-white/8 sm:h-80">
         {album.coverImage ? (
           <>
             <img
@@ -325,7 +417,7 @@ const GalleryAlbumPage: React.FC = () => {
         {/* Album info over banner */}
         <div className="absolute inset-x-0 bottom-0 container mx-auto px-4 pb-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="space-y-2">
+            <div className="max-w-3xl space-y-3 rounded-[24px] border border-white/10 bg-black/30 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.22)] backdrop-blur-md sm:p-5">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
@@ -352,8 +444,8 @@ const GalleryAlbumPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl font-bold text-white drop-shadow sm:text-3xl">{album.title}</h1>
-              {album.subtitle && <p className="text-sm text-white/60">{album.subtitle}</p>}
+              <h1 className="text-2xl font-bold text-white drop-shadow sm:text-4xl">{album.title}</h1>
+              {album.subtitle && <p className="max-w-2xl text-sm leading-6 text-white/70 sm:text-base">{album.subtitle}</p>}
             </div>
 
             {/* Stats */}
@@ -376,7 +468,7 @@ const GalleryAlbumPage: React.FC = () => {
 
         {/* Subalbum filter tabs */}
         {subalbums.length > 1 && (
-          <section className="space-y-4">
+          <section className={`${sectionShellClass} space-y-4`}>
             <h2 className="text-base font-semibold uppercase tracking-widest text-white/40">
               {t.subalbums}
             </h2>
@@ -388,7 +480,7 @@ const GalleryAlbumPage: React.FC = () => {
                 onClick={() => setSelectedSubalbumId('all')}
                 className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
                   selectedSubalbumId === 'all'
-                    ? 'border-accent-400 bg-accent-400 text-primary-900'
+                    ? 'border-accent-400 bg-accent-400 text-primary-900 shadow-[0_0_18px_rgba(250,204,21,0.22)]'
                     : 'border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:bg-white/8 hover:text-white'
                 }`}
               >
@@ -401,7 +493,7 @@ const GalleryAlbumPage: React.FC = () => {
                   onClick={() => setSelectedSubalbumId(s.id)}
                   className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
                     selectedSubalbumId === s.id
-                      ? 'border-white/30 bg-white/12 text-white'
+                      ? 'border-accent-400/40 bg-white/12 text-white ring-1 ring-accent-400/20'
                       : 'border-white/10 bg-white/5 text-white/55 hover:border-white/20 hover:bg-white/8 hover:text-white'
                   }`}
                 >
@@ -417,7 +509,7 @@ const GalleryAlbumPage: React.FC = () => {
                   key={s.id}
                   type="button"
                   onClick={() => setSelectedSubalbumId(s.id)}
-                  className={`group relative overflow-hidden rounded-xl border text-left transition-all duration-300 hover:-translate-y-1 ${
+                  className={`group relative overflow-hidden rounded-2xl border bg-white/[0.03] text-left shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,0,0,0.3)] ${
                     selectedSubalbumId === s.id
                       ? 'border-accent-400/40 ring-1 ring-accent-400/20'
                       : 'border-white/8 hover:border-white/15'
@@ -467,7 +559,7 @@ const GalleryAlbumPage: React.FC = () => {
         )}
 
         {/* Highlights */}
-        {album.bestPhotos.length > 0 && renderPhotoGrid(t.bestOf, album.bestPhotos)}
+        {scopedBestPhotos.length > 0 && renderPhotoGrid(t.bestOf, scopedBestPhotos)}
 
         {/* Popular (only if any liked) */}
         {popularPhotos.length > 0 && renderPhotoGrid(t.popular, popularPhotos)}
@@ -476,7 +568,7 @@ const GalleryAlbumPage: React.FC = () => {
         {favorites.length > 0 ? (
           renderPhotoGrid(t.favorites, favorites)
         ) : (
-          <section className="space-y-2">
+          <section className={`${sectionShellClass} space-y-2`}>
             <h3 className="text-lg font-semibold text-white/90">{t.favorites}</h3>
             <div className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/4 p-4 text-sm text-white/35">
               <Star className="h-5 w-5 shrink-0 text-amber-400/50" />
@@ -487,7 +579,14 @@ const GalleryAlbumPage: React.FC = () => {
 
         {/* Photos by subalbum */}
         {visibleSubalbums.map((s) => (
-          <section key={s.id} id={s.slug} className="space-y-4">
+          <section
+            key={s.id}
+            id={s.slug}
+            ref={(node) => {
+              subalbumSectionRefs.current[s.id] = node;
+            }}
+            className={`${sectionShellClass} space-y-4`}
+          >
             <div>
               <h2 className="text-xl font-semibold text-white">{s.title}</h2>
               {s.subtitle && <p className="mt-0.5 text-sm text-white/50">{s.subtitle}</p>}
@@ -518,6 +617,21 @@ const GalleryAlbumPage: React.FC = () => {
         likedImageIds={likedImageIds}
         favoriteImageIds={favoriteImageIds}
         likeCounts={likeCounts}
+        labels={{
+          close: t.close,
+          download: t.download,
+          zoomIn: t.zoomIn,
+          zoomOut: t.zoomOut,
+          share: t.share,
+          like: t.like,
+          unlike: t.unlike,
+          favorite: t.favorite,
+          unfavorite: t.unfavorite,
+          featured: t.featured,
+          bestOf: t.topBadge,
+          photoCounter: t.photoCounter,
+          untitled: t.untitledPhoto,
+        }}
       />
     </div>
   );

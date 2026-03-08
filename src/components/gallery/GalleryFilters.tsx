@@ -35,11 +35,11 @@ const GalleryFilters: React.FC<GalleryFiltersProps> = ({
           type="button"
           onClick={() => onFilterChange(key)}
           className={`
-            inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold
+            inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.14)] backdrop-blur-sm
             transition-all duration-200
             ${isActive
               ? 'border-accent-400 bg-accent-400 text-primary-900 shadow-[0_0_20px_rgba(250,204,21,0.28)]'
-              : 'border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:bg-white/10 hover:text-white'
+              : 'border-slate-300/70 bg-white/90 text-slate-700 hover:-translate-y-0.5 hover:border-primary-300 hover:bg-white hover:text-slate-900 hover:shadow-[0_12px_28px_rgba(0,0,0,0.16)]'
             }
           `}
         >
@@ -48,7 +48,7 @@ const GalleryFilters: React.FC<GalleryFiltersProps> = ({
           {count !== undefined && count > 0 && (
             <span
               className={`min-w-[1.2rem] rounded-full text-center text-[10px] font-bold leading-5 ${
-                isActive ? 'bg-primary-900/20 text-primary-900' : 'bg-white/12 text-white/55'
+                isActive ? 'bg-primary-900/20 text-primary-900' : 'bg-slate-200 text-slate-700'
               }`}
             >
               {count}

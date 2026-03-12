@@ -231,9 +231,9 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[100dvh] w-screen max-w-none bg-black p-0">
+      <DialogContent className="w-screen max-w-none bg-black p-0">
         <div
-          className="relative flex h-full w-full max-h-[100dvh] max-w-[100vw] flex-col items-center justify-center overflow-hidden bg-black"
+          className="absolute inset-0 overflow-hidden bg-black"
           onMouseMove={revealChrome}
           onMouseEnter={revealChrome}
           onTouchStart={revealChrome}
@@ -298,16 +298,17 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
             </div>
           </div>
 
-          {/* Main image */}
+          {/* Main image — absolute inset-0 so it always fills the full screen
+               regardless of viewport units (fixes iOS Safari landscape bug) */}
           {currentImage && (
             <figure
-              className="relative flex h-full w-full items-center justify-center px-0 py-0 sm:px-16 sm:py-24"
+              className="absolute inset-0"
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
             >
               {imageLoading && (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 z-10 flex items-center justify-center">
                   <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-white" />
                 </div>
               )}
@@ -315,7 +316,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                 src={currentImage.src}
                 alt={displayTitle}
                 onLoad={() => setImageLoading(false)}
-                className="h-auto max-h-[100dvh] w-auto max-w-[100vw] object-contain transition-all duration-300 ease-out sm:max-h-[calc(100dvh-8rem)] sm:max-w-[calc(100vw-8rem)]"
+                className="absolute inset-0 h-full w-full object-contain object-center transition-transform duration-300 ease-out"
                 style={{
                   transform: `scale(${zoom})`,
                   cursor: zoom > 1 ? 'zoom-out' : 'zoom-in',

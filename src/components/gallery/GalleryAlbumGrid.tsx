@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Camera, Calendar, Images as ImagesIcon, ChevronRight } from 'lucide-react';
 import type { GalleryAlbum } from '../../hooks/useGalleryImages';
 
@@ -33,14 +33,11 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
   photosLabel,
   onAlbumOpen,
 }) => {
-  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
-
   if (!albums.length) return null;
 
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {albums.map((album) => {
-        const isLoaded = loadedImages.has(album.id);
         const categoryLabel = categoryLabels[album.category] ?? album.category;
         const style = CATEGORY_STYLE[album.category] ?? CATEGORY_STYLE.other;
         const rawTitle = album.title?.trim() ?? '';
@@ -56,18 +53,12 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.12),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_24%)] opacity-70 transition duration-500 group-hover:opacity-100" />
             <div className="absolute -right-12 top-8 h-28 w-28 rounded-full bg-white/10 blur-3xl transition duration-700 group-hover:scale-150 group-hover:opacity-80" />
             <div className="relative aspect-[1.34/1] overflow-hidden bg-[#060f1a]">
-              {!isLoaded && album.coverImage && (
-                <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#0d1f35] to-[#060f1a]" />
-              )}
               {album.coverImage ? (
                 <img
                   src={album.coverImage.src}
                   alt={displayTitle ?? categoryLabel}
                   loading="lazy"
-                  onLoad={() => setLoadedImages((prev) => new Set(prev).add(album.id))}
-                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.08] ${
-                    isLoaded ? 'opacity-100' : 'opacity-0'
-                  }`}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center">

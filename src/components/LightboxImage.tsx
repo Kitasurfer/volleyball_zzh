@@ -33,21 +33,26 @@ export const LightboxImage: React.FC<LightboxImageProps> = ({
           <span className="pointer-events-none absolute inset-0 rounded-lg bg-black/10 opacity-0 transition-opacity duration-200 hover:opacity-100" />
         </button>
       </DialogTrigger>
-      <DialogContent className="flex max-h-screen max-w-[96vw] items-center justify-center border-none bg-black/95 p-0">
+      <DialogContent className="h-[100dvh] w-screen max-w-none border-none bg-black p-0">
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="group relative flex items-center justify-center focus:outline-none"
+          className="absolute right-3 top-3 z-10 rounded-full bg-black/70 p-2 text-white shadow-lg transition-colors hover:bg-black/85 sm:right-4 sm:top-4"
+          aria-label={alt}
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="flex h-full w-full items-center justify-center bg-black px-0 py-0 focus:outline-none sm:px-4 sm:py-4"
           aria-label={alt}
         >
           <img
             src={src}
             alt={alt}
-            className="max-h-[90vh] w-auto max-w-full object-contain cursor-zoom-out"
+            className="h-auto max-h-[100dvh] w-auto max-w-[100vw] object-contain cursor-zoom-out sm:max-h-[calc(100dvh-2rem)] sm:max-w-[calc(100vw-2rem)]"
           />
-          <span className="absolute right-4 top-4 rounded-full bg-black/70 p-2 text-white shadow-lg transition-colors group-hover:bg-black/85">
-            <X className="h-5 w-5" />
-          </span>
         </button>
       </DialogContent>
     </Dialog>

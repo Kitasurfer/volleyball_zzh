@@ -115,8 +115,40 @@ const BeachPage: React.FC = () => {
 
   const t = content[language];
 
-  const seoTitle = t.title;
-  const seoDescription = t.description;
+  const seoTitle =
+    language === 'de'
+      ? 'Beachvolleyball Unterensingen | Beachvolleyball Training | SKV Unterensingen'
+      : t.title;
+  const seoDescription =
+    language === 'de'
+      ? 'Beachvolleyball rund um Unterensingen mit SKV Unterensingen: Beachvolleyball Training, Trainingszeiten Beachvolleyball und Sandplätze.'
+      : t.description;
+  const seoKeywords =
+    language === 'de'
+      ? [
+          'Beachvolleyball Unterensingen',
+          'Beach Volleyball Unterensingen',
+          'Beachvolleyball Training Unterensingen',
+          'Trainingszeiten Beachvolleyball Unterensingen',
+          'SKV Unterensingen Beachvolleyball',
+        ]
+      : undefined;
+  const seoJsonLd =
+    language === 'de'
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'SportsActivityLocation',
+          name: 'Beachvolleyball SKV Unterensingen',
+          sport: 'Beach Volleyball',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'Auf d. Insel 1',
+            postalCode: '72622',
+            addressLocality: 'Nürtingen',
+            addressCountry: 'DE',
+          },
+        }
+      : undefined;
 
   // Transform schedule data for current language
   const scheduleItems = beachSchedule2026.map((item) => ({
@@ -127,7 +159,7 @@ const BeachPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20">
-      <Seo title={seoTitle} description={seoDescription} />
+      <Seo title={seoTitle} description={seoDescription} keywords={seoKeywords} jsonLd={seoJsonLd} />
       <div className="container mx-auto px-6 lg:px-12">
         <div className="text-center mb-12">
           <h1 className="text-h1 font-bold text-primary-900 mb-4">{t.title}</h1>

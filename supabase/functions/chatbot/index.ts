@@ -243,7 +243,21 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body: RequestBody = await req.json();
-    const language = body.language ?? 'de';
+
+    // Auto-detect language from question text so the bot always replies
+    // in the language the user is actually writing in.
+    const detectLanguageFromText = (text: string): string | null => {
+      if (/[а-яёА-ЯЁ]/.test(text)) return 'ru';
+      if (/[äöüßÄÖÜ]/.test(text) ||
+          /\b(ich|sie|der|die|das|und|oder|wie|was|wo|wann|welche|können|spielen|Training|Adresse|Halle|Beach)\b/i.test(text)) return 'de';
+      if (/\b(pallavolo|dove|quando|come|grazie|ciao|allenamento)\b/i.test(text)) return 'it';
+      if (/\b(where|when|how|what|address|schedule|beach|indoor|training)\b/i.test(text)) return 'en';
+      return null;
+    };
+
+    const uiLanguage = body.language ?? 'de';
+    const detectedLanguage = detectLanguageFromText(body.question ?? '');
+    const language = detectedLanguage ?? uiLanguage;
 
     console.log('=== Chatbot Request ===');
     console.log('Question:', body.question);

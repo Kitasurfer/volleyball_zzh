@@ -9,6 +9,7 @@ interface SeoProps {
   imagePath?: string;
   noIndex?: boolean;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+  keywords?: string[];
 }
 
 export function Seo({
@@ -17,6 +18,7 @@ export function Seo({
   imagePath = '/images/SKV_Volleyball.png',
   noIndex = false,
   jsonLd,
+  keywords,
 }: SeoProps) {
   const { language, t } = useLanguage();
   const location = useLocation();
@@ -143,6 +145,7 @@ export function Seo({
       <html lang={language} />
       <title>{title}</title>
       <meta name="description" content={description} />
+      {keywords && keywords.length > 0 ? <meta name="keywords" content={keywords.join(', ')} /> : null}
       <link rel="canonical" href={canonicalUrl} />
 
       <meta property="og:type" content="website" />

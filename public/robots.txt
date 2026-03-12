@@ -5,3 +5,4 @@ Allow: /admin/login
 Allow: /admin/login/
 
 Sitemap: https://skvunterensingen.netlify.app/sitemap.xml
+LLM-Content: https://skvunterensingen.netlify.app/llms.txt

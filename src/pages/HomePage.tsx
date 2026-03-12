@@ -81,6 +81,12 @@ const HomePage: React.FC = () => {
           'Kontaktieren Sie uns heute und werden Sie Teil der SKV Unterensingen Familie!',
         primary: 'Kontakt aufnehmen',
         secondary: 'Trainingsangebot',
+        badge: 'SKV Unterensingen Volleyball',
+        highlights: [
+          { label: 'Club', value: 'Volleyball & Beachvolleyball in Unterensingen' },
+          { label: 'Training', value: 'Hallen- und Beachtraining für verschiedene Leistungsstufen' },
+          { label: 'Kontakt', value: 'Schneller Weg zu Einstieg, Fragen und allen wichtigen Infos' },
+        ],
       },
       schedule: {
         title: 'Trainingszeiten 2026',
@@ -151,6 +157,12 @@ const HomePage: React.FC = () => {
           'Contact us today and become part of the SKV Unterensingen family!',
         primary: 'Get in touch',
         secondary: 'Training options',
+        badge: 'SKV Unterensingen Volleyball',
+        highlights: [
+          { label: 'Club', value: 'Volleyball & beach volleyball in Unterensingen' },
+          { label: 'Training', value: 'Hall and beach sessions for multiple levels' },
+          { label: 'Contact', value: 'Fast path to join, ask, and get all key details' },
+        ],
       },
       schedule: {
         title: 'Training Schedule 2026',
@@ -221,6 +233,12 @@ const HomePage: React.FC = () => {
           'Свяжитесь с нами сегодня и станьте частью семьи SKV Unterensingen!',
         primary: 'Связаться',
         secondary: 'Тренировочные программы',
+        badge: 'SKV Unterensingen Volleyball',
+        highlights: [
+          { label: 'Клуб', value: 'Волейбол и пляжный волейбол в Унтерензингене' },
+          { label: 'Тренировки', value: 'Зал и пляж для разных уровней подготовки' },
+          { label: 'Контакт', value: 'Быстрый путь к участию, вопросам и всей важной информации' },
+        ],
       },
       schedule: {
         title: 'Расписание тренировок 2026',
@@ -291,6 +309,12 @@ const HomePage: React.FC = () => {
           'Contattaci oggi e diventa parte della famiglia SKV Unterensingen!',
         primary: 'Contattaci',
         secondary: 'Offerta di allenamenti',
+        badge: 'SKV Unterensingen Volleyball',
+        highlights: [
+          { label: 'Club', value: 'Pallavolo e beach volley a Unterensingen' },
+          { label: 'Allenamento', value: 'Sessioni indoor e beach per diversi livelli' },
+          { label: 'Contatto', value: 'Accesso rapido per unirti, chiedere e ottenere tutti i dettagli' },
+        ],
       },
       schedule: {
         title: 'Orari degli allenamenti 2026',
@@ -301,22 +325,152 @@ const HomePage: React.FC = () => {
     },
   };
 
-  const t = content[language];
+  const t = (content[language as keyof typeof content] ?? content.de);
+  const metricTones = [
+    {
+      shell: 'from-sky-50 via-white to-sky-100/70',
+      glow: 'bg-sky-200/50',
+      icon: 'from-sky-500 to-cyan-500 text-white',
+      border: 'group-hover:border-sky-200/90',
+    },
+    {
+      shell: 'from-violet-50 via-white to-fuchsia-100/70',
+      glow: 'bg-fuchsia-200/45',
+      icon: 'from-violet-500 to-fuchsia-500 text-white',
+      border: 'group-hover:border-fuchsia-200/90',
+    },
+    {
+      shell: 'from-amber-50 via-white to-orange-100/80',
+      glow: 'bg-amber-200/50',
+      icon: 'from-amber-400 to-orange-500 text-white',
+      border: 'group-hover:border-amber-200/90',
+    },
+    {
+      shell: 'from-emerald-50 via-white to-teal-100/70',
+      glow: 'bg-emerald-200/50',
+      icon: 'from-emerald-500 to-teal-500 text-white',
+      border: 'group-hover:border-emerald-200/90',
+    },
+    {
+      shell: 'from-primary-50 via-white to-sky-100/70',
+      glow: 'bg-primary-200/50',
+      icon: 'from-primary-500 to-primary-700 text-white',
+      border: 'group-hover:border-primary-200/90',
+    },
+  ];
+  const sectionTones = [
+    {
+      surface: 'from-slate-950 via-primary-950 to-primary-900',
+      glow: 'bg-sky-400/30',
+      line: 'from-sky-300/80 via-sky-100/10 to-transparent',
+      iconWrap: 'border-sky-300/25 bg-sky-300/10 text-sky-100',
+      cta: 'text-sky-200 group-hover:text-white',
+      icon: Home,
+    },
+    {
+      surface: 'from-[#0e1620] via-[#10202d] to-[#1e293b]',
+      glow: 'bg-amber-300/25',
+      line: 'from-amber-200/80 via-amber-100/10 to-transparent',
+      iconWrap: 'border-amber-200/25 bg-amber-300/10 text-amber-100',
+      cta: 'text-amber-200 group-hover:text-white',
+      icon: Sun,
+    },
+    {
+      surface: 'from-[#08111f] via-[#102040] to-[#1b2d57]',
+      glow: 'bg-violet-300/25',
+      line: 'from-violet-200/80 via-violet-100/10 to-transparent',
+      iconWrap: 'border-violet-200/25 bg-violet-300/10 text-violet-100',
+      cta: 'text-violet-200 group-hover:text-white',
+      icon: Users,
+    },
+  ];
+  const scheduleTones = {
+    hall: {
+      shell: 'from-white via-white to-primary-50/90',
+      glow: 'bg-sky-300/25',
+      header: 'from-primary-50 via-white to-sky-50',
+      ring: 'group-hover:border-primary-200/90',
+      icon: 'from-primary-500 to-primary-700',
+      item: 'bg-primary-50/85 border-primary-100/90 group-hover:border-primary-200',
+      line: 'from-primary-400 to-primary-600',
+      meta: 'text-primary-400',
+      link: 'text-primary-600 group-hover:text-primary-700',
+    },
+    beach: {
+      shell: 'from-white via-white to-amber-50/90',
+      glow: 'bg-amber-300/25',
+      header: 'from-amber-50 via-orange-50 to-white',
+      ring: 'group-hover:border-amber-200/90',
+      icon: 'from-amber-400 to-orange-500',
+      item: 'bg-amber-50/85 border-amber-100/90 group-hover:border-amber-200',
+      line: 'from-amber-400 to-orange-500',
+      meta: 'text-amber-500',
+      link: 'text-amber-600 group-hover:text-amber-700',
+    },
+  };
 
-  const seoTitle = t.hero.title;
-  const seoDescription = t.hero.description;
+  const seoTitle =
+    language === 'de'
+      ? 'SKV Unterensingen Volleyball | Volleyball Unterensingen | Beachvolleyball Unterensingen'
+      : t.hero.title;
+  const seoDescription =
+    language === 'de'
+      ? 'SKV Unterensingen Volleyball in Unterensingen: Hallenvolleyball, Beachvolleyball und aktuelle Trainingszeiten für Volleyball und Beachvolleyball.'
+      : t.hero.description;
+  const seoKeywords =
+    language === 'de'
+      ? [
+          'SKV Unterensingen Volleyball',
+          'Volleyball Unterensingen',
+          'Volleyball Verein Unterensingen',
+          'Volleyball Training Unterensingen',
+          'Trainingszeiten Volleyball Unterensingen',
+          'Beachvolleyball Unterensingen',
+          'Beachvolleyball Training Unterensingen',
+          'Trainingszeiten Beachvolleyball Unterensingen',
+        ]
+      : undefined;
+  const seoJsonLd =
+    language === 'de'
+      ? [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'SportsActivityLocation',
+            name: 'SKV Unterensingen Volleyball',
+            sport: ['Volleyball', 'Beach Volleyball'],
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: 'Schulstraße 43',
+              postalCode: '72669',
+              addressLocality: 'Unterensingen',
+              addressCountry: 'DE',
+            },
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'SportsEvent',
+            name: 'Volleyball Training SKV Unterensingen',
+            sport: 'Volleyball',
+            location: {
+              '@type': 'Place',
+              name: 'Bettwiesenhalle Unterensingen',
+              address: 'Schulstraße 43, 72669 Unterensingen, Germany',
+            },
+          },
+        ]
+      : undefined;
 
   // Transform schedule data for current language
   const hallItems = hallSchedule2026.map((item) => ({
-    day: item.day[language],
+    day: item.day[language as keyof typeof item.day] ?? item.day.de,
     time: item.time,
-    location: item.location?.[language],
+    location: item.location?.[language as keyof typeof item.location],
   }));
 
   const beachItems = beachSchedule2026.map((item) => ({
-    day: item.day[language],
+    day: item.day[language as keyof typeof item.day] ?? item.day.de,
     time: item.time,
-    location: item.location?.[language],
+    location: item.location?.[language as keyof typeof item.location],
   }));
 
   const formattedUpdatedAt = useMemo(() => {
@@ -346,6 +500,8 @@ const HomePage: React.FC = () => {
         title={seoTitle}
         description={seoDescription}
         imagePath="https://kxwmkvtxkaczuonnnxlj.supabase.co/storage/v1/object/public/media-public/uploads/1771522090149-yh71uj.jpg"
+        keywords={seoKeywords}
+        jsonLd={seoJsonLd}
       />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-primary-950">
@@ -393,18 +549,24 @@ const HomePage: React.FC = () => {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
             {t.metrics.map((metric, index) => {
               const Icon = metric.icon;
+              const tone = metricTones[index % metricTones.length];
               return (
-                <Card key={index} className="border-none bg-white/90 shadow-lg shadow-primary-900/5">
-                  <CardHeader className="flex items-center justify-center">
-                    <span className="rounded-full bg-primary-100/70 p-4 text-primary-700 shadow-inner">
+                <Card
+                  key={index}
+                  className={`group relative overflow-hidden border border-white/70 bg-gradient-to-br ${tone.shell} shadow-[0_18px_45px_rgba(15,23,42,0.06)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_28px_70px_rgba(15,23,42,0.12)] ${tone.border}`}
+                >
+                  <div className={`absolute -right-10 top-0 h-28 w-28 rounded-full blur-3xl transition duration-500 group-hover:scale-125 ${tone.glow}`} />
+                  <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent opacity-70" />
+                  <CardHeader className="relative flex items-center justify-center">
+                    <span className={`rounded-full bg-gradient-to-br p-4 shadow-lg transition duration-500 group-hover:-translate-y-1 group-hover:scale-105 ${tone.icon}`}>
                       <Icon className="h-8 w-8" />
                     </span>
                   </CardHeader>
-                  <CardContent className="space-y-2 text-center">
+                  <CardContent className="relative space-y-2 text-center">
                     <CardTitle className="text-base sm:text-lg lg:text-xl xl:text-3xl font-semibold text-primary-900 leading-snug">
                       {metric.value}
                     </CardTitle>
-                    <CardDescription className="text-sm text-neutral-600">{metric.label}</CardDescription>
+                    <CardDescription className="text-sm text-neutral-600 transition-colors duration-300 group-hover:text-neutral-700">{metric.label}</CardDescription>
                   </CardContent>
                 </Card>
               );
@@ -428,26 +590,53 @@ const HomePage: React.FC = () => {
       <section className="bg-white py-20">
         <div className="container mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {t.sections.map((section, index) => (
-              <Card key={index} className="group border-none bg-gradient-to-br from-white to-neutral-50 shadow-lg shadow-primary-900/5">
-                <CardHeader>
-                  <CardTitle className="text-2xl font-semibold text-primary-900 transition-colors group-hover:text-primary-600">
-                    {section.title}
-                  </CardTitle>
-                  <CardDescription className="text-base text-neutral-600">
-                    {section.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button asChild variant="ghost" className="group/cta gap-2 px-0 text-primary-600 hover:text-primary-700">
-                    <Link to={section.link}>
-                      {t.sectionsCtaLabel}
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/cta:translate-x-1" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            {t.sections.map((section, index) => {
+              const tone = sectionTones[index % sectionTones.length];
+              const SectionIcon = tone.icon;
+
+              return (
+                <Card
+                  key={index}
+                  className="group relative overflow-hidden border border-primary-100/80 bg-white p-0 shadow-[0_20px_60px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-3 hover:border-primary-200/90 hover:shadow-[0_34px_90px_rgba(15,23,42,0.16)]"
+                >
+                  <div className={`absolute -right-14 top-8 h-32 w-32 rounded-full blur-3xl transition duration-500 group-hover:scale-125 ${tone.glow}`} />
+                  <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary-200/80 to-transparent" />
+                  <div className={`relative mx-6 mt-6 overflow-hidden rounded-[1.6rem] border border-white/10 bg-gradient-to-br ${tone.surface} p-6 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]`}>
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_42%)] opacity-80" />
+                    <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r ${tone.line}`} />
+                    <div className="relative flex items-start justify-between gap-4">
+                      <div className="text-xs font-semibold uppercase tracking-[0.34em] text-white/55">
+                        {String(index + 1).padStart(2, '0')}
+                      </div>
+                      <div className={`rounded-full border p-3 transition duration-500 group-hover:-translate-y-1 group-hover:scale-105 ${tone.iconWrap}`}>
+                        <SectionIcon className="h-5 w-5" />
+                      </div>
+                    </div>
+                    <div className="relative mt-16">
+                      <div className="text-sm uppercase tracking-[0.28em] text-white/42">{t.sectionsCtaLabel}</div>
+                      <div className="mt-2 text-2xl font-semibold tracking-tight text-white">{section.title}</div>
+                      <div className="mt-2 h-px w-16 bg-gradient-to-r from-white/60 to-transparent transition duration-500 group-hover:w-24" />
+                    </div>
+                  </div>
+                  <CardHeader className="relative pb-4">
+                    <CardTitle className="text-2xl font-semibold text-primary-900 transition-transform duration-500 group-hover:translate-y-1">
+                      {section.title}
+                    </CardTitle>
+                    <CardDescription className="text-base leading-7 text-neutral-600 transition-colors duration-300 group-hover:text-neutral-700">
+                      {section.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="relative pt-0">
+                    <Button asChild variant="ghost" className={`group/cta gap-2 px-0 transition-colors hover:bg-transparent ${tone.cta}`}>
+                      <Link to={section.link}>
+                        {t.sectionsCtaLabel}
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover/cta:translate-x-1.5" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -464,38 +653,40 @@ const HomePage: React.FC = () => {
 
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Hall Schedule */}
-              <div className="bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden">
-                <div className="px-5 py-4 border-b border-neutral-100 bg-gradient-to-r from-primary-50 to-white">
+              <div className={`group relative overflow-hidden rounded-[2rem] border border-neutral-100 bg-gradient-to-br ${scheduleTones.hall.shell} shadow-[0_22px_70px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_34px_90px_rgba(15,23,42,0.14)] ${scheduleTones.hall.ring}`}>
+                <div className={`absolute -right-10 top-8 h-32 w-32 rounded-full blur-3xl transition duration-500 group-hover:scale-125 ${scheduleTones.hall.glow}`} />
+                <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary-200 to-transparent" />
+                <div className={`relative px-5 py-4 border-b border-neutral-100 bg-gradient-to-r ${scheduleTones.hall.header}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md">
+                      <div className={`p-2 rounded-xl bg-gradient-to-br ${scheduleTones.hall.icon} text-white shadow-lg transition duration-500 group-hover:-translate-y-1 group-hover:scale-105`}>
                         <Home className="w-4 h-4" />
                       </div>
                       <h3 className="font-semibold text-primary-900">{t.schedule.hallTitle}</h3>
                     </div>
-                    <Link to="/hall" className="text-xs text-primary-600 hover:text-primary-700 font-medium">
-                      {t.schedule.viewDetails} →
+                    <Link to="/hall" className={`group/link inline-flex items-center gap-1 text-xs font-medium transition-colors ${scheduleTones.hall.link}`}>
+                      {t.schedule.viewDetails}
+                      <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover/link:translate-x-1" />
                     </Link>
                   </div>
                 </div>
-                <div className="p-4 space-y-2">
+                <div className="relative p-4 space-y-2">
                   {hallItems.map((item, idx) => (
                     <div
                       key={idx}
-                      className="relative flex items-center gap-3 p-3 rounded-lg bg-primary-50 border border-primary-100"
+                      className={`relative flex items-center gap-3 rounded-xl border p-3 transition-all duration-300 ${scheduleTones.hall.item}`}
                     >
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg bg-gradient-to-b from-primary-400 to-primary-600" />
+                      <div className={`absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg bg-gradient-to-b ${scheduleTones.hall.line}`} />
                       <div className="flex-1 pl-1">
                         <p className="font-medium text-primary-900 text-sm">{item.day}</p>
                         <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-600">
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-primary-400" />
+                            <Clock className={`w-3 h-3 ${scheduleTones.hall.meta}`} />
                             {item.time}
                           </span>
                           {item.location && (
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-primary-400" />
+                              <MapPin className={`w-3 h-3 ${scheduleTones.hall.meta}`} />
                               {item.location}
                             </span>
                           )}
@@ -506,38 +697,40 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Beach Schedule */}
-              <div className="bg-white rounded-2xl shadow-xl border border-neutral-100 overflow-hidden">
-                <div className="px-5 py-4 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50">
+              <div className={`group relative overflow-hidden rounded-[2rem] border border-neutral-100 bg-gradient-to-br ${scheduleTones.beach.shell} shadow-[0_22px_70px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_34px_90px_rgba(15,23,42,0.14)] ${scheduleTones.beach.ring}`}>
+                <div className={`absolute -right-10 top-8 h-32 w-32 rounded-full blur-3xl transition duration-500 group-hover:scale-125 ${scheduleTones.beach.glow}`} />
+                <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-200 to-transparent" />
+                <div className={`relative px-5 py-4 border-b border-amber-100 bg-gradient-to-r ${scheduleTones.beach.header}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md">
+                      <div className={`p-2 rounded-xl bg-gradient-to-br ${scheduleTones.beach.icon} text-white shadow-lg transition duration-500 group-hover:-translate-y-1 group-hover:scale-105`}>
                         <Sun className="w-4 h-4" />
                       </div>
                       <h3 className="font-semibold text-primary-900">{t.schedule.beachTitle}</h3>
                     </div>
-                    <Link to="/beach" className="text-xs text-amber-600 hover:text-amber-700 font-medium">
-                      {t.schedule.viewDetails} →
+                    <Link to="/beach" className={`group/link inline-flex items-center gap-1 text-xs font-medium transition-colors ${scheduleTones.beach.link}`}>
+                      {t.schedule.viewDetails}
+                      <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover/link:translate-x-1" />
                     </Link>
                   </div>
                 </div>
-                <div className="p-4 space-y-2">
+                <div className="relative p-4 space-y-2">
                   {beachItems.map((item, idx) => (
                     <div
                       key={idx}
-                      className="relative flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100"
+                      className={`relative flex items-center gap-3 rounded-xl border p-3 transition-all duration-300 ${scheduleTones.beach.item}`}
                     >
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg bg-gradient-to-b from-amber-400 to-orange-500" />
+                      <div className={`absolute left-0 top-0 bottom-0 w-0.5 rounded-l-lg bg-gradient-to-b ${scheduleTones.beach.line}`} />
                       <div className="flex-1 pl-1">
                         <p className="font-medium text-primary-900 text-sm">{item.day}</p>
                         <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-600">
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-amber-500" />
+                            <Clock className={`w-3 h-3 ${scheduleTones.beach.meta}`} />
                             {item.time}
                           </span>
                           {item.location && (
                             <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-amber-500" />
+                              <MapPin className={`w-3 h-3 ${scheduleTones.beach.meta}`} />
                               {item.location}
                             </span>
                           )}
@@ -562,21 +755,69 @@ const HomePage: React.FC = () => {
       />
 
       {/* CTA Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-700 to-primary-900 py-20 text-center text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.18),transparent_55%)]" />
+      <section className="relative overflow-hidden bg-[#050816] py-24 text-white sm:py-28">
+        {/* Radial glows — no dark linear overlay so they're visible */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_55%_at_50%_-5%,_rgba(103,232,249,0.22),_transparent),radial-gradient(circle_at_88%_15%,_rgba(217,70,239,0.20),_transparent_30%)]" />
+        <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.35)_1px,transparent_1px)] [background-size:5rem_5rem]" />
         <div className="relative container mx-auto px-6">
-          <h2 className="text-4xl font-bold sm:text-5xl">{t.cta.title}</h2>
-          <p className="mt-6 text-lg sm:text-xl">{t.cta.subtitle}</p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Button asChild size="lg" variant="accent" className="px-8 text-base font-semibold shadow-lg shadow-accent-500/40">
-              <Link to="/contact">
-                {t.cta.primary}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" className="border border-white/30 bg-white/10 px-6 text-white hover:bg-white/20">
-              <Link to="/training">{t.cta.secondary}</Link>
-            </Button>
+          <div className="mx-auto max-w-5xl">
+            <div className="group relative overflow-hidden rounded-[2rem] border border-white/[0.12] bg-white/[0.05] p-8 shadow-[0_40px_120px_-48px_rgba(14,165,233,0.6)] backdrop-blur-xl transition duration-500 hover:-translate-y-1 hover:border-white/[0.18] hover:shadow-[0_48px_140px_-48px_rgba(14,165,233,0.75)] sm:p-10 lg:p-12">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.14),_transparent_36%),linear-gradient(135deg,rgba(14,165,233,0.14),transparent_40%,rgba(217,70,239,0.16))]" />
+              <div className="absolute -right-16 top-8 h-40 w-40 rounded-full bg-cyan-400/30 blur-3xl transition duration-700 group-hover:scale-125" />
+              <div className="absolute -left-12 bottom-4 h-36 w-36 rounded-full bg-fuchsia-500/22 blur-3xl transition duration-700 group-hover:scale-125" />
+              <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+
+              <div className="relative text-center">
+                <div className="inline-flex items-center gap-3 rounded-full border border-white/[0.14] bg-white/[0.07] px-4 py-2 text-xs uppercase tracking-[0.32em] text-white/65 backdrop-blur-sm">
+                  <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(103,232,249,0.9)]" />
+                  {t.cta.badge}
+                </div>
+
+                <h2 className="mx-auto mt-8 max-w-3xl text-balance text-4xl font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-6xl">
+                  {t.cta.title}
+                </h2>
+                <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/70 sm:text-xl">
+                  {t.cta.subtitle}
+                </p>
+
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="accent"
+                    className="group/cta px-8 text-base font-semibold shadow-[0_24px_70px_-24px_rgba(56,189,248,0.75)] transition duration-300 hover:-translate-y-0.5"
+                  >
+                    <Link to="/contact">
+                      {t.cta.primary}
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover/cta:translate-x-1.5" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="group/ghost border border-white/20 bg-white/[0.09] px-6 text-white backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.15]"
+                  >
+                    <Link to="/training">
+                      {t.cta.secondary}
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover/ghost:translate-x-1" />
+                    </Link>
+                  </Button>
+                </div>
+
+                <div className="mt-10 grid gap-3 text-left sm:grid-cols-3">
+                  {t.cta.highlights.map((item, index) => (
+                    <div
+                      key={`${item.label}-${index}`}
+                      className="relative overflow-hidden rounded-2xl border border-white/[0.12] bg-white/[0.07] px-4 py-4 backdrop-blur-sm transition duration-300 hover:border-white/[0.20] hover:bg-white/[0.11]"
+                    >
+                      <div className="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                      <div className="text-[11px] uppercase tracking-[0.24em] text-white/55">{item.label}</div>
+                      <div className="mt-2 text-sm text-white/85">{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

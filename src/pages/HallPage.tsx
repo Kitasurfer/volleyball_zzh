@@ -86,8 +86,40 @@ const HallPage: React.FC = () => {
 
   const t = content[language];
 
-  const seoTitle = t.title;
-  const seoDescription = t.description;
+  const seoTitle =
+    language === 'de'
+      ? 'Hallenvolleyball Unterensingen | Volleyball Training | SKV Unterensingen'
+      : t.title;
+  const seoDescription =
+    language === 'de'
+      ? 'Hallenvolleyball beim SKV Unterensingen in der Bettwiesenhalle: Volleyball Training, Trainingszeiten Volleyball Unterensingen und Spielbetrieb.'
+      : t.description;
+  const seoKeywords =
+    language === 'de'
+      ? [
+          'Hallenvolleyball Unterensingen',
+          'Volleyball Unterensingen',
+          'Volleyball Training Unterensingen',
+          'Trainingszeiten Volleyball Unterensingen',
+          'SKV Unterensingen Volleyball',
+        ]
+      : undefined;
+  const seoJsonLd =
+    language === 'de'
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'SportsActivityLocation',
+          name: 'Bettwiesenhalle Unterensingen',
+          sport: 'Volleyball',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'Schulstraße 43',
+            postalCode: '72669',
+            addressLocality: 'Unterensingen',
+            addressCountry: 'DE',
+          },
+        }
+      : undefined;
 
   // Transform schedule data for current language
   const scheduleItems = hallSchedule2026.map((item) => ({
@@ -98,7 +130,7 @@ const HallPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20">
-      <Seo title={seoTitle} description={seoDescription} />
+      <Seo title={seoTitle} description={seoDescription} keywords={seoKeywords} jsonLd={seoJsonLd} />
       <div className="container mx-auto px-6 lg:px-12">
         <div className="text-center mb-12">
           <h1 className="text-h1 font-bold text-primary-900 mb-4">{t.title}</h1>

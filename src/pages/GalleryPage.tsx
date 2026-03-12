@@ -269,7 +269,7 @@ const GalleryPage: React.FC = () => {
   }, [language]);
 
   const seoTitle = language === 'de'
-    ? 'Galerie – SKV Unterensingen Volleyball'
+    ? 'Volleyball & Beachvolleyball Galerie – SKV Unterensingen'
     : language === 'ru'
     ? 'Галерея — SKV Unterensingen Volleyball'
     : language === 'it'
@@ -277,7 +277,7 @@ const GalleryPage: React.FC = () => {
     : 'Gallery – SKV Unterensingen Volleyball';
 
   const seoDescription = language === 'de'
-    ? 'Fotos von Spieltagen, Events, Beach und Training bei SKV Unterensingen Volleyball.'
+    ? 'Fotos von Volleyball, Hallenvolleyball und Beachvolleyball bei SKV Unterensingen in Unterensingen.'
     : language === 'ru'
     ? 'Фотографии матчей, событий, пляжа и тренировок SKV Unterensingen Volleyball.'
     : language === 'it'
@@ -352,7 +352,21 @@ const GalleryPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary-950 via-primary-900/95 to-neutral-900 pt-20 pb-16 text-white">
-      <Seo title={seoTitle} description={seoDescription} imagePath="/images/SKV_Volleyball.png" />
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        imagePath="/images/SKV_Volleyball.png"
+        keywords={
+          language === 'de'
+            ? [
+                'Volleyball Unterensingen Bilder',
+                'SKV Unterensingen Volleyball Fotos',
+                'Beachvolleyball Unterensingen Bilder',
+                'Hallenvolleyball Unterensingen Fotos',
+              ]
+            : undefined
+        }
+      />
       <div className="container mx-auto px-4 lg:px-8">
         <GalleryFilters filters={t.filters} activeFilter={filter} onFilterChange={setFilter} counts={categoryCounts} />
 

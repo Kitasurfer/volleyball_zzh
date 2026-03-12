@@ -74,11 +74,13 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 }) => {
   const [zoom, setZoom] = useState(1);
   const [imageLoading, setImageLoading] = useState(true);
+  const [showChrome, setShowChrome] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isLocationCollapsed, setIsLocationCollapsed] = useState(true);
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
+  const chromeTimeoutRef = useRef<number | null>(null);
   const currentImage = images[currentIndex];
   const hasEngagement = Boolean(onLike || onFavorite || onShare);
   const hasThumbnails = images.length > 1;
@@ -113,6 +115,30 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   }, [open]);
 
   useEffect(() => {
+    if (!open) {
+      setShowChrome(true);
+      if (chromeTimeoutRef.current !== null) {
+        window.clearTimeout(chromeTimeoutRef.current);
+        chromeTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    setShowChrome(true);
+
+    chromeTimeoutRef.current = window.setTimeout(() => {
+      setShowChrome(false);
+    }, 2200);
+
+    return () => {
+      if (chromeTimeoutRef.current !== null) {
+        window.clearTimeout(chromeTimeoutRef.current);
+        chromeTimeoutRef.current = null;
+      }
+    };
+  }, [open, currentIndex]);
+
+  useEffect(() => {
     if (thumbnailContainerRef.current && open) {
       const thumbnail = thumbnailContainerRef.current.children[currentIndex] as HTMLElement;
       if (thumbnail) {
@@ -127,6 +153,16 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.5, 3));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.5, 1));
+
+  const revealChrome = () => {
+    setShowChrome(true);
+    if (chromeTimeoutRef.current !== null) {
+      window.clearTimeout(chromeTimeoutRef.current);
+    }
+    chromeTimeoutRef.current = window.setTimeout(() => {
+      setShowChrome(false);
+    }, 2200);
+  };
 
   const handleDownload = async () => {
     if (!currentImage) return;
@@ -152,6 +188,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
+    revealChrome();
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -194,11 +231,20 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-full w-full items-center justify-center bg-black/96 p-0">
-        <div className="relative flex h-full w-full max-h-screen max-w-screen flex-col items-center justify-center overflow-hidden">
+      <DialogContent className="h-[100dvh] w-screen max-w-none bg-black p-0">
+        <div
+          className="relative flex h-full w-full max-h-[100dvh] max-w-[100vw] flex-col items-center justify-center overflow-hidden bg-black"
+          onMouseMove={revealChrome}
+          onMouseEnter={revealChrome}
+          onTouchStart={revealChrome}
+        >
 
           {/* Top controls */}
-          <div className="absolute left-4 right-4 top-4 z-40 flex items-center justify-between">
+          <div
+            className={`absolute left-4 right-4 top-4 z-40 flex items-center justify-between transition-opacity duration-200 ${
+              showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+            }`}
+          >
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -255,7 +301,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
           {/* Main image */}
           {currentImage && (
             <figure
-              className="relative flex h-full w-full items-center justify-center px-16 py-24"
+              className="relative flex h-full w-full items-center justify-center px-0 py-0 sm:px-16 sm:py-24"
               onTouchStart={onTouchStart}
               onTouchMove={onTouchMove}
               onTouchEnd={onTouchEnd}
@@ -269,7 +315,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                 src={currentImage.src}
                 alt={displayTitle}
                 onLoad={() => setImageLoading(false)}
-                className="max-h-full max-w-full object-contain transition-all duration-300 ease-out"
+                className="h-auto max-h-[100dvh] w-auto max-w-[100vw] object-contain transition-all duration-300 ease-out sm:max-h-[calc(100dvh-8rem)] sm:max-w-[calc(100vw-8rem)]"
                 style={{
                   transform: `scale(${zoom})`,
                   cursor: zoom > 1 ? 'zoom-out' : 'zoom-in',
@@ -284,7 +330,11 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
           )}
 
           {currentImage && (
-            <div className="pointer-events-none absolute inset-x-3 bottom-24 z-20 sm:inset-x-4 sm:bottom-24 md:left-6 md:right-auto md:max-w-[420px]">
+            <div
+              className={`pointer-events-none absolute inset-x-3 bottom-24 z-20 transition-opacity duration-200 sm:inset-x-4 sm:bottom-24 md:left-6 md:right-auto md:max-w-[420px] ${
+                showChrome ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
               <div className="rounded-2xl border border-white/10 bg-black/55 px-4 py-3 shadow-2xl backdrop-blur-md">
                 <div className="flex flex-wrap items-center gap-2">
                   {currentImage.isBestOfTournament && (
@@ -319,7 +369,12 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
           {locationBlock && (
             <>
               {isLocationCollapsed && (
-                <div className="absolute z-30" style={{ bottom: bottomOffset, right: '1rem' }}>
+                <div
+                  className={`absolute z-30 transition-opacity duration-200 ${
+                    showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+                  }`}
+                  style={{ bottom: bottomOffset, right: '1rem' }}
+                >
                   <button
                     type="button"
                     onClick={() => setIsLocationCollapsed(false)}
@@ -332,7 +387,9 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
               {!isLocationCollapsed && (
                 <div
-                  className="absolute left-4 z-30 mx-auto w-[340px] max-w-[92vw] space-y-3 rounded-xl border border-white/15 bg-black/75 p-4 shadow-xl backdrop-blur"
+                  className={`absolute left-4 z-30 mx-auto w-[340px] max-w-[92vw] space-y-3 rounded-xl border border-white/15 bg-black/75 p-4 shadow-xl backdrop-blur transition-opacity duration-200 ${
+                    showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+                  }`}
                   style={{ bottom: bottomOffset }}
                 >
                   <div className="flex items-start gap-2">
@@ -393,7 +450,9 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                   variant="ghost"
                   size="icon"
                   onClick={onPrevious}
-                  className="h-12 w-12 rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm hover:bg-black/75"
+                  className={`h-12 w-12 rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition-opacity hover:bg-black/75 ${
+                    showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+                  }`}
                   aria-label={text.previous}
                 >
                   <ChevronLeft className="h-6 w-6" />
@@ -404,7 +463,9 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
                   variant="ghost"
                   size="icon"
                   onClick={onNext}
-                  className="h-12 w-12 rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm hover:bg-black/75"
+                  className={`h-12 w-12 rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-sm transition-opacity hover:bg-black/75 ${
+                    showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+                  }`}
                   aria-label={text.next}
                 >
                   <ChevronRight className="h-6 w-6" />
@@ -414,7 +475,11 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
           )}
 
           {images.length > 1 && (
-            <div className="absolute inset-x-3 bottom-[5.4rem] z-30 flex items-center justify-between sm:hidden">
+            <div
+              className={`absolute inset-x-3 bottom-[5.4rem] z-30 flex items-center justify-between transition-opacity duration-200 sm:hidden ${
+                showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+              }`}
+            >
               <Button
                 variant="ghost"
                 size="icon"
@@ -439,7 +504,9 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
           {/* Engagement bar */}
           {hasEngagement && currentImage && (
             <div
-              className="absolute left-1/2 z-40 -translate-x-1/2"
+              className={`absolute left-1/2 z-40 -translate-x-1/2 transition-opacity duration-200 ${
+                showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+              }`}
               style={{ bottom: hasThumbnails ? '5.25rem' : '1.25rem' }}
             >
               <div className="flex items-center gap-1 rounded-full border border-white/15 bg-black/70 px-3 py-2 shadow-xl backdrop-blur-md">
@@ -493,7 +560,11 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
 
           {/* Thumbnail strip */}
           {images.length > 1 && (
-            <div className="absolute bottom-3 left-3 right-3 z-40">
+            <div
+              className={`absolute bottom-3 left-3 right-3 z-40 transition-opacity duration-200 ${
+                showChrome ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+              }`}
+            >
               <div
                 ref={thumbnailContainerRef}
                 className="flex gap-1.5 overflow-x-auto rounded-xl bg-black/65 p-2.5 backdrop-blur-sm"

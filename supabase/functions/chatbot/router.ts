@@ -1,8 +1,59 @@
 // Router Agent - анализирует запрос и обогащает промпт для LLM
 // НЕ даёт готовых ответов - только контекст и инструкции для умного ответа
-import { generateCerebrasChat } from './clients.ts';
-import { getCerebrasConfig } from './config.ts';
 import { getWeatherForecast, formatWeatherResponse, type WeatherForecast } from './weather.ts';
+
+// ============================================================
+// КЛУБНЫЕ АДРЕСА (hardcoded facts — не зависят от RAG)
+// ============================================================
+const HALL_ADDRESS = 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen';
+const HALL_MAPS = 'https://maps.google.com/?q=Schulstraße+43,+72669+Unterensingen';
+const BEACH_ADDRESS = 'Beachanlage Zizishausen (TSV Zizishausen), Auf d. Insel 1, 72622 Nürtingen';
+const BEACH_MAPS = 'https://maps.google.com/?q=Auf+d.+Insel+1,+72622+Nürtingen';
+
+const buildLocationAnswer = (language: string): string => {
+  switch (language) {
+    case 'ru':
+      return [
+        '**🏐 Зал (октябрь – апрель):**',
+        HALL_ADDRESS,
+        `📍 ${HALL_MAPS}`,
+        '',
+        '**🏖️ Пляж (апрель – сентябрь):**',
+        BEACH_ADDRESS,
+        `📍 ${BEACH_MAPS}`,
+      ].join('\n');
+    case 'en':
+      return [
+        '**🏐 Indoor Hall (October – April):**',
+        HALL_ADDRESS,
+        `📍 ${HALL_MAPS}`,
+        '',
+        '**🏖️ Beach Courts (April – September):**',
+        BEACH_ADDRESS,
+        `📍 ${BEACH_MAPS}`,
+      ].join('\n');
+    case 'it':
+      return [
+        '**🏐 Palestra (ottobre – aprile):**',
+        HALL_ADDRESS,
+        `📍 ${HALL_MAPS}`,
+        '',
+        '**🏖️ Campi Beach (aprile – settembre):**',
+        BEACH_ADDRESS,
+        `📍 ${BEACH_MAPS}`,
+      ].join('\n');
+    default: // de
+      return [
+        '**🏐 Halle (Oktober – April):**',
+        HALL_ADDRESS,
+        `📍 ${HALL_MAPS}`,
+        '',
+        '**🏖️ Beach (April – September):**',
+        BEACH_ADDRESS,
+        `📍 ${BEACH_MAPS}`,
+      ].join('\n');
+  }
+};
 
 export interface RouterResult {
   originalQuestion: string;
@@ -28,8 +79,21 @@ export async function routeQuestion(
   language: string,
   history?: ChatHistoryItem[]
 ): Promise<RouterResult> {
-  const lowerQ = question.toLowerCase();
-  
+  // Прямой ответ с адресами — не требует RAG
+  if (isLocationQuestion(question)) {
+    console.log('[Router] Location question - returning hardcoded addresses');
+    return {
+      originalQuestion: question,
+      enrichedQuestion: question,
+      questionType: 'location',
+      needsKnowledgeBase: false,
+      context: '',
+      instructions: '',
+      isAmbiguous: false,
+      directAnswer: buildLocationAnswer(language),
+    };
+  }
+
   // Только для погоды используем прямой ответ (реальные данные API)
   if (isWeatherQuestion(question)) {
     console.log('[Router] Weather question - fetching real data');
@@ -67,6 +131,27 @@ function isWeatherQuestion(question: string): boolean {
     'можно играть', 'can we play', 'können wir spielen',
   ];
   return weatherKeywords.some(kw => lowerQ.includes(kw));
+}
+
+// Проверка на вопрос об адресе / местоположении
+// Только специфичные локейшн-слова — не захватываем 'пляж' или 'зал',
+// чтобы не перехватывать вопросы о правилах.
+function isLocationQuestion(question: string): boolean {
+  const lowerQ = question.toLowerCase();
+  const locationKeywords = [
+    // RU — только явные запросы адреса/маршрута
+    'адрес', 'где играем', 'где тренир', 'как добраться', 'как найти',
+    'куда ехать', 'где находится зал', 'где находится пляж',
+    // DE
+    'adresse', 'wo spielen wir', 'wo trainieren', 'wie komme ich', 'anfahrt',
+    'wo ist die halle', 'wo ist der beach', 'standort',
+    // EN
+    'address', 'where do we play', 'where is the hall', 'where is the beach',
+    'how to get there', 'how to find', 'location', 'venue', 'directions', 'find us',
+    // IT
+    'indirizzo', 'dove giochiamo', 'come arrivare',
+  ];
+  return locationKeywords.some(kw => lowerQ.includes(kw));
 }
 
 // Умный анализ вопроса с учётом истории чата

@@ -51,9 +51,10 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
             key={album.id}
             type="button"
             onClick={() => onAlbumOpen(album.id)}
-            className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-white/8 bg-[#0d1f35] text-left shadow-[0_16px_50px_rgba(0,0,0,0.18)] transition-all duration-300 hover:-translate-y-1.5 hover:border-white/15 hover:shadow-[0_22px_55px_rgba(0,0,0,0.32)] focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 focus:ring-offset-[#0f0f1e]"
+            className="group relative flex h-full flex-col overflow-hidden rounded-[30px] border border-white/8 bg-[#0d1f35] text-left shadow-[0_18px_55px_rgba(0,0,0,0.18)] transition-all duration-500 hover:-translate-y-2.5 hover:border-white/15 hover:shadow-[0_30px_85px_rgba(0,0,0,0.34)] focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 focus:ring-offset-[#0f0f1e]"
           >
-            {/* Image */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.12),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_24%)] opacity-70 transition duration-500 group-hover:opacity-100" />
+            <div className="absolute -right-12 top-8 h-28 w-28 rounded-full bg-white/10 blur-3xl transition duration-700 group-hover:scale-150 group-hover:opacity-80" />
             <div className="relative aspect-[1.34/1] overflow-hidden bg-[#060f1a]">
               {!isLoaded && album.coverImage && (
                 <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#0d1f35] to-[#060f1a]" />
@@ -64,7 +65,7 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
                   alt={displayTitle ?? categoryLabel}
                   loading="lazy"
                   onLoad={() => setLoadedImages((prev) => new Set(prev).add(album.id))}
-                  className={`absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06] ${
+                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 group-hover:scale-[1.08] ${
                     isLoaded ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
@@ -74,37 +75,35 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
                 </div>
               )}
 
-              {/* Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f35]/80 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f35]/88 via-[#0d1f35]/18 to-transparent" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.16),_transparent_34%)] opacity-60 transition duration-500 group-hover:opacity-90" />
 
-              {/* Photo count – top right */}
+              <span className="absolute left-4 top-4 text-[10px] font-semibold uppercase tracking-[0.34em] text-white/52 transition duration-500 group-hover:text-white/78">
+                {String(albums.indexOf(album) + 1).padStart(2, '0')}
+              </span>
               <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-[11px] font-semibold text-white/90 backdrop-blur-sm">
                 <Camera className="h-3 w-3" />
                 {album.imageCount}
               </span>
             </div>
 
-            {/* Card footer */}
-            <div className="flex flex-1 flex-col gap-2.5 bg-[#0d1f35] p-4">
-              {/* Category badge */}
+            <div className="relative flex flex-1 flex-col gap-2.5 bg-[#0d1f35] p-4">
               <span
-                className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] ${style.bg} ${style.text}`}
+                className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.18em] transition duration-300 group-hover:-translate-y-0.5 ${style.bg} ${style.text}`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                 {categoryLabel}
               </span>
 
-              {/* Title or empty spacer */}
               <div className="min-h-[2.75rem] flex-1">
                 {displayTitle ? (
-                  <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-white/92">
+                  <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-white/92 transition duration-300 group-hover:text-white">
                     {displayTitle}
                   </h3>
                 ) : null}
               </div>
 
-              {/* Meta row */}
-              <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2 text-[10px] font-medium text-white/42">
+              <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2 text-[10px] font-medium text-white/42 transition duration-300 group-hover:border-white/12 group-hover:text-white/55">
                 <span className="flex min-w-0 items-center gap-1 truncate">
                   {album.eventDate ? (
                     <>
@@ -119,7 +118,7 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
                     `${seasonLabel} ${album.season}`
                   ) : null}
                 </span>
-                <span className="shrink-0 flex items-center gap-0.5 text-white/32 transition-colors group-hover:text-white/70">
+                <span className="shrink-0 flex items-center gap-0.5 text-white/32 transition-all duration-300 group-hover:translate-x-1 group-hover:text-white/78">
                   {photosLabel}
                   <ChevronRight className="h-3 w-3" />
                 </span>

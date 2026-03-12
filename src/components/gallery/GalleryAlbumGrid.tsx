@@ -50,8 +50,8 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
             onClick={() => onAlbumOpen(album.id)}
             className="group relative flex h-full flex-col overflow-hidden rounded-[30px] border border-white/8 bg-[#0d1f35] text-left shadow-[0_18px_55px_rgba(0,0,0,0.18)] transition-all duration-500 hover:-translate-y-2.5 hover:border-white/15 hover:shadow-[0_30px_85px_rgba(0,0,0,0.34)] focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 focus:ring-offset-[#0f0f1e]"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.12),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_24%)] opacity-70 transition duration-500 group-hover:opacity-100" />
-            <div className="absolute -right-12 top-8 h-28 w-28 rounded-full bg-white/10 blur-3xl transition duration-700 group-hover:scale-150 group-hover:opacity-80" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.08),_transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.015),transparent_24%)] opacity-35 transition duration-500 group-hover:opacity-60" />
+            <div className="absolute -right-12 top-8 h-28 w-28 rounded-full bg-white/10 opacity-0 blur-3xl transition duration-700 group-hover:scale-150 group-hover:opacity-60" />
             <div className="relative aspect-[1.34/1] overflow-hidden bg-[#060f1a]">
               {album.coverImage ? (
                 <img
@@ -66,8 +66,8 @@ const GalleryAlbumGrid: React.FC<GalleryAlbumGridProps> = ({
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f35]/88 via-[#0d1f35]/18 to-transparent" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.16),_transparent_34%)] opacity-60 transition duration-500 group-hover:opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f35]/58 via-[#0d1f35]/10 to-transparent" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_34%)] opacity-30 transition duration-500 group-hover:opacity-55" />
 
               <span className="absolute left-4 top-4 text-[10px] font-semibold uppercase tracking-[0.34em] text-white/52 transition duration-500 group-hover:text-white/78">
                 {String(albums.indexOf(album) + 1).padStart(2, '0')}

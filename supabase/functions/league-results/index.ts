@@ -33,13 +33,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { standings, schedule } = await fetchLeagueData();
-    
+    const { standings, schedule, season, leagueName, archive } = await fetchLeagueData();
+
     return new Response(
       JSON.stringify({
         standings,
         schedule,
         team: findTeamStanding(standings),
+        season,
+        leagueName,
+        archive,
         lastUpdated: new Date().toISOString(),
       }),
       {

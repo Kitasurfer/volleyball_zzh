@@ -2,8 +2,12 @@ const http = require('http');
 
 const PORT = Number.parseInt(process.env.LEAGUE_PROXY_PORT || process.env.PORT || '3001', 10);
 const DEFAULT_SERIES_URL =
-  'https://www.vlw-online.de/cms/home/spielbetrieb/mixed/mixed_24.xhtml?LeaguePresenter.view=resultTable&LeaguePresenter.matchSeriesId=53522667';
+  'https://www.vlw-online.de/cms/home/spielbetrieb/mixed/mixed_24.xhtml?LeaguePresenter.view=resultTable&LeaguePresenter.matchSeriesId=116036564';
+const DEFAULT_ARCHIVE_SERIES_URL =
+  'https://www.vlw-online.de/cms/home/spielbetrieb/mixed/archiv/saison_2025_2026.xhtml?LeaguePresenter.view=resultTable&LeaguePresenter.matchSeriesId=95219095';
 const SERIES_URL = process.env.SERIES_URL || process.env.VLW_SERIES_URL || DEFAULT_SERIES_URL;
+const ARCHIVE_SERIES_URL =
+  process.env.ARCHIVE_SERIES_URL || process.env.VLW_ARCHIVE_SERIES_URL || DEFAULT_ARCHIVE_SERIES_URL;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,6 +51,16 @@ const parseIntSafe = (value) => {
 
 const isSetsValue = (value) => /^\d+\s*:\s*\d+$/.test(value);
 
+const dedupeName = (value) => {
+  const str = String(value ?? '').trim();
+  for (let i = 1; i <= str.length / 2; i += 1) {
+    if (str.slice(0, i).trim() === str.slice(i).trim()) {
+      return str.slice(i).trim();
+    }
+  }
+  return str;
+};
+
 const findSets = (cells) => {
   for (let i = cells.length - 1; i >= 0; i -= 1) {
     const cell = cells[i];
@@ -69,7 +83,8 @@ const findPoints = (cells) => {
 };
 
 const isOurTeamName = (name) =>
-  typeof name === 'string' && (name.includes('Zizishausen') || name.includes('Unterensingen'));
+  typeof name === 'string' &&
+  (name.includes('Zizishausen') || name.includes('Unterensingen') || name.includes('Schnakenbatscher'));
 
 const findTeamStanding = (standings) => standings.find((s) => isOurTeamName(s.name)) ?? null;
 
@@ -79,14 +94,16 @@ const extractStandingsFromTable = (tableHtml) => {
 
   for (const rowHtml of rows) {
     const cellMatches = rowHtml.match(/<t[dh][\s\S]*?<\/t[dh]>/gi) ?? [];
-    const cells = cellMatches.map((cellHtml) => stripTags(cellHtml));
+    const cells = cellMatches
+      .map((cellHtml) => stripTags(cellHtml))
+      .filter((cell) => cell !== '');
 
     if (cells.length < 4) continue;
 
     const position = parseIntSafe(cells[0]);
     if (!position) continue;
 
-    const name = cells[1] ?? '';
+    const name = dedupeName(cells[1]);
     const matches = parseIntSafe(cells[2]);
     const wins = parseIntSafe(cells[3]);
     const sets = findSets(cells);
@@ -135,12 +152,7 @@ const fetchHtml = async (url) => {
   return response.text();
 };
 
-const fetchLeagueResults = async () => {
-  if (!SERIES_URL) {
-    throw new Error('SERIES_URL (or VLW_SERIES_URL) environment variable is not set');
-  }
-
-  const html = await fetchHtml(SERIES_URL);
+const parseStandingsFromHtml = (html) => {
   const tableMatches = html.match(/<table[^>]*class="[^"]*samsDataTable[^"]*"[^>]*>[\s\S]*?<\/table>/gi) ?? [];
 
   console.log(`Found ${tableMatches.length} table(s) on the page`);
@@ -162,15 +174,56 @@ const fetchLeagueResults = async () => {
   }
 
   if (allStandings.length === 0) {
-    throw new Error('Unable to parse standings data');
+    return null;
   }
 
   const selected = pickBestStandings(allStandings);
   console.log(`Selected table (${selected.reason})`);
+  return selected;
+};
+
+const extractSeasonLabel = (html) => {
+  const match = String(html).match(/(20\d{2}\s*\/\s*\d{2,4})/);
+  return match ? match[1].replace(/\s+/g, '') : null;
+};
+
+const fetchLeagueResults = async () => {
+  if (!SERIES_URL) {
+    throw new Error('SERIES_URL (or VLW_SERIES_URL) environment variable is not set');
+  }
+
+  const html = await fetchHtml(SERIES_URL);
+  const selected = parseStandingsFromHtml(html);
+
+  if (!selected) {
+    throw new Error('Unable to parse standings data');
+  }
+
+  let archive = null;
+
+  if (ARCHIVE_SERIES_URL) {
+    try {
+      const archiveHtml = await fetchHtml(ARCHIVE_SERIES_URL);
+      const archiveSelected = parseStandingsFromHtml(archiveHtml);
+
+      if (archiveSelected && archiveSelected.standings.length > 0) {
+        archive = {
+          season: extractSeasonLabel(archiveHtml),
+          leagueName: null,
+          standings: archiveSelected.standings,
+        };
+      }
+    } catch (error) {
+      console.error('Failed to fetch archive standings:', error);
+    }
+  }
 
   return {
     standings: selected.standings,
     team: selected.team,
+    season: extractSeasonLabel(html),
+    leagueName: null,
+    archive,
     lastUpdated: new Date().toISOString(),
     schedule: [],
   };

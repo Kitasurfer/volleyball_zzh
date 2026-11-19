@@ -20,9 +20,18 @@ export type CompetitionMatch = {
   isHome: boolean;
 };
 
+export interface ArchiveTable {
+  season: string | null;
+  leagueName?: string | null;
+  standings: Standing[];
+}
+
 export interface StandingsResponse {
   standings: Standing[];
   team: Standing | null;
   lastUpdated: string | null;
   schedule?: CompetitionMatch[];
+  season?: string | null;
+  leagueName?: string | null;
+  archive?: ArchiveTable | null;
 }

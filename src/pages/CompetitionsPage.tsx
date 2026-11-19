@@ -49,6 +49,10 @@ const content = {
       noData: 'Aktuell liegen keine Daten vor.',
       loading: 'Tabellen werden geladen…',
     },
+    archive: {
+      title: 'Archiv',
+      subtitle: 'Tabelle der Saison',
+    },
     schedule: {
       titleUpcoming: 'Bevorstehende Spiele',
       titlePlayed: 'Vergangene Spiele',
@@ -90,6 +94,10 @@ const content = {
       updated: 'Updated:',
       noData: 'No standings data available right now.',
       loading: 'Loading standings…',
+    },
+    archive: {
+      title: 'Archive',
+      subtitle: 'Standings for season',
     },
     schedule: {
       titleUpcoming: 'Upcoming Matches',
@@ -133,6 +141,10 @@ const content = {
       noData: 'Al momento non ci sono dati di classifica.',
       loading: 'Caricamento classifica…',
     },
+    archive: {
+      title: 'Archivio',
+      subtitle: 'Classifica della stagione',
+    },
     schedule: {
       titleUpcoming: 'Partite in programma',
       titlePlayed: 'Risultati recenti',
@@ -174,6 +186,10 @@ const content = {
       updated: 'Обновлено:',
       noData: 'Данные таблицы пока недоступны.',
       loading: 'Загружаем таблицу…',
+    },
+    archive: {
+      title: 'Архив',
+      subtitle: 'Таблица сезона',
     },
     schedule: {
       titleUpcoming: 'Ближайшие матчи',
@@ -283,7 +299,14 @@ const CompetitionsPage: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-xl border border-white/40 overflow-hidden">
               <div className="px-6 py-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-semibold text-primary-900">{t.standings.title}</h2>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold text-primary-900">{t.standings.title}</h2>
+                    {data?.season && (
+                      <span className="text-xs font-semibold uppercase tracking-wide bg-primary-50 text-primary-700 px-2 py-1 rounded-full">
+                        {data.season}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-neutral-500 flex items-center gap-2 mt-1">
                     <CalendarDays className="w-4 h-4" />
                     {formattedUpdatedAt ? (
@@ -342,6 +365,49 @@ const CompetitionsPage: React.FC = () => {
                 )}
               </div>
             </div>
+
+            {data?.archive?.standings?.length ? (
+              <div className="bg-white rounded-2xl shadow-xl border border-white/40 overflow-hidden">
+                <div className="px-6 py-5 border-b border-neutral-100">
+                  <h3 className="text-xl font-semibold text-primary-900">{t.archive.title}</h3>
+                  <p className="text-sm text-neutral-500 mt-1">
+                    {t.archive.subtitle} {[data.archive.leagueName, data.archive.season].filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="bg-neutral-50 text-neutral-500 uppercase text-xs tracking-wide">
+                      <tr>
+                        <th className="px-4 py-3">{t.standings.position}</th>
+                        <th className="px-4 py-3">{t.standings.team}</th>
+                        <th className="px-4 py-3 text-center">{t.standings.matches}</th>
+                        <th className="px-4 py-3 text-center">{t.standings.wins}</th>
+                        <th className="px-4 py-3 text-center">{t.standings.sets}</th>
+                        <th className="px-4 py-3 text-center">{t.standings.points}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 text-neutral-800">
+                      {data.archive.standings.map((standing) => {
+                        const isTeamRow = isOurTeamName(standing.name);
+                        return (
+                          <tr
+                            key={`archive-${standing.position}-${standing.name}`}
+                            className={isTeamRow ? 'bg-accent-50 font-semibold text-primary-900' : ''}
+                          >
+                            <td className="px-4 py-3">{standing.position}</td>
+                            <td className="px-4 py-3">{normalizeTeamName(standing.name)}</td>
+                            <td className="px-4 py-3 text-center">{standing.matches}</td>
+                            <td className="px-4 py-3 text-center">{standing.wins}</td>
+                            <td className="px-4 py-3 text-center">{standing.sets}</td>
+                            <td className="px-4 py-3 text-center">{standing.points}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
 
             <div className="bg-white rounded-2xl shadow-xl border border-white/40 p-6">
               <div className="flex items-center gap-3 mb-4">

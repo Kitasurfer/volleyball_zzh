@@ -51,7 +51,7 @@ const content = {
     },
     archive: {
       title: 'Archiv',
-      subtitle: 'Tabelle der Saison',
+      subtitle: 'Endtabelle der vergangenen Saison',
     },
     schedule: {
       titleUpcoming: 'Bevorstehende Spiele',
@@ -97,7 +97,7 @@ const content = {
     },
     archive: {
       title: 'Archive',
-      subtitle: 'Standings for season',
+      subtitle: 'Final standings of the previous season',
     },
     schedule: {
       titleUpcoming: 'Upcoming Matches',
@@ -143,7 +143,7 @@ const content = {
     },
     archive: {
       title: 'Archivio',
-      subtitle: 'Classifica della stagione',
+      subtitle: 'Classifica finale della stagione precedente',
     },
     schedule: {
       titleUpcoming: 'Partite in programma',
@@ -189,7 +189,7 @@ const content = {
     },
     archive: {
       title: 'Архив',
-      subtitle: 'Таблица сезона',
+      subtitle: 'Итоговая таблица прошлого сезона',
     },
     schedule: {
       titleUpcoming: 'Ближайшие матчи',
@@ -369,9 +369,16 @@ const CompetitionsPage: React.FC = () => {
             {data?.archive?.standings?.length ? (
               <div className="bg-white rounded-2xl shadow-xl border border-white/40 overflow-hidden">
                 <div className="px-6 py-5 border-b border-neutral-100">
-                  <h3 className="text-xl font-semibold text-primary-900">{t.archive.title}</h3>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-xl font-semibold text-primary-900">{t.archive.title}</h3>
+                    {data.archive.season && (
+                      <span className="text-xs font-semibold uppercase tracking-wide bg-neutral-100 text-neutral-600 px-2 py-1 rounded-full">
+                        {data.archive.season}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-neutral-500 mt-1">
-                    {t.archive.subtitle} {[data.archive.leagueName, data.archive.season].filter(Boolean).join(' · ')}
+                    {[t.archive.subtitle, data.archive.leagueName].filter(Boolean).join(' · ')}
                   </p>
                 </div>
                 <div className="overflow-x-auto">

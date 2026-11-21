@@ -3,6 +3,7 @@ import type { AdminNavItem } from '../../types/admin';
 import { useLanguage } from '../../lib/LanguageContext';
 import { useAuth } from '../../lib/AuthContext';
 import { Seo } from '../Seo';
+import { useMatchText } from '@/data/matchTranslations';
 
 const navItems: AdminNavItem[] = [
   { key: 'overview', path: '/admin' },
@@ -11,10 +12,13 @@ const navItems: AdminNavItem[] = [
   { key: 'albums', path: '/admin/albums' },
   { key: 'vectorJobs', path: '/admin/vector-jobs' },
   { key: 'chats', path: '/admin/chats' },
+  { key: 'competitions', path: '/admin/competitions' },
+  { key: 'scoreboard', path: '/admin/scoreboard' },
 ];
 
 const AdminLayout = () => {
   const { t } = useLanguage();
+  const { t: matchText } = useMatchText();
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const nav = t.admin.nav;
@@ -47,8 +51,8 @@ const AdminLayout = () => {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-6xl gap-8 px-6 py-8">
-        <aside className="w-64 space-y-2">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-3 py-8 sm:px-6 lg:flex-row lg:gap-8">
+        <aside className="w-full space-y-2 lg:w-56 lg:shrink-0">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -62,7 +66,8 @@ const AdminLayout = () => {
                 }`
               }
             >
-              {nav.items[item.key]}
+              {item.key === 'competitions' ? matchText('tournaments') :
+                item.key === 'scoreboard' ? matchText('nav') : nav.items[item.key]}
             </NavLink>
           ))}
 
@@ -75,7 +80,7 @@ const AdminLayout = () => {
           </button>
         </aside>
 
-        <section className="flex-1 rounded-xl bg-white p-6 shadow-sm">
+        <section className="min-w-0 flex-1 rounded-xl bg-white p-3 shadow-sm sm:p-6">
           <Outlet />
         </section>
       </div>

@@ -7,6 +7,13 @@ import { useStandings } from '../hooks/useStandings';
 import { Alert, Spinner } from '../components/ui';
 import { normalizeTeamName, isOurTeamName } from '../lib/teamNaming';
 import { Seo } from '../components/Seo';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/lib/AuthContext';
+import { useMatchText } from '@/data/matchTranslations';
+import { usePublicScores } from '@/hooks/usePublicScores';
+import { listCompetitions } from '@/lib/matchApi';
+import { supabase } from '@/lib/supabase';
+import { PublicMatchCards, ScoreLink } from '@/components/MatchScore';
 
 const formatDate = (isoDate: string | null, language: Language) => {
   if (!isoDate) return null;
@@ -220,6 +227,18 @@ const content = {
 const CompetitionsPage: React.FC = () => {
   const { language } = useLanguage();
   const { data, isLoading, error } = useStandings();
+  const { role } = useAuth();
+  const { t: matchText } = useMatchText();
+  const liveScores = usePublicScores();
+  const clubCompetitions = useQuery({
+    queryKey: ['skv-competitions', 'public'],
+    enabled: Boolean(supabase && !('__PRERENDER_INJECTED' in window)),
+    queryFn: () => listCompetitions(),
+  });
+  const active = liveScores.data?.filter(match =>
+    ['live', 'paused'].includes(match.state.status)) ?? [];
+  const linked = new Map(liveScores.data?.filter(match => match.external_match_id)
+    .map(match => [match.external_match_id, match.match_id]));
   const t = content[language];
 
   const seoTitle = t.hero.title;
@@ -296,6 +315,22 @@ const CompetitionsPage: React.FC = () => {
       <section className="container mx-auto px-6 lg:px-12 -mt-16">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
+            <section className="space-y-3 rounded-2xl bg-white p-4 shadow-sm sm:p-6">
+              <h2 className="text-xl font-bold text-primary-900">{matchText('liveGames')}</h2>
+              {active.length ? <PublicMatchCards matches={active} /> :
+                <p className="text-sm text-neutral-700">{matchText(liveScores.isError ?
+                  'offline' : liveScores.isLoading ? 'loading' : 'noLive')}</p>}
+              {!!clubCompetitions.data?.length && <div className="border-t border-neutral-200 pt-3">
+                <h3 className="font-bold text-primary-900">{matchText('tournaments')}</h3>
+                <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                  {clubCompetitions.data.map(club => <li key={club.id}>
+                    <Link to={`/competitions/${club.id}`} className="font-semibold text-primary-700 underline">
+                      {club.name}
+                    </Link>
+                  </li>)}
+                </ul>
+              </div>}
+            </section>
             <div className="bg-white rounded-2xl shadow-xl border border-white/40 overflow-hidden">
               <div className="px-6 py-5 border-b border-neutral-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -572,6 +607,15 @@ const CompetitionsPage: React.FC = () => {
                           ) : (
                             <span className="text-neutral-400 text-xs italic">—</span>
                           )}
+                          {linked.has(match.id) ? <div className="mt-1">
+                            <ScoreLink id={linked.get(match.id)!}>{matchText('unofficial')}</ScoreLink>
+                          </div> : role === 'admin' && <div className="mt-1">
+                            <Link className="text-xs font-semibold text-primary-700 underline"
+                              to={`/scoreboard/new?${new URLSearchParams({ vlw: match.id,
+                                a: normalizeTeamName(match.homeTeam), b: normalizeTeamName(match.awayTeam) })}`}>
+                              {matchText('newMatch')}
+                            </Link>
+                          </div>}
                         </td>
                         <td className="px-4 py-3 text-neutral-600 text-xs hidden lg:table-cell">
                           <div className="max-w-xs truncate" title={match.location ?? ''}>

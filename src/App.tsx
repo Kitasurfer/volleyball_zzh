@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, useLocation, useMatch } from 'react-router-dom';
 import { AppProviders } from './lib/AppProviders';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -59,6 +59,28 @@ function PrerenderReadySignal({ enabled }: { enabled: boolean }) {
  * - Router for page routing
  * - Lazy loaded pages for code splitting
  */
+function SiteContent({ isPrerender }: { isPrerender: boolean }) {
+  const display = useMatch('/scoreboard/:matchId/display');
+  const control = useMatch('/scoreboard/:matchId/control');
+  const scoreboard = useMatch('/scoreboard/*');
+  const tournament = useMatch('/competitions/:competitionId');
+  if (display) return <AppRoutes PageFallback={PageFallback} AdminFallback={AdminFallback} />;
+  const Content = scoreboard || tournament ? 'div' : 'main';
+  return (
+    <div className="flex min-h-screen flex-col bg-background-page">
+      <div className="contents print:hidden"><Header /></div>
+      <Content className="flex-grow">
+        <AppRoutes PageFallback={PageFallback} AdminFallback={AdminFallback} />
+      </Content>
+      <div className="contents print:hidden">
+        <Footer />
+        {!isPrerender && <CookieConsent />}
+        {!isPrerender && !control && <Chatbot />}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const isPrerender =
     typeof window !== 'undefined' && Boolean((window as unknown as { __PRERENDER_INJECTED?: { prerender?: boolean } }).__PRERENDER_INJECTED?.prerender);
@@ -73,15 +95,7 @@ function App() {
       >
         <PrerenderReadySignal enabled={isPrerender} />
         <ScrollToTop />
-        <div className="flex flex-col min-h-screen bg-background-page">
-          <Header />
-          <main className="flex-grow">
-            <AppRoutes PageFallback={PageFallback} AdminFallback={AdminFallback} />
-          </main>
-          <Footer />
-          {!isPrerender && <CookieConsent />}
-          {!isPrerender && <Chatbot />}
-        </div>
+        <SiteContent isPrerender={isPrerender} />
       </Router>
     </AppProviders>
   );

@@ -4,9 +4,11 @@ import { Menu, X, Globe } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { Language, SUPPORTED_LANGUAGES } from '../types';
 import { LightboxImage } from './LightboxImage';
+import { useMatchText } from '@/data/matchTranslations';
 
 const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
+  const { t: matchText } = useMatchText();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
@@ -27,6 +29,7 @@ const Header: React.FC = () => {
     { to: '/beach', label: t.nav.beach },
     { to: '/training', label: t.nav.training },
     { to: '/competitions', label: t.nav.competitions },
+    { to: '/scoreboard', label: matchText('nav') },
     { to: '/contact', label: t.nav.contact },
   ];
 
@@ -50,19 +53,19 @@ const Header: React.FC = () => {
               alt="SKV Unterensingen Volleyball"
               className="h-12 w-auto object-contain"
             />
-            <span className="text-xl font-bold hidden sm:block text-white">
+            <span className="hidden text-xl font-bold text-white sm:block xl:hidden 2xl:block">
               SKV Unterensingen Volleyball
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex flex-1 items-center justify-center gap-8">
+          <nav className="hidden flex-1 items-center justify-center gap-4 xl:flex 2xl:gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
-                className={`text-base font-medium whitespace-nowrap transition-colors duration-200 ${
-                  location.pathname === link.to
+                className={`whitespace-nowrap text-sm font-medium transition-colors duration-200 2xl:text-base ${
+                  location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(`${link.to}/`))
                     ? 'text-white'
                     : 'text-white/80 hover:text-white'
                 }`}
@@ -73,7 +76,7 @@ const Header: React.FC = () => {
           </nav>
 
           {/* Language Switcher */}
-          <div className="hidden lg:flex items-center flex-shrink-0">
+          <div className="hidden flex-shrink-0 items-center xl:flex">
             <div className="relative inline-flex group">
               <button
                 type="button"
@@ -106,7 +109,7 @@ const Header: React.FC = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 text-white/80 hover:text-white"
+            className="p-2 text-white/80 hover:text-white xl:hidden"
             aria-label="Toggle menu"
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -115,7 +118,7 @@ const Header: React.FC = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-white/20">
+          <div className="border-t border-white/20 py-4 xl:hidden">
             <nav className="flex flex-col space-y-4">
               {navLinks.map((link) => (
                 <Link

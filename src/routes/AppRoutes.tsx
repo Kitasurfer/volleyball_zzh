@@ -20,6 +20,12 @@ const AdminMediaPage = lazy(() => import('../pages/admin/AdminMediaPage'));
 const AdminVectorJobsPage = lazy(() => import('../pages/admin/AdminVectorJobsPage'));
 const AdminChatsPage = lazy(() => import('../pages/admin/AdminChatsPage'));
 const AdminAlbumsPage = lazy(() => import('../pages/admin/AdminAlbumsPage'));
+const MatchCenterPage = lazy(() => import('@/pages/MatchCenterPage'));
+const NewMatchPage = lazy(() => import('@/pages/NewMatchPage'));
+const MatchControlPage = lazy(() => import('@/pages/MatchControlPage'));
+const MatchSpectatorPage = lazy(() => import('@/pages/MatchSpectatorPage'));
+const ClubCompetitionPage = lazy(() => import('@/pages/ClubCompetitionPage'));
+const AdminMatchCenterPage = lazy(() => import('@/pages/admin/AdminMatchCenterPage'));
 
 interface AppRoutesProps {
   PageFallback: ComponentType;
@@ -38,6 +44,12 @@ export function AppRoutes({ PageFallback, AdminFallback }: AppRoutesProps) {
         <Route path="/beach" element={<BeachPage />} />
         <Route path="/training" element={<TrainingPage />} />
         <Route path="/competitions" element={<CompetitionsPage />} />
+        <Route path="/competitions/:competitionId" element={<ClubCompetitionPage />} />
+        <Route path="/scoreboard" element={<MatchCenterPage />} />
+        <Route path="/scoreboard/new" element={<NewMatchPage />} />
+        <Route path="/scoreboard/:matchId" element={<MatchSpectatorPage />} />
+        <Route path="/scoreboard/:matchId/control" element={<MatchControlPage />} />
+        <Route path="/scoreboard/:matchId/display" element={<MatchSpectatorPage display />} />
         <Route path="/contact" element={<ContactPage />} />
 
         <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -58,6 +70,8 @@ export function AppRoutes({ PageFallback, AdminFallback }: AppRoutesProps) {
           <Route path="albums" element={<AdminAlbumsPage />} />
           <Route path="vector-jobs" element={<AdminVectorJobsPage />} />
           <Route path="chats" element={<AdminChatsPage />} />
+          <Route path="competitions" element={<AdminMatchCenterPage />} />
+          <Route path="scoreboard" element={<AdminMatchCenterPage matchesOnly />} />
         </Route>
       </Routes>
     </Suspense>

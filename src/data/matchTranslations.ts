@@ -77,6 +77,11 @@ const labels = {
   password: ['Passwort', 'Password', 'Пароль', 'Password'],
   logout: ['Abmelden', 'Sign out', 'Выйти', 'Esci'],
   publish: ['Öffentlich anzeigen', 'Publish scoreboard', 'Опубликовать табло', 'Pubblica tabellone'],
+  publishLocal: ['Lokales Ergebnis veröffentlichen', 'Publish local result', 'Опубликовать локальный результат', 'Pubblica risultato locale'],
+  invalidSetHistory: ['Dieser Spielstand würde einen späteren Satz ungültig machen.', 'This score would invalidate a later set.', 'При таком счёте следующая партия не могла начаться.', 'Con questo punteggio un set successivo non sarebbe valido.'],
+  vlwMatches: ['Ergebnis stimmt mit VLW überein.', 'Score matches VLW.', 'Счёт совпадает с VLW.', 'Il risultato coincide con VLW.'],
+  vlwDiffers: ['Ergebnis weicht von VLW ab.', 'Score differs from VLW.', 'Счёт отличается от VLW.', 'Il risultato differisce da VLW.'],
+  checkTeams: ['Teamzuordnung prüfen.', 'Check the team names.', 'Проверьте соответствие команд.', 'Verifica i nomi delle squadre.'],
   protocol: ['Spielprotokoll', 'Match report', 'Протокол матча', 'Referto partita'],
   print: ['Drucken', 'Print', 'Распечатать', 'Stampa'],
   export: ['CSV exportieren', 'Export CSV', 'Экспорт CSV', 'Esporta CSV'],
@@ -141,6 +146,7 @@ export function matchError(error: unknown, t: MatchText) {
     case 'lease_taken': case 'lease_lost': return t('leaseTaken');
     case 'schedule_overlap': return t('overlap');
     case 'invalid_time': return t('invalidTime');
+    case 'invalid_set_history': return t('invalidSetHistory');
     case 'account_not_found': return t('accountMissing');
     case 'rules_locked': return t('rulesLocked');
     case 'schedule_exists': return t('scheduleExists');

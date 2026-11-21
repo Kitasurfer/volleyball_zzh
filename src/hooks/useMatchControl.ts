@@ -8,7 +8,7 @@ import { queueAction, readDraft, saveDraft, seedDraft, type MatchDraft } from '@
 import type { Action } from '@/lib/matchRules';
 
 const conflictErrors = ['lease_taken', 'lease_lost', 'version_conflict', 'access_denied',
-  'event_reused', 'invalid_action'];
+  'event_reused', 'invalid_action', 'invalid_set_history'];
 const message = (error: unknown) => error instanceof Error ? error.message : 'unknown';
 
 export function useMatchControl(
@@ -55,11 +55,14 @@ export function useMatchControl(
     running.current = true;
     setSyncing(true);
     try {
-      if (value.current.conflict) return;
-      if (!wantsLease.current && !value.current.pending.length && !force) {
+      if (value.current.conflict || (!wantsLease.current && !value.current.pending.length && !force)) {
         const match = await readMatch(id);
+        if (!mounted.current) return;
         setServer(match);
-        if (match.updated_at !== value.current.confirmed.updated_at) await refresh();
+        if (!value.current.conflict && match.updated_at !== value.current.confirmed.updated_at) {
+          await refresh();
+        }
+        setError(undefined);
         setOffline(false);
         return;
       }
@@ -104,10 +107,12 @@ export function useMatchControl(
       if (conflictErrors.includes(problem)) {
         setHeld(false);
         wantsLease.current = false;
-        if (value.current?.pending.length) {
+        if (value.current?.pending.length && !value.current.conflict) {
           await update(current => ({ ...current, conflict: current.conflict ?? crypto.randomUUID() }))
             .catch(setError);
           void readMatch(id).then(setServer).catch(() => {});
+        } else if (value.current?.fence && !value.current.pending.length) {
+          await update(current => ({ ...current, fence: null })).catch(setError);
         }
       }
       setError(cause);
@@ -143,11 +148,11 @@ export function useMatchControl(
     }
     void load().catch(cause => { if (!cancelled) setError(cause); })
       .finally(() => { if (!cancelled) setLoading(false); });
-    const online = () => { void connect(); };
+    const online = () => { if (local) setOffline(!navigator.onLine); else void connect(); };
     const disconnected = () => setOffline(true);
     window.addEventListener('online', online);
     window.addEventListener('offline', disconnected);
-    const timer = window.setInterval(online, 4000);
+    const timer = local ? undefined : window.setInterval(online, 4000);
     return () => {
       cancelled = true;
       mounted.current = false;
@@ -180,17 +185,18 @@ export function useMatchControl(
     const current = value.current;
     if (!current?.conflict || !authenticated || running.current) return;
     running.current = true;
+    setSyncing(true);
     try {
-      const { match, history } = await readSnapshot(id);
       await matchRpc('skv_archive_conflict', { mid: id, cid: current.conflict,
         events: current.pending, local_state: current.projected.state });
+      const { match, history } = await readSnapshot(id);
       await update(latest => ({ ...latest, conflict: null, pending: [], history, fence: null,
         confirmed: match, projected: match }));
       setHeld(false);
       setServer(match);
       setError(undefined);
     } catch (cause) { setError(cause); }
-    finally { running.current = false; }
+    finally { running.current = false; if (mounted.current) setSyncing(false); }
   }
 
   async function release() {

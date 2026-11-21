@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { applyScore, canSwitchDecider, currentSet, indoorRules, initialMatch, setWins,
   type MatchRules, type MatchState, type Side } from '@/lib/matchRules';
-import { berlinTime, roundRobin, type ControlledMatch } from '@/lib/matchApi';
+import { berlinTime, compareLeagueResult, roundRobin, type ControlledMatch, type PublicScore } from '@/lib/matchApi';
+import type { CompetitionMatch } from '@/types/standings';
 import { queueAction, seedDraft, undoTarget } from '@/lib/matchStorage';
 
 const start = (r = indoorRules(1), serve: Side = 'a') =>
@@ -88,6 +89,39 @@ describe('volleyball rules', () => {
     expect(() => applyScore(paused, r, { type: 'POINT_AWARDED', side: 'a' })).toThrow();
     const resumed = applyScore(paused, r, { type: 'MATCH_RESUMED' });
     expect(correct(resumed, r, 21, 20).winner).toBe('a');
+  });
+
+  it('preserves later rallies and rejects corrections that invalidate a later set', () => {
+    const rules = indoorRules(3);
+    const split = correct(next(correct(start(rules), rules, 25, 18), rules), rules, 21, 25);
+    const decider = correct(next(split, rules), rules, 6, 8);
+    const edit = (s: MatchState, a: number, b: number) => applyScore(s, rules, {
+      type: 'EARLIER_SET_CORRECTED', setNumber: 1, a, b, reason: 'Verified',
+    });
+    expect(edit(decider, 25, 22).sets.slice(1)).toEqual(decider.sets.slice(1));
+    expect(() => edit(decider, 22, 25)).toThrow('invalid_set_history');
+    expect(() => edit(decider, 24, 23)).toThrow('invalid_set_history');
+    expect(edit(split, 20, 25).winner).toBe('b');
+    const finished = applyScore(edit(split, 20, 25), rules, { type: 'MATCH_COMPLETED' });
+    expect(() => edit(finished, 25, 20)).toThrow('invalid_action');
+  });
+});
+
+describe('VLW result comparison', () => {
+  const rules = indoorRules(1);
+  const state = applyScore(correct(start(rules), rules, 25, 17), rules, { type: 'MATCH_COMPLETED' });
+  const local = { state, team_a: 'Guests', team_b: 'SKV Unterensingen' } as PublicScore;
+  const fixture = { homeTeam: 'SG TSV Zizishausen/SKV Unterensingen', awayTeam: 'Guests' } as CompetitionMatch;
+  it('compares completed scores in official home/away order, including available rally totals', () => {
+    for (const result of ['0:1', '0:1 (17:25)']) {
+      expect(compareLeagueResult({ ...fixture, result }, local)).toBe('vlwMatches');
+    }
+    for (const result of ['1:0', '0:1 (18:25)']) {
+      expect(compareLeagueResult({ ...fixture, result }, local)).toBe('vlwDiffers');
+    }
+    expect(compareLeagueResult({ ...fixture, result: null }, local)).toBeNull();
+    expect(compareLeagueResult({ ...fixture, result: 'postponed' }, local)).toBeNull();
+    expect(compareLeagueResult({ ...fixture, result: '0:1', homeTeam: 'Other' }, local)).toBe('checkTeams');
   });
 });
 

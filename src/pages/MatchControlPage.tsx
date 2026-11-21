@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import { MatchLogin, MatchScore, SetReport, matchCard, matchInput, matchPage } from '@/components/MatchScore';
 import { matchError, useMatchText, type MatchText } from '@/data/matchTranslations';
@@ -9,11 +9,11 @@ import { useAuth } from '@/lib/AuthContext';
 import { downloadMatchFile, undoTarget } from '@/lib/matchStorage';
 import { canSwitchDecider, currentSet, opposite, shortScore, teamName,
   type Action, type Side } from '@/lib/matchRules';
-import { formatMatchDate } from '@/lib/matchApi';
+import { formatMatchDate, matchRpc } from '@/lib/matchApi';
 
 const actionLabels: Record<Action['type'], Parameters<MatchText>[0]> = {
   MATCH_STARTED: 'start', SET_STARTED: 'next', POINT_AWARDED: 'ballFor',
-  POINT_CORRECTED: 'correct', EVENT_UNDONE: 'undo', SERVE_CHANGED: 'serve',
+  POINT_CORRECTED: 'correct', EARLIER_SET_CORRECTED: 'correct', EVENT_UNDONE: 'undo', SERVE_CHANGED: 'serve',
   SIDES_SWITCHED: 'switchSide', MATCH_PAUSED: 'pause', MATCH_RESUMED: 'resume',
   MATCH_COMPLETED: 'finish', MATCH_REOPENED: 'reopen', MATCH_CANCELLED: 'cancel',
   WALKOVER: 'forfeit',
@@ -49,6 +49,9 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
   const [initialSide, setInitialSide] = useState<Side>('a');
   const [notice, setNotice] = useState('');
   const [correction, setCorrection] = useState<Action['type']>();
+  const [setNumber, setSetNumber] = useState(1);
+  const [publishing, setPublishing] = useState(false);
+  const navigate = useNavigate();
   const [wake, setWake] = useState<WakeLockSentinel>();
   const local = id.startsWith('local-');
   const match = draft?.projected;
@@ -80,8 +83,9 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
     const reason = String(fields.get('reason') ?? '').trim();
     if (!reason || !window.confirm(correctionLabel)) return;
     if (correction === 'POINT_CORRECTED') {
-      void dispatch({ type: correction, a: Number(fields.get('a')), b: Number(fields.get('b')),
-        reason });
+      const score = { a: Number(fields.get('a')), b: Number(fields.get('b')), reason };
+      void dispatch(setNumber === state.sets.length ? { type: correction, ...score } :
+        { type: 'EARLIER_SET_CORRECTED', setNumber, ...score });
     } else if (correction === 'MATCH_REOPENED' || correction === 'MATCH_CANCELLED') {
       void dispatch({ type: correction, reason });
     } else if (correction === 'WALKOVER') {
@@ -121,6 +125,22 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
           formatMatchDate(draft.confirmed.updated_at, language)}</p>}
         {error && <p role="alert" className="text-rose-800">{matchError(error, t)}</p>}
         {notice && <p role="status">{notice}</p>}
+        {local && state.status === 'completed' && (admin ? <Button disabled={publishing || offline}
+          onClick={async () => {
+            if (!window.confirm(t('publishLocal'))) return;
+            setPublishing(true);
+            try {
+              const mid = await matchRpc<string>('skv_publish_local_match', {
+                source_id: id.slice('local-'.length),
+                config: { team_a: match.team_a, team_b: match.team_b, court: match.court, rules: match.rules },
+                events: draft.history.map(({ id, at, action }) => ({ id, at, action })),
+              });
+              navigate(`/scoreboard/${mid}`);
+            } catch (cause) { setNotice(matchError(cause, t)); }
+            finally { setPublishing(false); }
+          }}>{t('publishLocal')}</Button> : !authenticated && <details>
+          <summary>{t('publishLocal')}</summary><MatchLogin />
+        </details>)}
         {draft.conflict && <>
           <p>{t('server')}: {server ? shortScore(server.state) : '—'} · {
             t('device')}: {shortScore(state)}</p>
@@ -199,7 +219,10 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             {canPoint && <Button variant="outline" onClick={() => void dispatch({
               type: 'SERVE_CHANGED', side: opposite(state.serve ?? 'a'),
             })}>{t('serve')}</Button>}
-            {set && <Button variant="outline" onClick={() => setCorrection('POINT_CORRECTED')}>
+            {set && <Button variant="outline" onClick={() => {
+              setSetNumber(state.sets.length);
+              setCorrection('POINT_CORRECTED');
+            }}>
               {t('correct')}
             </Button>}
             {state.winner && <Button variant="accent" onClick={() =>
@@ -220,9 +243,15 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
         </div>
         {correction && <form className={`${matchCard} space-y-3`} onSubmit={submitCorrection}>
           <h2 className="font-semibold">{correctionLabel}</h2>
-          {correction === 'POINT_CORRECTED' && <div className="grid grid-cols-2 gap-3">
+          {correction === 'POINT_CORRECTED' && state.sets.length > 1 && <label>{t('set')}
+            <select className={matchInput} value={setNumber}
+              onChange={e => setSetNumber(Number(e.target.value))}>
+              {state.sets.map((_, i) => <option key={i} value={i+1}>{i+1}</option>)}
+            </select>
+          </label>}
+          {correction === 'POINT_CORRECTED' && <div key={setNumber} className="grid grid-cols-2 gap-3">
             {(['a', 'b'] as const).map(side => <label key={side}>{teamName(match, side)}
-              <input name={side} className={matchInput} defaultValue={set?.[side] ?? 0}
+              <input name={side} className={matchInput} defaultValue={state.sets[setNumber-1]?.[side] ?? 0}
                 type="number" min="0" max="2147483646" required />
             </label>)}
           </div>}
@@ -253,6 +282,7 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             #{event.sequence} · {formatMatchDate(event.at, language)} · {
               t(actionLabels[event.action.type])}
             {'side' in event.action && ` · ${teamName(match, event.action.side)}`}
+            {'setNumber' in event.action && ` · ${t('set')} ${event.action.setNumber}`}
             {'a' in event.action && ` · ${event.action.a}:${event.action.b}`}
             {'reason' in event.action && ` · ${event.action.reason}`}
           </li>)}

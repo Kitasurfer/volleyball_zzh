@@ -24,6 +24,7 @@ export type Action =
   | { [T in SideAction]: { type: T; side: Side } }[SideAction]
   | { type: 'MATCH_STARTED'; side: Side; left?: Side }
   | { type: 'POINT_CORRECTED'; a: number; b: number; reason: string }
+  | { type: 'EARLIER_SET_CORRECTED'; setNumber: number; a: number; b: number; reason: string }
   | { type: 'MATCH_REOPENED' | 'MATCH_CANCELLED'; reason: string }
   | { type: 'WALKOVER'; side: Side; reason: string }
   | { type: 'EVENT_UNDONE' | 'SIDES_SWITCHED' | 'MATCH_PAUSED' | 'MATCH_RESUMED'
@@ -80,21 +81,33 @@ export function applyScore(
       };
     }
     case 'POINT_AWARDED':
+    case 'EARLIER_SET_CORRECTED':
     case 'POINT_CORRECTED': {
       const point = action.type === 'POINT_AWARDED';
-      if (state.status !== 'live' || !set || (point && set.winner)) return invalid();
-      const a = point ? set.a + Number(action.side === 'a') : action.a;
-      const b = point ? set.b + Number(action.side === 'b') : action.b;
+      const earlier = action.type === 'EARLIER_SET_CORRECTED';
+      const index = earlier ? action.setNumber - 1 : state.sets.length - 1;
+      if (earlier && index >= state.sets.length - 1) return invalid();
+      const selected = state.sets[index];
+      if (state.status !== 'live' || !selected || (point && selected.winner)) return invalid();
+      const a = point ? selected.a + Number(action.side === 'a') : action.a;
+      const b = point ? selected.b + Number(action.side === 'b') : action.b;
       if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || a < 0 || b < 0 ||
           a > 2147483646 || b > 2147483646) return invalid();
-      if (!point && !action.reason.trim()) return invalid();
-      const winner = Math.max(a, b) >= set.target && Math.abs(a - b) >= rules.margin
+      if (!point && (!action.reason.trim() || action.reason.trim().length > 500)) return invalid();
+      const winner = Math.max(a, b) >= selected.target && Math.abs(a - b) >= rules.margin
         ? a > b ? 'a' : 'b' : null;
+      const sets = state.sets.slice();
+      sets[index] = { ...selected, a, b, winner };
+      const needed = (rules.bestOf + 1) / 2;
+      if (earlier && (!winner || sets.slice(0, -1).filter(s => s.winner === winner).length >= needed)) {
+        throw new Error('invalid_set_history');
+      }
       const next: MatchState = {
-        ...state, sets: [...state.sets.slice(0, -1), { ...set, a, b, winner }],
+        ...state, sets,
         serve: point ? action.side : state.serve, winner: null,
       };
-      if (winner && setWins(next, winner) >= (rules.bestOf + 1) / 2) next.winner = winner;
+      if (setWins(next, 'a') >= needed) next.winner = 'a';
+      else if (setWins(next, 'b') >= needed) next.winner = 'b';
       return next;
     }
     case 'EVENT_UNDONE':

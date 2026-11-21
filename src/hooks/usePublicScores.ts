@@ -37,17 +37,22 @@ export function usePublicScore(id: string) {
     let active = true;
     const key = scoreKey(id);
     const channel = service.channel(`skv:${id}:${crypto.randomUUID()}`)
+      .on('system', {}, ({ extension, status }) => {
+        if (!active || extension !== 'postgres_changes') return;
+        const ready = status === 'ok' && navigator.onLine;
+        setConnected(ready);
+        // Catch up on changes between the initial HTTP read and database subscription.
+        if (ready) void client.invalidateQueries({ queryKey: key });
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'skv_public_scores',
         filter: `match_id=eq.${id}` }, payload => {
         if (!active) return;
+        setConnected(navigator.onLine);
         if (payload.eventType === 'DELETE') void client.invalidateQueries({ queryKey: key });
         else client.setQueryData<PublicScore | null>(key, previous =>
           newest(previous, payload.new as PublicScore));
       }).subscribe(status => {
-        if (!active) return;
-        setConnected(status === 'SUBSCRIBED' && navigator.onLine);
-        if (status === 'SUBSCRIBED') void client.cancelQueries({ queryKey: key }, { revert: false })
-          .then(() => { if (active) void client.refetchQueries({ queryKey: key }); });
+        if (active && status !== 'SUBSCRIBED') setConnected(false);
       });
     const offline = () => setConnected(false);
     window.addEventListener('offline', offline);

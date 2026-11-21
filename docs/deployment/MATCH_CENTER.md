@@ -7,8 +7,9 @@
    site build and the standard SPA fallback. No new Edge Function, Netlify service,
    server credential, or production Supabase project is required.
 2. Check the target migration history. Apply
-   `20261121090000_skv_match_center.sql` and
-   `20261121091000_skv_tournament_management.sql` before deploying the frontend.
+   `20261121090000_skv_match_center.sql`,
+   `20261121091000_skv_tournament_management.sql` and
+   `20261121100000_skv_match_review.sql` in that order before deploying the frontend.
    They only add `skv_*` objects. The Supabase `supabase_realtime` publication must
    exist. If the target has other pending migrations, review them separately;
    do not blindly push the entire working directory.
@@ -32,10 +33,9 @@
    the additive database objects intact. Do not drop the event history. Retain
    the locations of both Netlify versions and take a database backup first.
 
-An earlier audit found a plaintext admin credential in the project documentation.
-The owner must revoke/rotate it and arrange removal from documentation and
-secret-bearing history before tournament deployment. This branch does not change
-or rotate existing credentials.
+An earlier revision of the database guide contained a plaintext admin password.
+The current guide omits the value. The owner must rotate it in Supabase Auth,
+revoke existing sessions and review access to historical copies before deployment.
 
 ## Routes and operation
 
@@ -51,8 +51,20 @@ or rotate existing credentials.
 | `/admin/scoreboard` | Match publication/scheduling, referee grants, control links and CSV |
 
 To link a VLW match, an admin can open the new-game link beside it in
-`/competitions`. The local scoreboard is explicitly unofficial. The existing VLW
-request, result and standings are untouched. Local results are never sent to VLW.
+`/competitions`. When VLW publishes a result, this page compares it with the
+confirmed local result in home/away order, including individual sets when
+available. A team-name mismatch prompts a manual check. VLW remains the official
+source. The comparison uses the schedule already loaded on the page.
+
+After confirming a device-only game, an admin can publish the result from its
+control screen. The server replays the original journal in a single transaction.
+The spectator sees the finished score and individual sets. The event log remains
+private. Repeating the same import opens the existing scoreboard. Further
+server-side corrections are made on the published match.
+
+To correct a played result, an admin reopens the match, then the referee selects
+the set, enters the score and records a reason. Every subsequent set must still
+have been legal to start. Confirm the result again to restore it in the standings.
 
 The active referee claims a 90-second lease and the app renews it while open.
 An admin can force a takeover. The current referee can release it with an empty
@@ -84,7 +96,7 @@ draft but cannot archive it on the server; hand it to an administrator.
 
 Authenticated RPCs: `skv_read_match`, `skv_list_matches`, `skv_control_snapshot`,
 `skv_match_history`, `skv_acquire_lease`, `skv_release_lease`, `skv_apply_event`,
-`skv_archive_conflict`, `skv_save_competition`, `skv_add_team`, `skv_create_match`,
+`skv_archive_conflict`, `skv_publish_local_match`, `skv_save_competition`, `skv_add_team`, `skv_create_match`,
 `skv_create_schedule`, `skv_edit_match`, `skv_assign_referee`. `skv_standings`
 can also be read anonymously for published competitions. All score writes check
 current rights and ownership in PostgreSQL under a match row lock, deduplicate
@@ -102,10 +114,10 @@ npm run build
 psql -X "$MATCH_CENTER_TEST_DB_URL" -f scripts/test-match-center.sql
 ```
 
-The SQL suite assumes an isolated Supabase database with both new migrations
+The SQL suite assumes an isolated Supabase database with all three SKV migrations
 applied and an administrator-level test connection. It rolls fixture changes
 back. Run `supabase start` only in a separate, unlinked test workdir; retain
-only the two scoring migrations there if testing this module independently.
+only the three SKV migrations there if testing this module independently.
 
 Use `npm run preview -- --host 127.0.0.1 --port 4317 --strictPort` to serve the
 built site. With `CHROME_BIN` set to a local Chrome or Chromium executable:
@@ -121,20 +133,33 @@ through `MATCH_CENTER_ANON_KEY` and `MATCH_CENTER_SERVICE_KEY` to the script.
 The latter exists only in the test process, not in the Vite build. The script
 creates fixture accounts and matches and refuses non-loopback URLs.
 
+After the spectator loads the initial score, the browser test blocks its HTTP
+reads of `skv_public_scores`. It checks that the spectator receives the first
+point for that match in a Realtime WebSocket frame and that the display reaches
+1:0, then 2:1 after the referee reconnects and replays the offline queue.
+The script also reloads the referee tab during a conflict, archives the draft,
+checks standings and QR, then plays and publishes a completed device-only match
+with a correction to its first set.
+
+On 21 November 2026 the SQL suite passed on a clean PostgreSQL 17.11 database
+after all three migrations. Both browser scripts passed with Chrome 157 and the
+production build against local GoTrue 2.186.0, PostgREST 14.3 and Supabase
+Realtime 2.73.2. The live test used separate browser contexts on one computer.
+Physical devices and the hall Wi-Fi are part of the venue rehearsal.
+
 ## Limits to consider for tournament day
 
 - The venue needs a network path from the referee device to Supabase for
   spectators to receive updates. No changes are published while the referee is
   offline. Browser storage can be evicted; do not use private browsing or clear
   the device's storage during the event. Test the actual browser and Wi-Fi.
-- A device-only game remains device-only. Start a server game when publication
-  or cross-device history is needed. Publishing and VLW linking require an admin.
-- Results can be reopened and the current/last set corrected. Editing an earlier
-  set in an already-advanced match and reopening a walkover are not supported.
+- Start a server match for live spectators. An admin can import a completed
+  device-only game with up to 5,000 events and a 4 MiB journal.
+- Walkovers cannot be reopened. Changes that would invalidate sets already
+  played require manual review.
 - Fixture generation supports up to 20 teams and does not overwrite an existing
   schedule. Court labels and slot durations are configured when making the
   schedule; there is no centralized court registry or playoff generator.
 - No player roster/rotation, substitution management, score cap, or official
-  electronic match-sheet submission. No automatic comparison to a subsequently
-  reported official VLW result. Tournament and match history management does not
+  electronic match-sheet submission. Tournament and match history management does not
   hard-delete records.

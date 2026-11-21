@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import type { Action, MatchEvent, MatchRules, MatchState } from '@/lib/matchRules';
+import { setWins, type Action, type MatchEvent, type MatchRules, type MatchState } from '@/lib/matchRules';
+import { normalizeTeamName } from '@/lib/teamNaming';
+import type { CompetitionMatch } from '@/types/standings';
 
 export interface PublicScore {
   match_id: string;
@@ -83,6 +85,42 @@ export const sendEvent = (mid: string, device: string, fence: number, event: Mat
 
 export const scoreKey = (id: string) => ['skv-score', id] as const;
 export const scoresKey = ['skv-scores'] as const;
+
+export async function linkedScores(ids: string[]) {
+  const matches: PublicScore[] = [];
+  for (let i = 0; i < ids.length; i += 50) {
+    const { data, error } = await matchClient().from('skv_public_scores').select('*')
+      .in('external_match_id', ids.slice(i, i + 50));
+    if (error) throw new Error(error.message);
+    matches.push(...data as PublicScore[]);
+  }
+  return matches;
+}
+
+export function compareLeagueResult(fixture: CompetitionMatch, score: PublicScore) {
+  if (!fixture.result || score.state.status !== 'completed' || score.state.outcome !== 'played') return null;
+  const parts = /^(\d+)\s*:\s*(\d+)(?:\s*\(([^()]+)\))?$/.exec(fixture.result.trim());
+  if (!parts) return null;
+  const name = (s: string) => normalizeTeamName(s).trim().toLowerCase();
+  const home = name(fixture.homeTeam);
+  const away = name(fixture.awayTeam);
+  const homeSide = name(score.team_a) === home ? 'a' : 'b';
+  const awaySide = homeSide === 'a' ? 'b' : 'a';
+  const teams = { a: name(score.team_a), b: name(score.team_b) };
+  if (home === away || teams[homeSide] !== home || teams[awaySide] !== away) return 'checkTeams';
+  if (Number(parts[1]) !== setWins(score.state, homeSide) ||
+      Number(parts[2]) !== setWins(score.state, awaySide)) return 'vlwDiffers';
+  if (parts[3]) {
+    const sets = parts[3].split(',').map(s => /^(\d+)\s*:\s*(\d+)$/.exec(s.trim()));
+    if (sets.some(set => !set)) return null;
+    if (sets.length !== score.state.sets.length) return 'vlwDiffers';
+    for (const [index, set] of sets.entries()) {
+      const local = score.state.sets[index];
+      if (Number(set[1]) !== local[homeSide] || Number(set[2]) !== local[awaySide]) return 'vlwDiffers';
+    }
+  }
+  return 'vlwMatches';
+}
 const fields = 'id,name,venue,description,starts_at,visibility,rules,standings';
 
 export async function getCompetition(id: string) {

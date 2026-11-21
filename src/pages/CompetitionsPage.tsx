@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
 import { useMatchText } from '@/data/matchTranslations';
 import { usePublicScores } from '@/hooks/usePublicScores';
-import { listCompetitions } from '@/lib/matchApi';
+import { compareLeagueResult, linkedScores, listCompetitions, scoresKey } from '@/lib/matchApi';
 import { supabase } from '@/lib/supabase';
 import { PublicMatchCards, ScoreLink } from '@/components/MatchScore';
 
@@ -237,8 +237,14 @@ const CompetitionsPage: React.FC = () => {
   });
   const active = liveScores.data?.filter(match =>
     ['live', 'paused'].includes(match.state.status)) ?? [];
-  const linked = new Map(liveScores.data?.filter(match => match.external_match_id)
-    .map(match => [match.external_match_id, match.match_id]));
+  const fixtureIds = (data?.schedule ?? []).map(match => match.id);
+  const linkedQuery = useQuery({
+    queryKey: [...scoresKey, 'vlw', fixtureIds],
+    enabled: Boolean(supabase && fixtureIds.length && !('__PRERENDER_INJECTED' in window)),
+    queryFn: () => linkedScores(fixtureIds),
+    refetchInterval: 30000,
+  });
+  const linked = new Map(linkedQuery.data?.map(match => [match.external_match_id, match]));
   const t = content[language];
 
   const seoTitle = t.hero.title;
@@ -572,6 +578,8 @@ const CompetitionsPage: React.FC = () => {
                   {schedule.map((match) => {
                     const isOurTeamHome = match.isHome;
                     const hasResult = Boolean(match.result);
+                    const localScore = linked.get(match.id);
+                    const comparison = localScore && compareLeagueResult(match, localScore);
                     return (
                       <tr
                         key={match.id}
@@ -607,9 +615,10 @@ const CompetitionsPage: React.FC = () => {
                           ) : (
                             <span className="text-neutral-400 text-xs italic">—</span>
                           )}
-                          {linked.has(match.id) ? <div className="mt-1">
-                            <ScoreLink id={linked.get(match.id)!}>{matchText('unofficial')}</ScoreLink>
-                          </div> : role === 'admin' && <div className="mt-1">
+                          {localScore ? <div className="mt-1">
+                            <ScoreLink id={localScore.match_id}>{matchText('unofficial')}</ScoreLink>
+                            {comparison && <p className="text-xs">{matchText(comparison)}</p>}
+                          </div> : role === 'admin' && linkedQuery.isSuccess && <div className="mt-1">
                             <Link className="text-xs font-semibold text-primary-700 underline"
                               to={`/scoreboard/new?${new URLSearchParams({ vlw: match.id,
                                 a: normalizeTeamName(match.homeTeam), b: normalizeTeamName(match.awayTeam) })}`}>

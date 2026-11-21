@@ -75,8 +75,7 @@ begin
     played_at := (item->>'at')::timestamptz;
     status := public.skv_apply_event(mid,device,fence,(item->>'id')::uuid,revision,
       played_at,item->'action')->'match'->'state'->>'status';
-    if status = 'scheduled' then started := null;
-    elsif item->'action'->>'type' = 'MATCH_STARTED' then started := played_at; end if;
+    if item->'action'->>'type' = 'MATCH_STARTED' then started := played_at; end if;
     revision := revision + 1;
   end loop;
   if status is distinct from 'completed' then raise exception 'invalid_action'; end if;

@@ -19,13 +19,14 @@ function checked(result) {
 
 function button(page, label) {
   return page.waitForFunction(text => [...document.querySelectorAll('button')]
-    .some(b => !b.disabled && b.innerText.trim() === text), { timeout: 15000 }, label);
+    .some(b => !b.disabled && (b.innerText.trim() === text || b.ariaLabel === text)),
+    { timeout: 15000 }, label);
 }
 
 async function click(page, label) {
   await page.waitForFunction(text => {
     const target = [...document.querySelectorAll('button')]
-      .find(b => !b.disabled && b.innerText.trim() === text);
+      .find(b => !b.disabled && (b.innerText.trim() === text || b.ariaLabel === text));
     if (!target) return false;
     target.click();
     return true;

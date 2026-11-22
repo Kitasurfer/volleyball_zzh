@@ -349,17 +349,17 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             {state.winner && <Button variant="accent" onClick={() =>
               confirmAction({ type: 'MATCH_COMPLETED' }, t('finish'))}>{t('finish')}</Button>}
           </>}
-          {state.status === 'paused' && <Button onClick={() =>
+          {state.status === 'paused' && <Button variant="accent" onClick={() =>
             void dispatch({ type: 'MATCH_RESUMED' })}>{t('resume')}</Button>}
           {highPrivilege && state.status === 'completed' && state.outcome === 'played' &&
-            <Button variant="outline" onClick={() => setCorrection('MATCH_REOPENED')}>
+            <Button variant="danger" onClick={() => setCorrection('MATCH_REOPENED')}>
               {t('reopen')}
             </Button>}
           {highPrivilege && !['completed', 'cancelled'].includes(state.status) && <>
-            <Button variant="outline" onClick={() => setCorrection('MATCH_CANCELLED')}>
+            <Button variant="danger" onClick={() => setCorrection('MATCH_CANCELLED')}>
               {t('cancel')}
             </Button>
-            <Button variant="outline" onClick={() => setCorrection('WALKOVER')}>{t('forfeit')}</Button>
+            <Button variant="danger" onClick={() => setCorrection('WALKOVER')}>{t('forfeit')}</Button>
           </>}
         </div>
         <p className="text-xs text-neutral-500">{t('shortcuts')}</p>

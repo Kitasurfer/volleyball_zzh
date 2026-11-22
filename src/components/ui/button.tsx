@@ -19,6 +19,8 @@ const buttonVariants = cva(
           'text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 focus-visible:ring-neutral-300 ring-offset-white',
         accent:
           'bg-accent-500 text-neutral-900 hover:bg-accent-600 focus-visible:ring-accent-500 ring-offset-accent-100',
+        danger:
+          'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 focus-visible:ring-rose-400 ring-offset-white',
       },
       size: {
         default: 'h-11 px-6 py-2',

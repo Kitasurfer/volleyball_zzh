@@ -83,6 +83,18 @@ describe('volleyball rules', () => {
     expect(correct(reopened, r, 20, 25).winner).toBe('b');
   });
 
+  it('reopens a just-finished last set when its score is corrected below the target', () => {
+    const r = indoorRules(1);
+    const finished = correct(start(r), r, 25, 20);
+    expect(finished.winner).toBe('a');
+    const revived = correct(finished, r, 24, 20);
+    expect(currentSet(revived)?.winner).toBeNull();
+    expect(revived.winner).toBeNull();
+    expect(revived.status).toBe('live');
+    expect(currentSet(applyScore(revived, r, { type: 'POINT_AWARDED', side: 'a' }))?.a).toBe(25);
+    expect(() => correct(finished, r, 25, -1)).toThrow();
+  });
+
   it('supports a custom training target and margin; pause blocks scoring', () => {
     const r: MatchRules = { ...indoorRules(1), points: 21, margin: 1 };
     const paused = applyScore(start(r), r, { type: 'MATCH_PAUSED' });

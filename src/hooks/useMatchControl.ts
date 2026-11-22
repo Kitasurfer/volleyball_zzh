@@ -5,7 +5,7 @@ import {
   type ControlledMatch,
 } from '@/lib/matchApi';
 import { queueAction, readDraft, saveDraft, seedDraft, type MatchDraft } from '@/lib/matchStorage';
-import type { Action } from '@/lib/matchRules';
+import type { Action, MatchRules } from '@/lib/matchRules';
 
 const conflictErrors = ['lease_taken', 'lease_lost', 'version_conflict', 'access_denied',
   'event_reused', 'invalid_action', 'invalid_set_history'];
@@ -199,6 +199,19 @@ export function useMatchControl(
     finally { running.current = false; if (mounted.current) setSyncing(false); }
   }
 
+  async function setRules(rules: MatchRules) {
+    try {
+      await update(current => {
+        if (!local || current.projected.state.status !== 'scheduled' || current.pending.length) {
+          throw new Error('invalid_action');
+        }
+        return { ...current, projected: { ...current.projected, rules },
+          confirmed: { ...current.confirmed, rules } };
+      });
+      setError(undefined);
+    } catch (cause) { setError(cause); }
+  }
+
   async function release() {
     if (running.current) return;
     running.current = true;
@@ -216,5 +229,5 @@ export function useMatchControl(
   }
 
   return { draft, server, loading, syncing, offline, held, error, dispatch, take, release,
-    keepServer };
+    keepServer, setRules };
 }

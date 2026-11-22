@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/lib/AuthContext';
-import { currentSet, opposite, setWins, teamName, type MatchState } from '@/lib/matchRules';
+import { currentSet, opposite, setWins, teamName, type MatchRules, type MatchState } from '@/lib/matchRules';
 import { useMatchText } from '@/data/matchTranslations';
 import { formatMatchDate, type PublicScore } from '@/lib/matchApi';
 
@@ -98,6 +98,38 @@ export function SetReport({ state }: { state: MatchState }) {
   );
 }
 
+export function RuleFields({ rules, onChange }: {
+  rules: MatchRules; onChange: (value: MatchRules) => void;
+}) {
+  const { t } = useMatchText();
+  return <div className="grid gap-3 sm:grid-cols-2">
+    <label>{t('format')}
+      <select className={matchInput} value={rules.bestOf} onChange={e =>
+        onChange({ ...rules, bestOf: Number(e.target.value) as MatchRules['bestOf'] })}>
+        {[1, 3, 5].map(n => <option key={n} value={n}>{t('sets')} · {n}</option>)}
+      </select>
+    </label>
+    <label>{t('target')}
+      <input className={matchInput} type="number" min={1} max={100} required
+        value={rules.points || ''} onChange={e => onChange({ ...rules, points: +e.target.value })} />
+    </label>
+    {rules.bestOf > 1 && <label>{t('decider')}
+      <input className={matchInput} type="number" min={1} max={100} required
+        value={rules.deciding || ''} onChange={e =>
+          onChange({ ...rules, deciding: +e.target.value,
+            switchAt: Math.min(rules.switchAt, +e.target.value) })} />
+    </label>}
+    {rules.bestOf > 1 && <label>{t('changeAt')}
+      <input className={matchInput} type="number" min={0} max={rules.deciding} required
+        value={rules.switchAt} onChange={e => onChange({ ...rules, switchAt: +e.target.value })} />
+    </label>}
+    <label>{t('margin')}
+      <input className={matchInput} type="number" min={1} max={5} required
+        value={rules.margin || ''} onChange={e => onChange({ ...rules, margin: +e.target.value })} />
+    </label>
+  </div>;
+}
+
 export function ScoreLink({ id, children }: { id: string; children?: React.ReactNode }) {
   const { t } = useMatchText();
   return <Link className="font-semibold text-primary-700 underline" to={`/scoreboard/${id}`}>
@@ -128,9 +160,13 @@ export function PublicMatchCards({ matches }: { matches: PublicScore[] }) {
           {match.scheduled_at && state.status === 'scheduled' &&
             <p className="text-sm">{formatMatchDate(match.scheduled_at, language)}</p>}
           {match.external_match_id && <p className="text-xs">{t('unofficial')}</p>}
-          <ScoreLink id={match.match_id}>
-            {t(state.status === 'completed' ? 'protocol' : 'board')}
-          </ScoreLink>
+          <div className="flex flex-wrap gap-3">
+            <ScoreLink id={match.match_id}>
+              {t(state.status === 'completed' ? 'protocol' : 'board')}
+            </ScoreLink>
+            <Link className="font-semibold text-primary-700 underline"
+              to={`/scoreboard/${match.match_id}/display`}>{t('display')}</Link>
+          </div>
         </article>;
       })}
     </div>

@@ -130,6 +130,13 @@ const labels = {
   accountMissing: ['Kein Benutzerkonto mit dieser E-Mail gefunden.', 'No account found for this email.', 'Не найден аккаунт с этой почтой.', 'Nessun account trovato per questa e-mail.'],
   rulesLocked: ['Für diesen Spielplan sind die Spielregeln bereits festgelegt.', 'Match rules are fixed for this schedule.', 'Правила матчей уже закреплены за этим расписанием.', 'Le regole delle partite sono già fissate per questo calendario.'],
   scheduleExists: ['Das Turnier hat bereits einen Spielplan.', 'A schedule already exists.', 'У турнира уже есть расписание.', 'Esiste già un calendario.'],
+  switchMatch: ['Spiel wechseln', 'Switch match', 'Сменить матч', 'Cambia partita'],
+  matchesDone: ['beendet', 'finished', 'завершено', 'concluse'],
+  removePoint: ['Punkt abziehen', 'Subtract a point', 'Снять очко', 'Togli un punto'],
+  shortcuts: ['Tasten 1/2: Punkt links/rechts · Z: Rückgängig', 'Keys 1/2: point left/right · Z: undo', 'Клавиши 1/2: очко слева/справа · Z: отмена', 'Tasti 1/2: punto a sinistra/destra · Z: annulla'],
+  ruleTo: ['Bis', 'Up to', 'До', 'Fino a'],
+  marginShort: ['Vorsprung', 'margin', 'разница', 'vantaggio'],
+  editRules: ['Spielregeln vor dem Start anpassen', 'Adjust match rules before start', 'Изменить правила до начала', 'Modifica le regole prima dell’inizio'],
 } as const;
 
 export function useMatchText() {

@@ -65,9 +65,9 @@ export function usePublicScore(id: string) {
   return { ...query, connected };
 }
 
-export function usePublicScores(competition?: string) {
+export function usePublicScores(competition?: string, active = true) {
   const client = useQueryClient();
-  const enabled = Boolean(supabase && !('__PRERENDER_INJECTED' in window));
+  const enabled = Boolean(active && supabase && !('__PRERENDER_INJECTED' in window));
   useEffect(() => {
     if (!supabase || !enabled) return;
     const filter = competition ? { filter: `competition_id=eq.${competition}` } : {};

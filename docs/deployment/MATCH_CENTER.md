@@ -160,6 +160,11 @@ Physical devices and the hall Wi-Fi are part of the venue rehearsal.
 - Fixture generation supports up to 20 teams and does not overwrite an existing
   schedule. Court labels and slot durations are configured when making the
   schedule; there is no centralized court registry or playoff generator.
-- No player roster/rotation, substitution management, score cap, or official
-  electronic match-sheet submission. Tournament and match history management does not
-  hard-delete records.
+- Rules of a server-side match are fixed at creation. Only device-only matches
+  can adjust their format before the first rally. Choose the format on
+  `/scoreboard/new` or in the tournament setup.
+- There is no single-action score reset. Reopen a confirmed result and correct
+  the affected sets so the event journal stays auditable.
+- No player roster/rotation, substitution management, score cap, timeout
+  tracking, or official electronic match-sheet submission. Tournament and
+  match history management does not hard-delete records.

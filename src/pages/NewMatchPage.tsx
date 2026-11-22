@@ -2,45 +2,13 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui';
-import { MatchLogin, matchCard, matchInput, matchPage } from '@/components/MatchScore';
+import { MatchLogin, RuleFields, matchCard, matchInput, matchPage } from '@/components/MatchScore';
 import { matchError, useMatchText } from '@/data/matchTranslations';
 import { useMatchShell } from '@/hooks/useMatchShell';
 import { useAuth } from '@/lib/AuthContext';
 import { matchClient, matchRpc, type ControlledMatch, type Team } from '@/lib/matchApi';
-import { indoorRules, initialMatch, type MatchRules } from '@/lib/matchRules';
+import { indoorRules, initialMatch } from '@/lib/matchRules';
 import { saveDraft, seedDraft } from '@/lib/matchStorage';
-
-export function RuleFields({ rules, onChange }: {
-  rules: MatchRules; onChange: (value: MatchRules) => void;
-}) {
-  const { t } = useMatchText();
-  return <div className="grid gap-3 sm:grid-cols-2">
-    <label>{t('format')}
-      <select className={matchInput} value={rules.bestOf} onChange={e =>
-        onChange({ ...rules, bestOf: Number(e.target.value) as MatchRules['bestOf'] })}>
-        {[1, 3, 5].map(n => <option key={n} value={n}>{t('sets')} · {n}</option>)}
-      </select>
-    </label>
-    <label>{t('target')}
-      <input className={matchInput} type="number" min={1} max={100} required
-        value={rules.points || ''} onChange={e => onChange({ ...rules, points: +e.target.value })} />
-    </label>
-    {rules.bestOf > 1 && <label>{t('decider')}
-      <input className={matchInput} type="number" min={1} max={100} required
-        value={rules.deciding || ''} onChange={e =>
-          onChange({ ...rules, deciding: +e.target.value,
-            switchAt: Math.min(rules.switchAt, +e.target.value) })} />
-    </label>}
-    {rules.bestOf > 1 && <label>{t('changeAt')}
-      <input className={matchInput} type="number" min={0} max={rules.deciding} required
-        value={rules.switchAt} onChange={e => onChange({ ...rules, switchAt: +e.target.value })} />
-    </label>}
-    <label>{t('margin')}
-      <input className={matchInput} type="number" min={1} max={5} required
-        value={rules.margin || ''} onChange={e => onChange({ ...rules, margin: +e.target.value })} />
-    </label>
-  </div>;
-}
 
 export default function NewMatchPage() {
   const { t } = useMatchText();

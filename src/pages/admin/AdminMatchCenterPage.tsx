@@ -2,13 +2,12 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui';
-import { matchCard, matchInput } from '@/components/MatchScore';
+import { RuleFields, matchCard, matchInput } from '@/components/MatchScore';
 import { matchError, useMatchText } from '@/data/matchTranslations';
 import { awardKeys, berlinInput, berlinTime, decisionKeys, formatMatchDate, listCompetitions,
   matchClient, matchRpc, roundRobin, scoresKey, type Competition, type ControlledMatch,
   type Team } from '@/lib/matchApi';
 import { indoorRules, shortScore } from '@/lib/matchRules';
-import { RuleFields } from '@/pages/NewMatchPage';
 import { StandingsTable } from '@/pages/ClubCompetitionPage';
 import { useClubStandings } from '@/hooks/usePublicScores';
 import { csvField, downloadMatchFile } from '@/lib/matchStorage';

@@ -1,14 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
-import { MatchLogin, MatchScore, SetReport, matchCard, matchInput, matchPage } from '@/components/MatchScore';
+import { MatchLogin, MatchScore, RuleFields, SetReport, matchCard, matchInput, matchPage } from '@/components/MatchScore';
 import { matchError, useMatchText, type MatchText } from '@/data/matchTranslations';
 import { useMatchControl } from '@/hooks/useMatchControl';
 import { useMatchShell } from '@/hooks/useMatchShell';
+import { usePublicScores } from '@/hooks/usePublicScores';
 import { useAuth } from '@/lib/AuthContext';
-import { downloadMatchFile, undoTarget } from '@/lib/matchStorage';
-import { canSwitchDecider, currentSet, opposite, shortScore, teamName,
-  type Action, type Side } from '@/lib/matchRules';
+import { downloadMatchFile, localMatches, undoTarget } from '@/lib/matchStorage';
+import { canSwitchDecider, currentSet, opposite, setWins, shortScore, teamName,
+  type Action, type MatchRules, type Side } from '@/lib/matchRules';
 import { formatMatchDate, matchRpc } from '@/lib/matchApi';
 
 const actionLabels: Record<Action['type'], Parameters<MatchText>[0]> = {
@@ -56,17 +58,61 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
   const local = id.startsWith('local-');
   const match = draft?.projected;
   const state = match?.state;
+  const set = state ? currentSet(state) : undefined;
+  const writable = Boolean(draft && (local || held) && !draft.conflict);
+  const canPoint = writable && state?.status === 'live' && !set?.winner;
+  const undoAvailable = writable && Boolean(draft && state &&
+    ['live', 'paused'].includes(state.status) && undoTarget(draft.history));
+  const left: Side = state?.left ?? 'a';
   useEffect(() => { if (state?.firstServe) setServe(opposite(state.firstServe)); },
     [state?.firstServe, state?.sets.length]);
   useEffect(() => () => { void wake?.release(); }, [wake]);
+  useEffect(() => {
+    const press = (event: KeyboardEvent) => {
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || correction) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (canPoint && (event.code === 'Digit1' || event.code === 'Numpad1')) {
+        event.preventDefault();
+        void dispatch({ type: 'POINT_AWARDED', side: left });
+      } else if (canPoint && (event.code === 'Digit2' || event.code === 'Numpad2')) {
+        event.preventDefault();
+        void dispatch({ type: 'POINT_AWARDED', side: opposite(left) });
+      } else if (undoAvailable && event.code === 'KeyZ') {
+        event.preventDefault();
+        void dispatch({ type: 'EVENT_UNDONE' });
+      }
+    };
+    window.addEventListener('keydown', press);
+    return () => window.removeEventListener('keydown', press);
+  }, [canPoint, undoAvailable, left, correction, dispatch]);
+  const siblings = usePublicScores(
+    !local && match?.competition_id ? match.competition_id : undefined,
+    !local && Boolean(match?.competition_id));
+  const locals = useQuery({ queryKey: ['skv-local-drafts'], enabled: local,
+    queryFn: localMatches, refetchInterval: 4000, refetchOnWindowFocus: true });
+  const [edited, setEdited] = useState<MatchRules>();
   if (!draft || !match || !state) return <main className={matchPage}>
     <p role="status">{model.loading ? t('loading') : error ? matchError(error, t) : t('unavailable')}</p>
     {!local && <Link to={`/scoreboard/${id}`}>{t('board')}</Link>}
   </main>;
-  const set = currentSet(state);
-  const writable = (local || held) && !draft.conflict;
-  const canPoint = writable && state.status === 'live' && !set?.winner;
   const highPrivilege = admin && authenticated && !offline && !draft.pending.length;
+  const options: { id: string; label: string; done: boolean }[] = local
+    ? (locals.data ?? []).map(d => ({
+        id: d.key,
+        label: `${d.projected.team_a} – ${d.projected.team_b} · ${t(d.projected.state.status)}`,
+        done: ['completed', 'cancelled'].includes(d.projected.state.status),
+      }))
+    : (siblings.data ?? []).map(m => ({
+        id: m.match_id,
+        label: `${m.team_a} – ${m.team_b} · ${setWins(m.state, 'a')}:${setWins(m.state, 'b')} · ${t(m.state.status)}`,
+        done: m.state.status === 'completed',
+      }));
+  if (!options.some(o => o.id === id)) {
+    options.unshift({ id, done: false,
+      label: `${match.team_a} – ${match.team_b} · ${t(state.status)}` });
+  }
+  const done = options.filter(o => o.done).length;
   const clickFullscreen = () => {
     const request = document.fullscreenElement ? document.exitFullscreen?.() :
       document.documentElement.requestFullscreen?.();
@@ -92,6 +138,11 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
       void dispatch({ type: correction, side: fields.get('side') === 'b' ? 'b' : 'a', reason });
     }
     setCorrection(undefined);
+  };
+  const quickMinus = (side: Side) => {
+    if (!set || set[side] <= 0) return;
+    void dispatch({ type: 'POINT_CORRECTED',
+      a: set.a - Number(side === 'a'), b: set.b - Number(side === 'b'), reason: '−1' });
   };
 
   return (
@@ -165,20 +216,41 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
           {t('release')}
         </Button>}
       </section>
+      {options.length > 1 && <nav className={`${matchCard} space-y-2 print:hidden`}>
+        <label className="block text-sm font-semibold">{t('switchMatch')}
+          <select className={`${matchInput} mt-1`} value={id}
+            onChange={e => navigate(`/scoreboard/${e.target.value}/control`)}>
+            {options.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+        </label>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <span>{done}/{options.length} · {t('matchesDone')}</span>
+          {local && <Link className="font-semibold text-primary-700 underline"
+            to="/scoreboard/new">{t('newMatch')}</Link>}
+        </div>
+      </nav>}
       <MatchScore match={match} />
       <SetReport state={state} />
+      <p className="text-sm text-neutral-600">
+        {t('ruleTo')} {set?.target ?? match.rules.points} · {t('marginShort')} {match.rules.margin}
+      </p>
       {writable && <section className="space-y-4 print:hidden">
         {state.status === 'live' && set?.winner && !state.winner &&
           <p role="status" className="rounded-md bg-accent-50 p-3 font-bold text-primary-900">
             {t('setFinished')} · {teamName(match, set.winner)}
           </p>}
-        {canPoint && <div className="grid grid-cols-2 gap-3">
+        {state.status === 'live' && set && <div className="grid grid-cols-2 gap-3">
           {[state.left, opposite(state.left)].map(side => (
-            <Button key={side} variant={side === 'a' ? 'accent' : 'default'}
-              className="h-auto min-h-24 min-w-0 whitespace-normal break-all px-2 py-4 text-lg sm:text-2xl"
-              onClick={() => void dispatch({ type: 'POINT_AWARDED', side })}>
-              +1 {teamName(match, side)}
-            </Button>
+            <div key={side} className="flex items-stretch gap-2">
+              <Button variant="outline" className="shrink-0 px-3 text-2xl"
+                aria-label={t('removePoint')} disabled={set[side] <= 0}
+                onClick={() => quickMinus(side)}>−</Button>
+              {canPoint && <Button variant={side === 'a' ? 'accent' : 'default'}
+                className="h-auto min-h-24 min-w-0 flex-1 whitespace-normal break-all px-2 py-4 text-lg sm:text-2xl"
+                onClick={() => void dispatch({ type: 'POINT_AWARDED', side })}>
+                +1 {teamName(match, side)}
+              </Button>}
+            </div>
           ))}
         </div>}
         {(state.status === 'scheduled' || (state.status === 'live' && set?.winner && !state.winner)) &&
@@ -202,6 +274,15 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
               } else void dispatch({ type: 'SET_STARTED', side: serve });
             }}>{t(state.status === 'scheduled' ? 'start' : 'next')}</Button>
           </div>}
+        {local && state.status === 'scheduled' && <details className={`${matchCard} print:hidden`}>
+          <summary className="cursor-pointer font-semibold">{t('editRules')}</summary>
+          <div className="mt-3 space-y-3">
+            <RuleFields rules={edited ?? match.rules} onChange={setEdited} />
+            <Button variant="outline" disabled={!edited} onClick={() => {
+              if (edited) void model.setRules(edited).then(() => setEdited(undefined));
+            }}>{t('save')}</Button>
+          </div>
+        </details>}
         {canSwitchDecider(state, match.rules) &&
           <p role="status" className="rounded-md bg-accent-50 p-3 font-semibold">{t('switchHint')}</p>}
         <div className="flex flex-wrap gap-2">
@@ -241,6 +322,7 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             <Button variant="outline" onClick={() => setCorrection('WALKOVER')}>{t('forfeit')}</Button>
           </>}
         </div>
+        <p className="text-xs text-neutral-500">{t('shortcuts')}</p>
         {correction && <form className={`${matchCard} space-y-3`} onSubmit={submitCorrection}>
           <h2 className="font-semibold">{correctionLabel}</h2>
           {correction === 'POINT_CORRECTED' && state.sets.length > 1 && <label>{t('set')}

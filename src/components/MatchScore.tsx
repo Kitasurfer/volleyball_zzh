@@ -84,16 +84,22 @@ export function MatchScore({
   );
 }
 
-export function SetReport({ state }: { state: MatchState }) {
+export function SetReport({ state, activeLast = false }: {
+  state: MatchState; activeLast?: boolean;
+}) {
   const { t } = useMatchText();
   if (!state.sets.length) return null;
   return (
     <ol className="flex flex-wrap gap-2">
-      {state.sets.map((set, i) => (
-        <li key={i} className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm">
+      {state.sets.map((set, i) => {
+        const active = activeLast && i === state.sets.length - 1 &&
+          state.status === 'live' && !set.winner;
+        return <li key={i} className={`rounded-md border px-3 py-2 text-sm ${active ?
+          'border-primary-800 bg-primary-800 font-semibold text-white' :
+          'border-neutral-200 bg-white'}`}>
           {t('set')} {i + 1} <strong className="ml-2 tabular-nums">{set.a}:{set.b}</strong>
-        </li>
-      ))}
+        </li>;
+      })}
     </ol>
   );
 }

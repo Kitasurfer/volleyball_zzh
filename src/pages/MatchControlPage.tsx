@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
-import { MatchLogin, MatchScore, RuleFields, SetReport, matchCard, matchInput, matchPage } from '@/components/MatchScore';
+import { MatchLogin, RuleFields, SetReport, matchCard, matchInput, matchPage } from '@/components/MatchScore';
 import { matchError, useMatchText, type MatchText } from '@/data/matchTranslations';
 import { useMatchControl } from '@/hooks/useMatchControl';
 import { useMatchShell } from '@/hooks/useMatchShell';
@@ -144,6 +144,32 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
     void dispatch({ type: 'POINT_CORRECTED',
       a: set.a - Number(side === 'a'), b: set.b - Number(side === 'b'), reason: '−1' });
   };
+  const renderSide = (side: Side) => {
+    const serving = state.serve === side && ['live', 'paused'].includes(state.status) &&
+      !set?.winner;
+    return <div key={side} className={`flex min-w-0 flex-col items-center gap-2 rounded-xl
+      border p-3 text-center sm:gap-3 sm:p-5 ${side === 'a' ?
+        'border-primary-100 bg-primary-50' : 'border-neutral-200 bg-neutral-100'}`}>
+      <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs
+        font-semibold ${serving ? 'bg-green-100 text-green-800' : 'bg-white/70 text-neutral-500'}`}>
+        ● {t('serve')}
+      </span>
+      <h2 className="break-words font-bold leading-tight text-primary-900
+        text-[clamp(0.95rem,3.5vw,1.75rem)]">{teamName(match, side)}</h2>
+      <strong className="block leading-none tabular-nums text-primary-900
+        text-[clamp(4rem,17vw,11rem)]">{set?.[side] ?? 0}</strong>
+      {writable && state.status === 'live' && set && <div className="mt-auto flex w-full
+        items-stretch gap-2">
+        <Button variant="outline" className="shrink-0 px-3 text-xl"
+          aria-label={`${t('removePoint')} · ${teamName(match, side)}`}
+          disabled={set[side] <= 0} onClick={() => quickMinus(side)}>−</Button>
+        {canPoint && <Button variant="accent"
+          className="h-auto min-h-14 min-w-0 flex-1 px-2 text-xl font-bold"
+          aria-label={`+1 ${teamName(match, side)}`}
+          onClick={() => void dispatch({ type: 'POINT_AWARDED', side })}>+1</Button>}
+      </div>}
+    </div>;
+  };
 
   return (
     <main className={matchPage}>
@@ -229,30 +255,44 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             to="/scoreboard/new">{t('newMatch')}</Link>}
         </div>
       </nav>}
-      <MatchScore match={match} />
-      <SetReport state={state} />
-      <p className="text-sm text-neutral-600">
-        {t('ruleTo')} {set?.target ?? match.rules.points} · {t('marginShort')} {match.rules.margin}
-      </p>
+      <section className={`${matchCard} space-y-3 sm:space-y-4`} aria-label={t('title')}>
+        <p className="text-center text-sm font-semibold text-neutral-600">
+          {t(state.status)}{set && ` · ${t('set')} ${state.sets.length}`}
+          {match.court && ` · ${match.court}`}
+        </p>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-2 sm:gap-4">
+          {renderSide(state.left)}
+          <div className="flex min-w-12 flex-col items-center justify-center gap-1 text-center">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+              {t('sets')}
+            </span>
+            <strong className="tabular-nums text-xl font-bold text-primary-900 sm:text-3xl">
+              {setWins(state, 'a')}:{setWins(state, 'b')}
+            </strong>
+            <span className="text-xs text-neutral-400">VS</span>
+            {set && <span className="rounded-md bg-primary-100 px-2 py-0.5 text-xs font-semibold
+              text-primary-900">{t('set')} {state.sets.length}</span>}
+          </div>
+          {renderSide(opposite(state.left))}
+        </div>
+        {state.winner && <p className="break-words text-center text-lg font-bold text-primary-900">
+          {t('winner')}: {teamName(match, state.winner)}
+          {state.outcome === 'walkover' && ` · ${t('forfeit')}`}
+        </p>}
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-bold text-primary-900">{t('sets')}</h2>
+          <p className="text-sm text-neutral-600">
+            {t('ruleTo')} {set?.target ?? match.rules.points} · {t('marginShort')} {match.rules.margin}
+          </p>
+        </div>
+        <SetReport state={state} activeLast />
+      </section>
       {writable && <section className="space-y-4 print:hidden">
         {state.status === 'live' && set?.winner && !state.winner &&
           <p role="status" className="rounded-md bg-accent-50 p-3 font-bold text-primary-900">
             {t('setFinished')} · {teamName(match, set.winner)}
           </p>}
-        {state.status === 'live' && set && <div className="grid grid-cols-2 gap-3">
-          {[state.left, opposite(state.left)].map(side => (
-            <div key={side} className="flex items-stretch gap-2">
-              <Button variant="outline" className="shrink-0 px-3 text-2xl"
-                aria-label={t('removePoint')} disabled={set[side] <= 0}
-                onClick={() => quickMinus(side)}>−</Button>
-              {canPoint && <Button variant={side === 'a' ? 'accent' : 'default'}
-                className="h-auto min-h-24 min-w-0 flex-1 whitespace-normal break-all px-2 py-4 text-lg sm:text-2xl"
-                onClick={() => void dispatch({ type: 'POINT_AWARDED', side })}>
-                +1 {teamName(match, side)}
-              </Button>}
-            </div>
-          ))}
-        </div>}
+
         {(state.status === 'scheduled' || (state.status === 'live' && set?.winner && !state.winner)) &&
           <div className={`${matchCard} flex flex-wrap items-end gap-3`}>
             <label className="block">{t('serve')}

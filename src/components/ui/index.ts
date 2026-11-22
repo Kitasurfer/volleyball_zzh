@@ -1,6 +1,7 @@
 export { Alert } from './Alert';
 export { Spinner } from './Spinner';
-export { Button, buttonVariants } from './button';
+export { Button } from './button';
+export { buttonVariants } from './buttonVariants';
 export {
   Card,
   CardHeader,

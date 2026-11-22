@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import { Seo } from '@/components/Seo';
 import { MatchScore, SetReport, matchPage } from '@/components/MatchScore';
 import { useMatchText } from '@/data/matchTranslations';
-import { usePublicScore } from '@/hooks/usePublicScores';
+import { usePublicScore, usePublicScores } from '@/hooks/usePublicScores';
 import { formatMatchDate } from '@/lib/matchApi';
 
 export default function MatchSpectatorPage({ display = false }: { display?: boolean }) {
@@ -14,11 +14,16 @@ export default function MatchSpectatorPage({ display = false }: { display?: bool
 
 function Spectator({ id, display }: { id: string; display: boolean }) {
   const { t, language } = useMatchText();
+  const navigate = useNavigate();
   const { data: match, isLoading, isError, connected } = usePublicScore(id);
   const [notice, setNotice] = useState('');
   const [qr, setQr] = useState('');
   const spectatorUrl = `${window.location.origin}/scoreboard/${id}`;
   const published = !!match;
+  const finished = !!match && ['completed', 'cancelled'].includes(match.state.status);
+  const siblings = usePublicScores(undefined, display && finished);
+  const next = finished ? siblings.data?.find(m => m.match_id !== id &&
+    m.court === match?.court && m.state.status === 'scheduled') : undefined;
   useEffect(() => {
     if (!published || display) return;
     let active = true;
@@ -27,6 +32,29 @@ function Spectator({ id, display }: { id: string; display: boolean }) {
     })).then(url => { if (active) setQr(url); }).catch(() => {});
     return () => { active = false; };
   }, [display, published, spectatorUrl]);
+  useEffect(() => {
+    if (!display || !('wakeLock' in navigator)) return;
+    let sentinel: WakeLockSentinel | undefined;
+    const acquire = () => {
+      if (document.visibilityState !== 'visible' || sentinel) return;
+      void navigator.wakeLock.request('screen').then(s => {
+        sentinel = s;
+        s.onrelease = () => { sentinel = undefined; };
+      }).catch(() => {});
+    };
+    acquire();
+    document.addEventListener('visibilitychange', acquire);
+    return () => {
+      document.removeEventListener('visibilitychange', acquire);
+      void sentinel?.release();
+    };
+  }, [display]);
+  useEffect(() => {
+    if (!display || !next) return;
+    const timer = window.setTimeout(
+      () => navigate(`/scoreboard/${next.match_id}/display`), 60000);
+    return () => window.clearTimeout(timer);
+  }, [display, navigate, next]);
   if (!match) return <main className={matchPage}>
     <p role={isError ? 'alert' : 'status'}>
       {isLoading ? t('loading') : isError ? t('offline') : t('unavailable')}
@@ -59,6 +87,9 @@ function Spectator({ id, display }: { id: string; display: boolean }) {
         {t('updated')}: {formatMatchDate(match.updated_at, language)}
         {(!connected || isError) && ` · ${t(isError || !navigator.onLine ? 'offline' : 'fallback')}`}
       </p>
+      {display && next && <p className="text-sm font-semibold">
+        {t('upNext')}: {next.team_a} – {next.team_b}
+      </p>}
       {!display && (
         <div className="flex flex-wrap gap-2 print:hidden">
           <Button asChild><Link to={`/scoreboard/${id}/display`}>{t('display')}</Link></Button>

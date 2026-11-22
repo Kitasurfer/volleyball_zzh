@@ -137,6 +137,17 @@ const labels = {
   ruleTo: ['Bis', 'Up to', 'До', 'Fino a'],
   marginShort: ['Vorsprung', 'margin', 'разница', 'vantaggio'],
   editRules: ['Spielregeln vor dem Start anpassen', 'Adjust match rules before start', 'Изменить правила до начала', 'Modifica le regole prima dell’inizio'],
+  upNext: ['Als Nächstes', 'Up next', 'Далее на этой площадке', 'A seguire su questo campo'],
+  timeout: ['Auszeit', 'Timeout', 'Тайм-аут', 'Time-out'],
+  readiness: ['Einsatzbereitschaft prüfen', 'Match-day readiness', 'Проверка готовности', 'Verifica di prontezza'],
+  checkAgain: ['Erneut prüfen', 'Check again', 'Проверить снова', 'Ricontrolla'],
+  checkNet: ['Internetverbindung', 'Internet connection', 'Интернет', 'Connessione internet'],
+  checkStore: ['Lokaler Speicher (Offline-Speicher)', 'Local storage (offline data)', 'Локальное хранилище (офлайн)', 'Archivio locale (offline)'],
+  checkServer: ['Server-Verbindung', 'Server connection', 'Связь с сервером', 'Connessione al server'],
+  checkRt: ['Live-Kanal (Realtime)', 'Realtime channel', 'Realtime-канал', 'Canale live (realtime)'],
+  checkSignIn: ['Schiedsrichter angemeldet', 'Referee signed in', 'Вход судьи', 'Arbitro autenticato'],
+  checkSw: ['Offline-Modus bereit', 'Offline mode ready', 'Офлайн-режим готов', 'Modalità offline pronta'],
+  checkWake: ['Bildschirm-Wachhaltung möglich', 'Screen wake lock available', 'Удержание экрана доступно', 'Blocco spegnimento disponibile'],
 } as const;
 
 export function useMatchText() {

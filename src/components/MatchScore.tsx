@@ -73,6 +73,13 @@ export function MatchScore({
               'text-[clamp(3rem,min(16vw,30vh),24rem)]' : 'text-6xl sm:text-8xl'}`}>
               {set?.[side] ?? 0}
             </strong>
+            <span className="mt-1 flex h-3 items-center justify-center gap-1.5"
+              title={t('timeout')}>
+              {set && [0, 1].map(i => <span key={i} className={`rounded-full ${
+                display ? 'h-3 w-3' : 'h-2 w-2'} ${
+                i < (side === 'a' ? set.timeouts_a ?? 0 : set.timeouts_b ?? 0)
+                  ? 'bg-accent-500' : 'bg-white/25'}`} />)}
+            </span>
             <span className="mt-2 text-base font-semibold">{t('sets')} {setWins(s, side)}</span>
           </div>
         ))}

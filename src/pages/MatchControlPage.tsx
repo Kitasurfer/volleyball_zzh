@@ -18,7 +18,7 @@ const actionLabels: Record<Action['type'], Parameters<MatchText>[0]> = {
   POINT_CORRECTED: 'correct', EARLIER_SET_CORRECTED: 'correct', EVENT_UNDONE: 'undo', SERVE_CHANGED: 'serve',
   SIDES_SWITCHED: 'switchSide', MATCH_PAUSED: 'pause', MATCH_RESUMED: 'resume',
   MATCH_COMPLETED: 'finish', MATCH_REOPENED: 'reopen', MATCH_CANCELLED: 'cancel',
-  WALKOVER: 'forfeit',
+  WALKOVER: 'forfeit', TIMEOUT_CALLED: 'timeout',
 };
 
 export default function MatchControlPage() {
@@ -147,6 +147,7 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
   const renderSide = (side: Side) => {
     const serving = state.serve === side && ['live', 'paused'].includes(state.status) &&
       !set?.winner;
+    const used = set ? (side === 'a' ? set.timeouts_a : set.timeouts_b) ?? 0 : 0;
     return <div key={side} className={`flex min-w-0 flex-col items-center gap-2 rounded-xl
       border p-3 text-center sm:gap-3 sm:p-5 ${side === 'a' ?
         'border-primary-100 bg-primary-50' : 'border-neutral-200 bg-neutral-100'}`}>
@@ -158,6 +159,14 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
         text-[clamp(0.95rem,3.5vw,1.75rem)]">{teamName(match, side)}</h2>
       <strong className="block leading-none tabular-nums text-primary-900
         text-[clamp(4rem,20vw,12rem)]">{set?.[side] ?? 0}</strong>
+      {set && <div className="flex items-center justify-center gap-1.5" title={t('timeout')}>
+        {[0, 1].map(i => <span key={i} className={`h-2.5 w-2.5 rounded-full ${
+          i < used ? 'bg-primary-700' : 'bg-neutral-300'}`} />)}
+        {writable && state.status === 'live' && !set.winner && used < 2 &&
+          <button type="button" onClick={() => void dispatch({ type: 'TIMEOUT_CALLED', side })}
+            className="ml-1 min-h-7 min-w-11 rounded-full bg-white/80 px-2 py-0.5 text-xs
+              font-bold text-primary-900 shadow-sm">{t('timeout')}</button>}
+      </div>}
       {writable && state.status === 'live' && set && <div className="mt-auto flex w-full
         items-stretch gap-2">
         <Button variant="outline" className="shrink-0 px-3 text-xl"

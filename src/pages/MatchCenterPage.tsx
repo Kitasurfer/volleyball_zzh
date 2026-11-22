@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { MatchScore, PublicMatchCards, matchCard, matchPage } from '@/components/MatchScore';
+import { ReadinessCheck } from '@/components/ReadinessCheck';
 import { Button } from '@/components/ui';
 import { Seo } from '@/components/Seo';
 import { useMatchText } from '@/data/matchTranslations';
@@ -41,6 +42,7 @@ export default function MatchCenterPage() {
         </div>
       </header>
       {publicScores.isError && <p role="status" className={matchCard}>{t('offline')}</p>}
+      <ReadinessCheck />
       <section id="skv-live" className="scroll-mt-24 space-y-3">
         <h2 className="text-2xl font-bold text-primary-900">{t('liveGames')}</h2>
         {!active.length && <p>{t(publicScores.isLoading ? 'loading' : 'noLive')}</p>}

@@ -165,6 +165,14 @@ Physical devices and the hall Wi-Fi are part of the venue rehearsal.
   `/scoreboard/new` or in the tournament setup.
 - There is no single-action score reset. Reopen a confirmed result and correct
   the affected sets so the event journal stays auditable.
-- No player roster/rotation, substitution management, score cap, timeout
-  tracking, or official electronic match-sheet submission. Tournament and
-  match history management does not hard-delete records.
+- Timeouts: each side can record up to two per set on the referee screen; the
+  dots are shown on the public board and TV display. The clock is not stopped
+  automatically, so combine with Pause when needed.
+- The `/scoreboard` readiness checklist (online, server, realtime, offline
+  storage, service worker, sign-in, wake lock) is part of the venue rehearsal.
+  The TV display (`/display`) requests a screen wake lock automatically and,
+  after a finished match, advances to the next scheduled fixture on the same
+  court after about a minute.
+- No player roster/rotation, substitution management, score cap, or official
+  electronic match-sheet submission. Tournament and match history management
+  does not hard-delete records.

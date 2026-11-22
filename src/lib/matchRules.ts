@@ -7,7 +7,11 @@ export interface MatchRules {
   margin: number;
   switchAt: number;
 }
-export interface SetScore { a: number; b: number; target: number; winner: Side | null }
+export interface SetScore {
+  a: number; b: number; target: number; winner: Side | null;
+  /** Timeouts taken by each side in this set (0-2); absent in states stored before. */
+  timeouts_a?: number; timeouts_b?: number;
+}
 export interface MatchState {
   status: MatchStatus;
   sets: SetScore[];
@@ -19,7 +23,7 @@ export interface MatchState {
   outcome: 'played' | 'walkover' | null;
 }
 
-type SideAction = 'SET_STARTED' | 'POINT_AWARDED' | 'SERVE_CHANGED';
+type SideAction = 'SET_STARTED' | 'POINT_AWARDED' | 'SERVE_CHANGED' | 'TIMEOUT_CALLED';
 export type Action =
   | { [T in SideAction]: { type: T; side: Side } }[SideAction]
   | { type: 'MATCH_STARTED'; side: Side; left?: Side }
@@ -77,7 +81,7 @@ export function applyScore(
         ...state, status: 'live', serve: action.side, firstServe: action.side, switched: false,
         left: action.type === 'MATCH_STARTED' ? action.left ?? state.left : opposite(state.left),
         sets: [...state.sets, { a: 0, b: 0, target: deciding ? rules.deciding : rules.points,
-          winner: null }],
+          winner: null, timeouts_a: 0, timeouts_b: 0 }],
       };
     }
     case 'POINT_AWARDED':
@@ -116,6 +120,15 @@ export function applyScore(
     case 'SERVE_CHANGED':
       if (state.status !== 'live' || !set || set.winner) return invalid();
       return { ...state, serve: action.side };
+    case 'TIMEOUT_CALLED': {
+      if (state.status !== 'live' || !set || set.winner) return invalid();
+      const used = (action.side === 'a' ? set.timeouts_a : set.timeouts_b) ?? 0;
+      if (used >= 2) return invalid();
+      const sets = state.sets.slice();
+      sets[sets.length - 1] = action.side === 'a'
+        ? { ...set, timeouts_a: used + 1 } : { ...set, timeouts_b: used + 1 };
+      return { ...state, sets };
+    }
     case 'SIDES_SWITCHED':
       if (state.status !== 'live') return invalid();
       return { ...state, left: opposite(state.left),

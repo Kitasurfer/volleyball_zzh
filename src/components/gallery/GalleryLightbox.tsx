@@ -174,7 +174,7 @@ const GalleryLightbox: React.FC<GalleryLightboxProps> = ({
       link.href = url;
       const fileNameBase = (currentImage.title || currentImage.subalbumTitle || currentImage.albumTitle || text.untitled)
         .replace(/\s+/g, '_')
-        .replace(/[^\w\-]+/g, '_');
+        .replace(/[^\w-]+/g, '_');
       link.download = `${fileNameBase || 'gallery_photo'}.jpg`;
       document.body.appendChild(link);
       link.click();

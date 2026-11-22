@@ -16,7 +16,8 @@ describe('volleyball rules', () => {
   it('starts at zero and follows the winner of every rally for service', () => {
     const r = indoorRules(1);
     const s = start(r);
-    expect(currentSet(s)).toEqual({ a: 0, b: 0, winner: null, target: 25 });
+    expect(currentSet(s)).toMatchObject({ a: 0, b: 0, winner: null, target: 25,
+      timeouts_a: 0, timeouts_b: 0 });
     const a = applyScore(s, r, { type: 'POINT_AWARDED', side: 'a' });
     expect(a.serve).toBe('a');
     const b = applyScore(a, r, { type: 'POINT_AWARDED', side: 'b' });
@@ -134,6 +135,44 @@ describe('VLW result comparison', () => {
     expect(compareLeagueResult({ ...fixture, result: null }, local)).toBeNull();
     expect(compareLeagueResult({ ...fixture, result: 'postponed' }, local)).toBeNull();
     expect(compareLeagueResult({ ...fixture, result: '0:1', homeTeam: 'Other' }, local)).toBe('checkTeams');
+  });
+});
+
+describe('timeouts', () => {
+  const call = (s: MatchState, r: MatchRules, side: Side) =>
+    applyScore(s, r, { type: 'TIMEOUT_CALLED', side });
+
+  it('counts two timeouts per side and refuses a third', () => {
+    const r = indoorRules(1);
+    let s = start(r);
+    s = call(s, r, 'a');
+    s = call(s, r, 'a');
+    expect(currentSet(s)).toMatchObject({ timeouts_a: 2, timeouts_b: 0 });
+    expect(() => call(s, r, 'a')).toThrow('invalid_action');
+    s = call(s, r, 'b');
+    expect(currentSet(s)?.timeouts_b).toBe(1);
+  });
+
+  it('resets the count for the next set and survives undo', () => {
+    const r = indoorRules(3);
+    let s = start(r);
+    s = call(s, r, 'a');
+    s = applyScore(s, r, { type: 'EVENT_UNDONE' }, start(r));
+    expect(currentSet(s)?.timeouts_a).toBe(0);
+    s = correct(s, r, 25, 20);
+    s = next(s, r);
+    expect(currentSet(s)).toMatchObject({ timeouts_a: 0, timeouts_b: 0 });
+  });
+
+  it('is blocked while paused, before start and on a finished set', () => {
+    const r = indoorRules(1);
+    expect(() => call(initialMatch(), r, 'a')).toThrow('invalid_action');
+    let s = start(r);
+    s = applyScore(s, r, { type: 'MATCH_PAUSED' });
+    expect(() => call(s, r, 'a')).toThrow('invalid_action');
+    s = applyScore(s, r, { type: 'MATCH_RESUMED' });
+    s = correct(s, r, 25, 20);
+    expect(() => call(s, r, 'a')).toThrow('invalid_action');
   });
 });
 

@@ -154,10 +154,10 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
         font-semibold ${serving ? 'bg-green-100 text-green-800' : 'bg-white/70 text-neutral-500'}`}>
         ● {t('serve')}
       </span>
-      <h2 className="break-words font-bold leading-tight text-primary-900
+      <h2 className="w-full break-words font-bold leading-tight text-primary-900 hyphens-auto
         text-[clamp(0.95rem,3.5vw,1.75rem)]">{teamName(match, side)}</h2>
       <strong className="block leading-none tabular-nums text-primary-900
-        text-[clamp(4rem,17vw,11rem)]">{set?.[side] ?? 0}</strong>
+        text-[clamp(4rem,20vw,12rem)]">{set?.[side] ?? 0}</strong>
       {writable && state.status === 'live' && set && <div className="mt-auto flex w-full
         items-stretch gap-2">
         <Button variant="outline" className="shrink-0 px-3 text-xl"
@@ -260,19 +260,19 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
           {t(state.status)}{set && ` · ${t('set')} ${state.sets.length}`}
           {match.court && ` · ${match.court}`}
         </p>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-2 sm:gap-4">
+        <div className="flex items-center justify-center gap-2 sm:gap-3">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 sm:text-xs">
+            {t('sets')}
+          </span>
+          <strong className="tabular-nums text-2xl font-bold text-primary-900 sm:text-3xl">
+            {setWins(state, 'a')}:{setWins(state, 'b')}
+          </strong>
+          <span className="text-xs text-neutral-400">VS</span>
+          {set && <span className="rounded-md bg-primary-100 px-2 py-0.5 text-xs font-semibold
+            text-primary-900">{t('set')} {state.sets.length}</span>}
+        </div>
+        <div className="grid grid-cols-2 items-stretch gap-2 sm:gap-4">
           {renderSide(state.left)}
-          <div className="flex min-w-12 flex-col items-center justify-center gap-1 text-center">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-              {t('sets')}
-            </span>
-            <strong className="tabular-nums text-xl font-bold text-primary-900 sm:text-3xl">
-              {setWins(state, 'a')}:{setWins(state, 'b')}
-            </strong>
-            <span className="text-xs text-neutral-400">VS</span>
-            {set && <span className="rounded-md bg-primary-100 px-2 py-0.5 text-xs font-semibold
-              text-primary-900">{t('set')} {state.sets.length}</span>}
-          </div>
           {renderSide(opposite(state.left))}
         </div>
         {state.winner && <p className="break-words text-center text-lg font-bold text-primary-900">

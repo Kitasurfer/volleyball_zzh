@@ -15,11 +15,17 @@ export function indexProfile(env: (key: string) => string | undefined) {
 
 export async function generateHFEmbedding(config: HFEmbeddingConfig, text: string): Promise<number[]> {
   const base = (config.baseUrl || 'https://router.huggingface.co').replace(/\/$/, '');
-  const res = await fetch(`${base}/hf-inference/models/${config.model}`, {
-    method: 'POST', headers: { Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ inputs: text }), signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) throw new Error(`embedding_unavailable_${res.status}`);
+  // Hosted inference can cold-start slowly; allow one retry within a 20s budget.
+  let res: Response | undefined;
+  for (let attempt = 0; attempt < 2 && (!res || !res.ok); attempt++) {
+    try {
+      res = await fetch(`${base}/hf-inference/models/${config.model}`, {
+        method: 'POST', headers: { Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inputs: text }), signal: AbortSignal.timeout(20000),
+      });
+    } catch { if (attempt === 1) throw new Error('embedding_unavailable'); }
+  }
+  if (!res!.ok) throw new Error(`embedding_unavailable_${res!.status}`);
   const data = await res.json();
   const vector = Array.isArray(data) && data.length === 1 && Array.isArray(data[0]) ? data[0] : data;
   const { size } = indexProfile(key => Deno.env.get(key));

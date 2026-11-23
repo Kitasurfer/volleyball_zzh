@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { chunkId, indexProfile } from '../_shared/embedding.ts';
-import { languageOf, routeQuestion, type Intent, type Language } from './intent.ts';
-import { rankEvidence } from './ranking.ts';
-import { parseRequest } from './request.ts';
-import { directAnswer } from './router.ts';
-import { ruleFact } from './ruleFacts.ts';
-import { buildChatMessages, readCompletion } from './prompts.ts';
+import { chunkId, indexProfile } from '../../functions/_shared/embedding.ts';
+import { languageOf, routeQuestion, type Intent, type Language } from '../../functions/chatbot/intent.ts';
+import { rankEvidence } from '../../functions/chatbot/ranking.ts';
+import { parseRequest } from '../../functions/chatbot/request.ts';
+import { directAnswer } from '../../functions/chatbot/router.ts';
+import { ruleFact } from '../../functions/chatbot/ruleFacts.ts';
+import { buildChatMessages, readCompletion } from '../../functions/chatbot/prompts.ts';
 
 const langs: Language[] = ['de', 'en', 'ru', 'it'];
 const matrix: [Intent, string[]][] = [
@@ -121,7 +121,7 @@ describe('public handler with provider fixtures', () => {
     QDRANT_URL: 'https://index.invalid', CEREBRAS_API_KEY: 'fixture',
   })[k] } }));
   it('an actual POST distinguishes an empty scoreboard, upstream failure and a paused match', async () => {
-    const { handleChatRequest } = await import('./answer.ts');
+    const { handleChatRequest } = await import('../../functions/chatbot/answer.ts');
     const ask = async () => (await (await handleChatRequest(new Request('http://localhost/chatbot', {
       method: 'POST', body: JSON.stringify({ question: 'What is the live score?' }),
     }))).json()).data;
@@ -138,7 +138,7 @@ describe('public handler with provider fixtures', () => {
     expect(fetch.mock.calls[0][1].headers.apikey).toBe('fixture-anon');
   });
   it('does not generate a price when there is no public evidence, or hide an outage as a negative result', async () => {
-    const { answerQuestion } = await import('./answer.ts');
+    const { answerQuestion } = await import('../../functions/chatbot/answer.ts');
     const fetch = vi.fn(async (url: string) => url.includes('huggingface') ?
       Response.json(Array(384).fill(.2)) : Response.json({ result: [] }));
     vi.stubGlobal('fetch', fetch);
@@ -149,7 +149,7 @@ describe('public handler with provider fixtures', () => {
     expect((await answerQuestion(q)).answer).toContain('unavailable');
   });
   it('passes cross-language evidence to the model and returns only the used source', async () => {
-    const { answerQuestion } = await import('./answer.ts');
+    const { answerQuestion } = await import('../../functions/chatbot/answer.ts');
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
       if (url.includes('huggingface')) return Response.json(Array(384).fill(.1));
       if (url.includes('index.invalid')) return Response.json({ result: [row(23, { snippet: 'Netzhöhe 2,43 m.' })] });

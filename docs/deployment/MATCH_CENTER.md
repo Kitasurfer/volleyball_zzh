@@ -165,6 +165,10 @@ Physical devices and the hall Wi-Fi are part of the venue rehearsal.
   `/scoreboard/new` or in the tournament setup.
 - There is no single-action score reset. Reopen a confirmed result and correct
   the affected sets so the event journal stays auditable.
+- Admins can hard-delete matches only while they are unpublished and never
+  reached a confirmed result (`skv_delete_match`, 20261122093000). To remove a
+  played fixture, unpublish and cancel it first; finished protocols stay
+  protected. Local device drafts are deleted on `/scoreboard`.
 - Timeouts: each side can record up to two per set on the referee screen; the
   dots are shown on the public board and TV display. The clock is not stopped
   automatically, so combine with Pause when needed.

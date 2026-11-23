@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { MatchScore, PublicMatchCards, matchCard, matchPage } from '@/components/MatchScore';
 import { ReadinessCheck } from '@/components/ReadinessCheck';
@@ -9,11 +9,12 @@ import { useMatchShell } from '@/hooks/useMatchShell';
 import { usePublicScores } from '@/hooks/usePublicScores';
 import { useAuth } from '@/lib/AuthContext';
 import { matchRpc, type ControlledMatch } from '@/lib/matchApi';
-import { localMatches } from '@/lib/matchStorage';
+import { deleteDraft, localMatches } from '@/lib/matchStorage';
 
 export default function MatchCenterPage() {
   const { t } = useMatchText();
   const { user, role, signOut } = useAuth();
+  const client = useQueryClient();
   const publicScores = usePublicScores();
   const stored = useQuery({ queryKey: ['skv-local'], queryFn: localMatches, staleTime: 0 });
   const managed = useQuery({
@@ -75,8 +76,16 @@ export default function MatchCenterPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           {stored.data.map(record => <article key={record.key} className="space-y-2">
             <MatchScore match={record.projected} />
-            <Link className="font-semibold text-primary-700 underline"
-              to={`/scoreboard/${record.key}/control`}>{t('control')}</Link>
+            <div className="flex items-center gap-3">
+              <Link className="font-semibold text-primary-700 underline"
+                to={`/scoreboard/${record.key}/control`}>{t('control')}</Link>
+              <button type="button" className="text-sm font-semibold text-rose-700 underline"
+                onClick={() => {
+                  if (!window.confirm(t('deleteMatch'))) return;
+                  void deleteDraft(record.key).then(() =>
+                    client.invalidateQueries({ queryKey: ['skv-local'] }));
+                }}>{t('deleteMatch')}</button>
+            </div>
           </article>)}
         </div>
       </section>}

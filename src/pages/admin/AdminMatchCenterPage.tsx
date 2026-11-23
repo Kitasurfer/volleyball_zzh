@@ -301,7 +301,9 @@ function Fixture({ match }: { match: ControlledMatch }) {
   const { t, language } = useMatchText();
   const edit = useSave();
   const access = useSave();
+  const del = useSave();
   const scheduled = match.state.status === 'scheduled';
+  const deletable = !match.published && match.state.status !== 'completed';
   return <details className={matchCard}>
     <summary className="cursor-pointer break-words font-semibold">
       {match.team_a} – {match.team_b} · {match.court} · {t(match.state.status)}
@@ -347,5 +349,13 @@ function Fixture({ match }: { match: ControlledMatch }) {
         </div>
       </form>
     </div>
+    {deletable && <div className="mt-4 flex items-center gap-3">
+      <Button variant="danger" size="sm" disabled={del.busy} onClick={() => {
+        if (window.confirm(t('deleteMatch'))) {
+          void del.run(() => matchRpc('skv_delete_match', { mid: match.id }));
+        }
+      }}>{t('deleteMatch')}</Button>
+      <Result save={del} />
+    </div>}
   </details>;
 }

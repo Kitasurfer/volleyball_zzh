@@ -148,6 +148,7 @@ const labels = {
   checkSignIn: ['Schiedsrichter angemeldet', 'Referee signed in', 'Вход судьи', 'Arbitro autenticato'],
   checkSw: ['Offline-Modus bereit', 'Offline mode ready', 'Офлайн-режим готов', 'Modalità offline pronta'],
   checkWake: ['Bildschirm-Wachhaltung möglich', 'Screen wake lock available', 'Удержание экрана доступно', 'Blocco spegnimento disponibile'],
+  deleteMatch: ['Spiel löschen', 'Delete match', 'Удалить матч', 'Elimina partita'],
 } as const;
 
 export function useMatchText() {

@@ -38,6 +38,16 @@ async function read<T>(operation: (store: IDBObjectStore) => IDBRequest<T>) {
 
 export const readDraft = (key: string): Promise<MatchDraft | undefined> =>
   read(store => store.get(key));
+
+export async function deleteDraft(key: string) {
+  const db = await openDatabase();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('drafts', 'readwrite');
+    tx.objectStore('drafts').delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
 export async function localMatches(): Promise<MatchDraft[]> {
   const all: MatchDraft[] = await read(store =>
     store.getAll(IDBKeyRange.bound('local-', 'local-\uffff')));

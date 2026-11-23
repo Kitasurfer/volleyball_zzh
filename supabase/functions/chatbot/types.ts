@@ -31,12 +31,18 @@ export interface KnowledgePayload {
   language?: string;
   origin?: unknown;
   content_id?: string;
+  chunk_index?: number;
+  revision?: string;
+  source_kind?: string;
+  type?: string;
 }
 
 export interface HistoryMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
 }
+
+export interface Answer { answer: string; citations: Citation[] }
 
 export interface RequestBody {
   question: string;

@@ -31,31 +31,9 @@ interface UseChatAnalyticsReturn {
   setUserHash: (hash: string) => void;
 }
 
-function generateUserHash(): string {
-  const nav = typeof navigator !== 'undefined' ? navigator : null;
-  const screen = typeof window !== 'undefined' ? window.screen : null;
-  
-  const data = [
-    nav?.userAgent || '',
-    nav?.language || '',
-    screen?.width || 0,
-    screen?.height || 0,
-    new Date().getTimezoneOffset(),
-  ].join('|');
-  
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  
-  return Math.abs(hash).toString(36);
-}
-
 export function useChatAnalytics(language: Language): UseChatAnalyticsReturn {
   const sessionIdRef = useRef<string | null>(null);
-  const userHashRef = useRef<string>(generateUserHash());
+  const userHashRef = useRef<string>('');
 
   const setSessionId = useCallback((id: string) => {
     sessionIdRef.current = id;
@@ -69,6 +47,8 @@ export function useChatAnalytics(language: Language): UseChatAnalyticsReturn {
     eventType: AnalyticsEventType,
     eventData: AnalyticsEventData = {}
   ): Promise<void> => {
+    if (!supabase) return;
+    userHashRef.current ||= crypto.randomUUID();
     try {
       const { error } = await supabase
         .from('chat_analytics')

@@ -39,7 +39,7 @@ const Chatbot: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [lastError, setLastError] = useState<'error' | 'rate_limit' | null>(null);
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
-  const [isRetrying, setIsRetrying] = useState(false);
+  const activeTurn = useRef(0);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -58,7 +58,7 @@ const Chatbot: React.FC = () => {
   } = useChatHistory();
   const { searchQuery, setSearchQuery, searchResults, clearSearch } = useChatSearch(messages);
   const { submitFeedback, getFeedback, isSubmitting: isFeedbackSubmitting, showThankYou, dismissThankYou } = useMessageFeedback();
-  const { canMakeRequest, recordRequest, isRateLimited, shouldRetry, incrementRetry, resetRetry, getRetryDelay } = useRateLimiter();
+  const { canMakeRequest, recordRequest, isRateLimited } = useRateLimiter();
   
   const handleVoiceResult = useCallback((transcript: string) => {
     setInput(transcript);
@@ -119,12 +119,12 @@ const Chatbot: React.FC = () => {
     }
   }, [sessionId, setAnalyticsSessionId]);
 
-  const handleCopyMessage = async (message: ChatMessage) => {
+  const handleCopyMessage = async (message: ChatMessage, visibleText: string) => {
     if (message.sender !== 'bot') return;
     if (!navigator?.clipboard) return;
 
     try {
-      await navigator.clipboard.writeText(message.text);
+      await navigator.clipboard.writeText(visibleText);
       setCopiedMessageId(message.id);
       window.setTimeout(() => {
         setCopiedMessageId((current) => (current === message.id ? null : current));
@@ -135,7 +135,7 @@ const Chatbot: React.FC = () => {
   };
 
   const handleSend = async (textToSend?: string, isRetryAttempt = false) => {
-    const messageText = textToSend || input;
+    const messageText = (textToSend || input).trim();
     if (!messageText.trim() || isLoading) return;
 
     // Rate limiting check
@@ -155,8 +155,11 @@ const Chatbot: React.FC = () => {
       sender: 'user',
     };
 
-    const messagesForHistory = [...messages, userMessage];
-    const history: ChatbotHistoryItem[] = messagesForHistory.slice(-6).map((message) => ({
+    // On a manual retry, exclude the failed turn and its UI error from history.
+    const lastUser = messages.map(m => m.sender).lastIndexOf('user');
+    const previous = isRetryAttempt && messages[lastUser]?.text === messageText
+      ? messages.slice(0, lastUser) : messages;
+    const history: ChatbotHistoryItem[] = previous.slice(-6).map((message) => ({
       role: message.sender === 'user' ? 'user' : 'assistant',
       content: message.text,
     }));
@@ -169,6 +172,7 @@ const Chatbot: React.FC = () => {
     setInput('');
     setIsLoading(true);
     recordRequest();
+    const turn = ++activeTurn.current;
 
     try {
       const { data, error } = await invokeChatbot({
@@ -178,9 +182,11 @@ const Chatbot: React.FC = () => {
         history,
       });
 
+      if (turn !== activeTurn.current) return;
       if (error) throw error;
 
-      let answerText = data?.answer || 'Sorry, I could not process your request.';
+      if (!data?.answer?.trim()) throw new Error('empty_answer');
+      let answerText = data.answer;
       
       if (!data?.citations || data.citations.length === 0) {
         answerText = answerText
@@ -192,10 +198,11 @@ const Chatbot: React.FC = () => {
       }
 
       const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: data.messageId || crypto.randomUUID(),
         text: answerText,
         sender: 'bot',
         citations: data?.citations,
+        sessionId: data.sessionId,
       };
 
       if (data?.sessionId) {
@@ -204,44 +211,13 @@ const Chatbot: React.FC = () => {
 
       setMessages((prev) => [...prev, botMessage]);
       trackEvent('message_received', { has_citations: !!data?.citations?.length });
-      resetRetry();
-    } catch (error) {
-      console.error('Chatbot error:', error);
-      
-      // Retry logic
-      if (shouldRetry()) {
-        const delay = getRetryDelay();
-        incrementRetry();
-        setIsRetrying(true);
-        
-        setTimeout(() => {
-          setIsRetrying(false);
-          handleSend(messageText, true);
-        }, delay);
-        return;
-      }
-
+    } catch {
+      if (turn !== activeTurn.current) return;
       setLastError('error');
       setLastFailedMessage(messageText);
-      trackEvent('error_occurred', { type: 'api_error', message: String(error) });
-      
-      const errorMessages: Record<string, string> = {
-        de: 'Entschuldigung, es gab einen Fehler. Bitte versuchen Sie es später erneut.',
-        en: 'Sorry, there was an error. Please try again later.',
-        ru: 'Извините, произошла ошибка. Пожалуйста, попробуйте позже.',
-        it: 'Spiacente, si è verificato un errore. Per favore riprova più tardi.',
-      };
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: errorMessages[language] || errorMessages.de,
-          sender: 'bot',
-        },
-      ]);
+      trackEvent('error_occurred', { type: 'api_error' });
     } finally {
-      setIsLoading(false);
-      setIsRetrying(false);
+      if (turn === activeTurn.current) setIsLoading(false);
       setTimeout(() => {
         if (inputRef.current && !inputRef.current.disabled) {
           inputRef.current.focus();
@@ -252,7 +228,6 @@ const Chatbot: React.FC = () => {
 
   const handleRetry = () => {
     if (lastFailedMessage) {
-      resetRetry();
       handleSend(lastFailedMessage, true);
     }
   };
@@ -264,9 +239,18 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  const resetTurn = () => {
+    ++activeTurn.current;
+    setIsLoading(false);
+    setLastFailedMessage(null);
+    setLastError(null);
+  };
+
   const handleLoadConversation = (id: string) => {
     const loadedMessages = loadConversation(id);
     if (loadedMessages) {
+      resetTurn();
+      setSessionId(loadedMessages.find(m => m.sessionId)?.sessionId);
       setMessages(loadedMessages);
       setShowHistory(false);
       trackEvent('history_viewed');
@@ -274,6 +258,7 @@ const Chatbot: React.FC = () => {
   };
 
   const handleClearAllHistory = () => {
+    resetTurn();
     clearAllHistory();
     setMessages([]);
     setSessionId(undefined);
@@ -282,12 +267,14 @@ const Chatbot: React.FC = () => {
   const handleDeleteConversation = (id: string) => {
     deleteConversation(id);
     if (currentConversationId === id) {
+      resetTurn();
       setMessages([]);
       setSessionId(undefined);
     }
   };
 
   const handleNewConversation = () => {
+    resetTurn();
     setMessages([]);
     setCurrentConversationId(null);
     setSessionId(undefined);
@@ -303,11 +290,9 @@ const Chatbot: React.FC = () => {
     trackEvent('quick_question_clicked', { question });
   };
 
-  const handleFeedback = async (messageId: string, type: 'like' | 'dislike') => {
-    if (sessionId) {
-      await submitFeedback(messageId, sessionId, type);
-      trackEvent('feedback_given', { type, message_id: messageId });
-    }
+  const handleFeedback = async (message: ChatMessage, type: 'like' | 'dislike') => {
+    if (message.sessionId && await submitFeedback(message.id, message.sessionId, type))
+      trackEvent('feedback_given', { type, message_id: message.id });
   };
 
   return (
@@ -375,6 +360,7 @@ const Chatbot: React.FC = () => {
               onLoadConversation={handleLoadConversation}
               onDeleteConversation={handleDeleteConversation}
               onClearAll={handleClearAllHistory}
+              onNewConversation={handleNewConversation}
               onClose={() => setShowHistory(false)}
               t={t.chatbot}
             />
@@ -387,12 +373,12 @@ const Chatbot: React.FC = () => {
                 key={message.id}
                 message={message}
                 t={t.chatbot}
-                onCopy={message.sender === 'bot' ? () => handleCopyMessage(message) : undefined}
+                onCopy={message.sender === 'bot' ? text => handleCopyMessage(message, text) : undefined}
                 copied={copiedMessageId === message.id}
                 feedback={getFeedback(message.id)}
-                onFeedback={message.sender === 'bot' ? (type) => handleFeedback(message.id, type) : undefined}
+                onFeedback={message.sender === 'bot' && message.sessionId ? type => handleFeedback(message, type) : undefined}
                 isFeedbackSubmitting={isFeedbackSubmitting}
-                searchHighlight={searchQuery}
+                searchHighlight={showSearch ? searchQuery : ''}
               />
             ))}
             
@@ -409,19 +395,12 @@ const Chatbot: React.FC = () => {
               </div>
             )}
 
-            {/* Retrying indicator */}
-            {isRetrying && (
-              <div className="text-center text-xs text-neutral-400">
-                {t.chatbot.retrying}
-              </div>
-            )}
-
             {/* Error message */}
             {lastError && !isLoading && (
               <ChatErrorMessage
                 type={lastError}
                 onRetry={lastError === 'error' ? handleRetry : undefined}
-                isRetrying={isRetrying}
+                isRetrying={false}
                 t={t.chatbot}
               />
             )}
@@ -455,6 +434,7 @@ const Chatbot: React.FC = () => {
                 <input
                   ref={inputRef}
                   type="text"
+                  maxLength={2000}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -484,7 +464,7 @@ const Chatbot: React.FC = () => {
               </button>
             </div>
             <p className="text-[10px] text-neutral-400 text-center mt-2 font-medium">
-              Powered by Cerebras AI • Knowledge from SKV & FIVB
+              SKV Unterensingen Volleyball
             </p>
           </div>
         </div>

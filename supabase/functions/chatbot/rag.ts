@@ -1,11 +1,15 @@
-import { generateOpenAIEmbedding } from './clients.ts';
+import { generateHFEmbedding } from './clients.ts';
 import type { QdrantSearchResult } from './clients.ts';
 import {
-  getOpenAIConfig,
+  getHFEmbeddingConfig,
   getQdrantClient,
   getCollectionName,
   searchLimit,
+  maxCitations, minRelevanceScore,
 } from './config.ts';
+import type { Route } from './intent.ts';
+import { publicRows } from './publicData.ts';
+import { articleIds, rankEvidence, type Article } from './ranking.ts';
 import type { Citation, KnowledgePayload } from './types.ts';
 
 const mapQdrantResultToCitation = (item: QdrantSearchResult): Citation => {
@@ -24,12 +28,10 @@ const mapQdrantResultToCitation = (item: QdrantSearchResult): Citation => {
   };
 };
 
-// Generate embedding using OpenAI (same as ingest-content)
+// Generate embedding using Hugging Face (same as ingest-content)
 const fetchEmbedding = async (text: string): Promise<number[]> => {
-  const config = getOpenAIConfig();
-  console.log('Generating OpenAI embedding...');
-  const embedding = await generateOpenAIEmbedding(config, text);
-  console.log('Embedding dimension:', embedding.length);
+  const config = getHFEmbeddingConfig();
+  const embedding = await generateHFEmbedding(config, text);
   return embedding;
 };
 
@@ -41,49 +43,29 @@ const searchKnowledgeBase = async (
   const qdrant = getQdrantClient();
   const collection = getCollectionName();
 
-  console.log(`Searching Qdrant collection "${collection}" with language filter: ${language || 'none'}`);
-  console.log(`Vector length: ${vector.length}, searchLimit: ${searchLimit}`);
-
-  try {
-    const searchParams: any = {
-      vector,
-      limit: searchLimit,
-      with_payload: true,
-    };
-
-    // Add language filter if specified
-    if (language) {
-      searchParams.filter = {
-        must: [
-          {
-            key: 'language',
-            match: { value: language }
-          }
-        ]
-      };
-    }
-
-    const response = await qdrant.search(collection, searchParams);
-
-    console.log('Qdrant response status:', response ? 'success' : 'failed');
-    
-    const results = response?.result ?? [];
-
-    console.log(`Found ${results.length} results from Qdrant`);
-    if (results.length > 0) {
-      results.forEach((r: QdrantSearchResult, i: number) => {
-        const payload = (r.payload || {}) as KnowledgePayload;
-        console.log(`Result ${i + 1}: score=${r.score.toFixed(4)}, title="${payload.title}", lang=${payload.language}, content_id=${payload.content_id}`);
-      });
-    } else {
-      console.log('No results found in Qdrant for this vector.');
-    }
-
-    return results;
-  } catch (error) {
-    console.error('Qdrant search error:', error);
+  if (!vector || vector.length === 0) {
     return [];
   }
+
+  const response = await qdrant.search(collection, {
+    vector, limit: searchLimit, with_payload: true,
+    filter: language ? { must: [{ key: 'language', match: { value: language } }] } : undefined,
+  });
+  return response.result;
 };
+
+export async function retrieve(route: Route) {
+  const vector = await fetchEmbedding(route.search);
+  const searches = await Promise.allSettled([searchKnowledgeBase(vector, route.language), searchKnowledgeBase(vector)]);
+  if (searches.every(s => s.status === 'rejected')) throw new Error('index_unavailable');
+  const hits = searches.flatMap(s => s.status === 'fulfilled' ? s.value : []);
+  const ids = articleIds(hits);
+  const articles = ids.length ? await publicRows<Article>('content_items', new URLSearchParams({
+    select: 'id,title,slug,updated_at,body_markdown,summary', id: `in.(${ids.join(',')})`,
+    status: 'eq.published',
+    published_at: `lte.${new Date().toISOString()}`,
+  })) : [];
+  return rankEvidence(hits, route, articles, minRelevanceScore, maxCitations);
+}
 
 export { mapQdrantResultToCitation, fetchEmbedding, searchKnowledgeBase };

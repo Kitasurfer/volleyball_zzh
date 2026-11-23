@@ -8,6 +8,7 @@ export interface VectorJob {
 }
 
 export interface ContentItem {
+  updated_at: string;
   id: string;
   title: string;
   summary: string | null;

@@ -1,35 +1,4 @@
-// API clients for OpenAI, Cerebras, and Qdrant
-
-// OpenAI Embedding
-export interface OpenAIConfig {
-  apiKey: string;
-  model: string;
-}
-
-export const generateOpenAIEmbedding = async (
-  config: OpenAIConfig,
-  text: string
-): Promise<number[]> => {
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.model,
-      input: text,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`OpenAI embedding failed (${response.status}): ${error}`);
-  }
-
-  const data = await response.json();
-  return data.data[0].embedding;
-};
+export { generateHFEmbedding, type HFEmbeddingConfig } from '../_shared/embedding.ts';
 
 // Cerebras Chat
 export interface CerebrasConfig {
@@ -65,15 +34,17 @@ export const generateCerebrasChat = async (
       temperature: options?.temperature ?? 0.7,
       max_tokens: options?.maxOutputTokens ?? 800,
     }),
+    signal: AbortSignal.timeout(20000),
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Cerebras chat failed (${response.status}): ${error}`);
+    throw new Error(`completion_unavailable_${response.status}`);
   }
 
   const data = await response.json();
-  return data.choices[0].message.content;
+  const answer = data?.choices?.[0]?.message?.content;
+  if (typeof answer !== 'string' || !answer.trim()) throw new Error('empty_completion');
+  return answer;
 };
 
 // Qdrant Client
@@ -106,6 +77,7 @@ const qdrantRequest = async <T>(
   
   const response = await fetch(url, {
     ...init,
+    signal: AbortSignal.timeout(5000),
     headers: {
       ...buildQdrantHeaders(config),
       ...(init.headers ?? {}),
@@ -113,8 +85,7 @@ const qdrantRequest = async <T>(
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Qdrant request failed (${response.status}): ${text}`);
+    throw new Error(`index_unavailable_${response.status}`);
   }
 
   return response.json();

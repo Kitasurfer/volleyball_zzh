@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createQdrantClient } from './clients.ts';
+import { indexProfile } from '../_shared/embedding.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +20,8 @@ const getPublicStorageBase = () => {
 };
 
 const getBatchSize = () => Number(Deno.env.get('INGEST_BATCH_SIZE') ?? '5');
-const getCollectionName = () => Deno.env.get('QDRANT_COLLECTION') ?? 'content_vectors';
+export const getIndexProfile = () => indexProfile(key => Deno.env.get(key));
+const getCollectionName = () => getIndexProfile().collection;
 
 const getQdrantClient = () =>
   createQdrantClient({
@@ -27,9 +29,10 @@ const getQdrantClient = () =>
     apiKey: Deno.env.get('QDRANT_API_KEY') || undefined,
   });
 
-const getOpenAIConfig = () => ({
-  apiKey: Deno.env.get('OPENAI_API_KEY') || '',
-  model: Deno.env.get('OPENAI_EMBED_MODEL') ?? 'text-embedding-3-small',
+const getHFEmbeddingConfig = () => ({
+  apiKey: Deno.env.get('HF_API_KEY') || '',
+  model: getIndexProfile().model,
+  baseUrl: Deno.env.get('HF_BASE_URL') ?? 'https://router.huggingface.co',
 });
 
 const getDoclingUrl = () => Deno.env.get('DOCLING_SERVICE_URL') || '';
@@ -41,6 +44,6 @@ export {
   getBatchSize,
   getCollectionName,
   getQdrantClient,
-  getOpenAIConfig,
+  getHFEmbeddingConfig,
   getDoclingUrl,
 };

@@ -3,7 +3,7 @@ import { Calendar, Clock, MapPin, Home, Users, Dumbbell } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { LightboxImage } from '../components/LightboxImage';
 import { Seo } from '../components/Seo';
-import { hallSchedule2026 } from '../data/schedule';
+import { hallSchedule2026, venues } from '@/data/schedule';
 
 const HallPage: React.FC = () => {
   const { language } = useLanguage();
@@ -14,11 +14,11 @@ const HallPage: React.FC = () => {
       description: 'Unser Trainingsort in Unterensingen - moderne Ausstattung für professionelles Training',
       mapTitle: 'Anfahrt & Karte',
       addressLabel: 'Adresse',
-      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      address: venues.hall.address,
       mapCta: 'Route in Google Maps öffnen',
       sections: [
         { title: 'Ausstattung', text: 'Professionelle Volleyballfelder mit modernster Technik', icon: Dumbbell },
-        { title: 'Adresse', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen', icon: MapPin },
+        { title: 'Adresse', text: venues.hall.address, icon: MapPin },
         { title: 'Einrichtungen', text: 'Umkleideräume, Duschen, Trainingsgeräte', icon: Users },
       ],
       scheduleTitle: 'Trainingszeiten 2026',
@@ -29,11 +29,11 @@ const HallPage: React.FC = () => {
       description: 'Our training venue in Unterensingen - modern equipment for professional training',
       mapTitle: 'Directions & Map',
       addressLabel: 'Address',
-      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      address: venues.hall.address,
       mapCta: 'Open in Google Maps',
       sections: [
         { title: 'Equipment', text: 'Professional volleyball courts with state-of-the-art technology', icon: Dumbbell },
-        { title: 'Address', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen', icon: MapPin },
+        { title: 'Address', text: venues.hall.address, icon: MapPin },
         { title: 'Facilities', text: 'Locker rooms, showers, training equipment', icon: Users },
       ],
       scheduleTitle: 'Training Schedule 2026',
@@ -44,11 +44,11 @@ const HallPage: React.FC = () => {
       description: 'Наш тренировочный зал в Унтерензингене — современное оборудование для профессиональных тренировок',
       mapTitle: 'Адрес и карта',
       addressLabel: 'Адрес',
-      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      address: venues.hall.address,
       mapCta: 'Открыть маршрут в Google Maps',
       sections: [
         { title: 'Оборудование', text: 'Профессиональные волейбольные площадки с современными технологиями', icon: Dumbbell },
-        { title: 'Адрес', text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen', icon: MapPin },
+        { title: 'Адрес', text: venues.hall.address, icon: MapPin },
         { title: 'Удобства', text: 'Раздевалки, душевые, тренажеры', icon: Users },
       ],
       scheduleTitle: 'Расписание тренировок 2026',
@@ -60,7 +60,7 @@ const HallPage: React.FC = () => {
         'La nostra palestra a Unterensingen – attrezzatura moderna per allenamenti professionali',
       mapTitle: 'Indirizzo e mappa',
       addressLabel: 'Indirizzo',
-      address: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+      address: venues.hall.address,
       mapCta: 'Apri in Google Maps',
       sections: [
         {
@@ -70,7 +70,7 @@ const HallPage: React.FC = () => {
         },
         {
           title: 'Indirizzo',
-          text: 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen',
+          text: venues.hall.address,
           icon: MapPin,
         },
         {

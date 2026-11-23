@@ -2,7 +2,7 @@
  * Chat history panel component - shows saved conversations
  */
 import React from 'react';
-import { History, Trash2, MessageSquare, X } from 'lucide-react';
+import { History, Trash2, MessageSquare, X, MessageSquarePlus } from 'lucide-react';
 import type { Translation } from '../../types';
 import type { ChatConversation } from '../../hooks/chatbot';
 
@@ -12,6 +12,7 @@ interface ChatHistoryPanelProps {
   onLoadConversation: (id: string) => void;
   onDeleteConversation: (id: string) => void;
   onClearAll: () => void;
+  onNewConversation: () => void;
   onClose: () => void;
   t: Translation['chatbot'];
 }
@@ -22,6 +23,7 @@ export const ChatHistoryPanel: React.FC<ChatHistoryPanelProps> = ({
   onLoadConversation,
   onDeleteConversation,
   onClearAll,
+  onNewConversation,
   onClose,
   t,
 }) => {
@@ -43,6 +45,14 @@ export const ChatHistoryPanel: React.FC<ChatHistoryPanelProps> = ({
           <History className="w-5 h-5 text-primary-500" />
           <span className="font-semibold text-neutral-800">{t.history}</span>
         </div>
+        <button
+          onClick={() => { onNewConversation(); onClose(); }}
+          className="p-1.5 hover:bg-neutral-200 rounded-lg transition-colors"
+          aria-label={t.newChat}
+          title={t.newChat}
+        >
+          <MessageSquarePlus className="w-5 h-5 text-neutral-500" />
+        </button>
         <button
           onClick={onClose}
           className="p-1.5 hover:bg-neutral-200 rounded-lg transition-colors"

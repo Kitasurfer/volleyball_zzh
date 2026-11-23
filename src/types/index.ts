@@ -45,6 +45,7 @@ export interface Translation {
     historyLoad: string;
     historyClear: string;
     historyClearConfirm: string;
+    newChat: string;
     // Search
     search: string;
     searchPlaceholder: string;

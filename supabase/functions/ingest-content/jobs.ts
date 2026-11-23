@@ -1,24 +1,25 @@
-import { generateOpenAIEmbedding } from './clients.ts';
+import { generateHFEmbedding } from './clients.ts';
 import {
   getSupabase,
   getBatchSize,
-  getOpenAIConfig,
+  getHFEmbeddingConfig,
 } from './config.ts';
 import type { VectorJob, ContentItem, MediaLink } from './types.ts';
 import { buildChunks } from './chunks.ts';
-import { toMediaPayload, chunkSnippet, upsertQdrant, generatePointId } from './qdrant.ts';
+import { toMediaPayload, chunkSnippet, upsertQdrant } from './qdrant.ts';
+import { chunkId } from '../_shared/embedding.ts';
 
 const generateEmbedding = async (text: string): Promise<number[]> => {
-  const openaiKey = Deno.env.get('OPENAI_API_KEY');
-  console.log('OpenAI key present:', !!openaiKey);
-  
-  if (!openaiKey) {
-    throw new Error('OPENAI_API_KEY not set in environment');
+  const hfKey = Deno.env.get('HF_API_KEY');
+  console.log('HF key present:', !!hfKey);
+
+  if (!hfKey) {
+    throw new Error('HF_API_KEY not set in environment');
   }
-  
-  console.log('Using OpenAI for embeddings');
-  const embedding = await generateOpenAIEmbedding(getOpenAIConfig(), text);
-  console.log('OpenAI embedding successful, dimension:', embedding.length);
+
+  console.log('Using Hugging Face for embeddings');
+  const embedding = await generateHFEmbedding(getHFEmbeddingConfig(), text);
+  console.log('Hugging Face embedding successful, dimension:', embedding.length);
   return embedding;
 };
 
@@ -53,8 +54,10 @@ const markJob = async (id: string, values: Record<string, unknown>) => {
 const fetchContent = async (contentId: string): Promise<ContentItem | null> => {
   const { data, error } = await getSupabase()
     .from('content_items')
-    .select('id, title, summary, body_markdown, body_html, slug, language, type, metadata')
+    .select('id, title, summary, body_markdown, body_html, slug, language, type, metadata, updated_at')
     .eq('id', contentId)
+    .eq('status', 'published')
+    .lte('published_at', new Date().toISOString())
     .maybeSingle();
 
   if (error) {
@@ -111,7 +114,7 @@ const processJob = async (job: VectorJob) => {
 
     const vectors = await Promise.all(chunks.map((chunk) => generateEmbedding(chunk.text)));
 
-    const points = vectors.map((vector, index) => {
+    const points = await Promise.all(vectors.map(async (vector, index) => {
       const chunk = chunks[index];
 
       const payload: Record<string, unknown> = {
@@ -123,6 +126,7 @@ const processJob = async (job: VectorJob) => {
         snippet: chunkSnippet(chunk.text),
         media: toMediaPayload(media, chunk),
         type: content.type,
+        revision: content.updated_at,
         source_file: (content.metadata as any)?.source_file,
       };
 
@@ -135,11 +139,11 @@ const processJob = async (job: VectorJob) => {
       }
 
       return {
-        id: generatePointId(),
+        id: await chunkId(content.id, language, index),
         vector,
         payload,
       };
-    });
+    }));
 
     console.log(`Upserting ${points.length} points to Qdrant`);
     await upsertQdrant(points);

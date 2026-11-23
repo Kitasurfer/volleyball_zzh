@@ -1,4 +1,5 @@
 import { createQdrantClient } from './clients.ts';
+import { indexProfile } from '../_shared/embedding.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,18 +24,20 @@ const getQdrantClient = () =>
     apiKey: ensureEnv('QDRANT_API_KEY', false),
   });
 
-const getOpenAIConfig = () => ({
-  apiKey: ensureEnv('OPENAI_API_KEY')!,
-  model: ensureEnv('OPENAI_EMBED_MODEL', false) ?? 'text-embedding-3-small',
+const profile = () => indexProfile(key => Deno.env.get(key));
+const getHFEmbeddingConfig = () => ({
+  apiKey: ensureEnv('HF_API_KEY')!,
+  model: profile().model,
+  baseUrl: ensureEnv('HF_BASE_URL', false) ?? 'https://router.huggingface.co',
 });
 
 const getCerebrasConfig = () => ({
   apiKey: ensureEnv('CEREBRAS_API_KEY')!,
   baseUrl: 'https://api.cerebras.ai/v1',
-  model: ensureEnv('CEREBRAS_CHAT_MODEL', false) ?? 'qwen-3-235b-a22b-thinking-2507',
+  model: ensureEnv('CEREBRAS_CHAT_MODEL', false) ?? 'gpt-oss-120b',
 });
 
-const getCollectionName = () => ensureEnv('QDRANT_COLLECTION', false) ?? 'content_vectors';
+const getCollectionName = () => profile().collection;
 const searchLimit = 20; // Increased search limit
 const maxCitations = 5; 
 const maxOutputTokens = Number(ensureEnv('CHAT_MAX_OUTPUT_TOKENS', false) ?? '1200');
@@ -44,7 +47,7 @@ export {
   corsHeaders,
   ensureEnv,
   getQdrantClient,
-  getOpenAIConfig,
+  getHFEmbeddingConfig,
   getCerebrasConfig,
   getCollectionName,
   searchLimit,

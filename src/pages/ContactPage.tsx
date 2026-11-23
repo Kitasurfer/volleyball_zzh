@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, Mail, Phone, MessageCircle } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { Seo } from '../components/Seo';
+import { contactEmail } from '@/data/schedule';
 
 const ContactPage: React.FC = () => {
   const { language } = useLanguage();
@@ -162,7 +163,7 @@ const ContactPage: React.FC = () => {
                 <Phone className="h-5 w-5" />
               </a>
               <a
-                href="mailto:volleyball@skvunterensingen.de?subject=Kontakt%20SKV%20Unterensingen%20Volleyball"
+                href={`mailto:${contactEmail}?subject=Kontakt%20SKV%20Unterensingen%20Volleyball`}
                 className="flex items-center justify-between rounded-md border border-primary-500 px-4 py-3 text-primary-600 shadow-sm transition-colors hover:bg-primary-50"
               >
                 <span className="text-body-lg font-semibold">{t.fastContact.email}</span>
@@ -201,10 +202,10 @@ const ContactPage: React.FC = () => {
                     {t.info.trainer}: Heinrich Treubert
                   </p>
                   <a
-                    href="mailto:volleyball@skvunterensingen.de"
+                    href={`mailto:${contactEmail}`}
                     className="text-body text-primary-500 hover:text-primary-600"
                   >
-                    volleyball@skvunterensingen.de
+                    {contactEmail}
                   </a>
                 </div>
               </div>

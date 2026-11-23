@@ -42,13 +42,8 @@ const toMediaPayload = (links: MediaLink[], chunk?: Chunk): MediaPayload[] => {
   }));
 };
 
-// Generate a proper UUID for Qdrant points
-const generatePointId = (): string => {
-  return crypto.randomUUID();
-};
-
 const upsertQdrant = async (points: Array<{ id: string; vector: number[]; payload: Record<string, unknown> }>) => {
   await getQdrantClient().upsert(getCollectionName(), { points });
 };
 
-export { extractPicturePositionsFromRefs, chunkSnippet, toMediaPayload, generatePointId, upsertQdrant };
+export { extractPicturePositionsFromRefs, chunkSnippet, toMediaPayload, upsertQdrant };

@@ -3,7 +3,7 @@ import { Clock, MapPin, Sun, Waves } from 'lucide-react';
 import { useLanguage } from '../lib/LanguageContext';
 import { LightboxImage } from '../components/LightboxImage';
 import { Seo } from '../components/Seo';
-import { beachSchedule2026 } from '../data/schedule';
+import { beachSchedule2026, venues } from '@/data/schedule';
 import { WeatherWidget } from '../components/beach/WeatherWidget';
 
 const BEACH_FACILITY_MAP_URL = 'https://www.google.com/maps?q=Auf+d.+Insel+1,+72622+Nürtingen&output=embed';
@@ -29,7 +29,7 @@ const BeachPage: React.FC = () => {
         operatedBy: 'Die Beachvolleyball-Anlagen werden vom TSV Zizishausen betrieben.',
         usage: 'Unsere Teams nutzen die Plätze im Rahmen einer partnerschaftlichen Kooperation.',
         addressLabel: 'Adresse',
-        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        address: venues.beach.address,
         mapLabel: 'Karte',
         linkIntro: 'Weitere Informationen zur Anlage finden Sie hier:',
         linkText: 'Zur TSV-Zizishausen-Seite',
@@ -53,7 +53,7 @@ const BeachPage: React.FC = () => {
         operatedBy: 'The beach volleyball courts are operated by TSV Zizishausen.',
         usage: 'Our teams use the courts as part of a collaborative partnership.',
         addressLabel: 'Address',
-        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        address: venues.beach.address,
         mapLabel: 'Map',
         linkIntro: 'Find more information about the facility here:',
         linkText: 'Visit the TSV Zizishausen page',
@@ -77,7 +77,7 @@ const BeachPage: React.FC = () => {
         operatedBy: 'Площадки пляжного волейбола управляются TSV Zizishausen.',
         usage: 'Наши команды используют эти площадки в рамках партнёрского сотрудничества.',
         addressLabel: 'Адрес',
-        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        address: venues.beach.address,
         mapLabel: 'Карта',
         linkIntro: 'Подробнее о площадке:',
         linkText: 'Сайт TSV Zizishausen',
@@ -105,7 +105,7 @@ const BeachPage: React.FC = () => {
         operatedBy: 'I campi da beach volley sono gestiti dal TSV Zizishausen.',
         usage: 'Le nostre squadre utilizzano i campi nell’ambito di una collaborazione partner.',
         addressLabel: 'Indirizzo',
-        address: 'Beachvolleyball TSV Zizishausen, Auf d. Insel 1, 72622 Nürtingen',
+        address: venues.beach.address,
         mapLabel: 'Mappa',
         linkIntro: "Ulteriori informazioni sull'impianto:",
         linkText: 'Vai al sito TSV Zizishausen',
@@ -264,7 +264,7 @@ const BeachPage: React.FC = () => {
             </div>
             <div>
               <p className="text-sm uppercase tracking-wide text-neutral-500">{t.facility.mapLabel}</p>
-              <p className="text-neutral-900 font-medium">Auf d. Insel 1, 72622 Nürtingen (TSV Zizishausen)</p>
+              <p className="text-neutral-900 font-medium">{venues.beach.address}</p>
             </div>
             <div className="pt-2">
               <p className="text-neutral-700">{t.facility.linkIntro}</p>

@@ -586,3 +586,13 @@ export const QuestionHeatmap = () => {
 6. 📋 PWA настройка
 7. 📋 Живые результаты
 8. 📋 Видео галерея
+
+## Overhaul (November 2026)
+
+Pipeline: `intent.ts` tokenizes the question (word-boundary matching — `training` no longer triggers `rain`), classifies intent/language with UI language as tie-breaker, and threads venue context through follow-ups (`What about beach?`). `router.ts` answers club facts directly from `supabase/functions/_shared/clubSchedule.ts` (single source shared with the site) and `skv_public_scores` read strictly as anon (`publicData.ts`) — live/next/results intents return real match links or `unavailable` on outage. `ruleFacts.ts` answers a narrow set of edition-specific indoor/beach rules without the index.
+
+`rag.ts`/`ranking.ts` keep only published, revision-checked evidence: CMS chunks must match the current `updated_at` and snippet of `content_items`; reviewed uploads require `source_kind=reviewed`; `volleyball-regeln-*` handbook chunks are rejected for beach questions; TOC/duplicate/foreign-language noise is deduplicated. `prompts.ts` returns strict JSON (`{"answer","sources":[n]}`) — the model may cite only presented evidence numbers, and club intents without used evidence fall back to the honest `unknown`/`rules` message.
+
+Embeddings/ingestion share `_shared/embedding.ts`: the collection dimension is model-aware (`indexProfile`), a non-default model refuses the default `content_vectors` collection, and chunk IDs are deterministic (`chunkId(document, language, index)`) so reindexing overwrites instead of duplicating.
+
+Regression: `supabase/functions/chatbot/quality.test.ts` (intent matrix de/en/ru/it, club grounding, handler fixtures) + `src/components/chatbot/ChatText.test.tsx`. Index comparison between two isolated local stacks: `node scripts/compare-chat-search.mjs BASE_URL CANDIDATE_URL` with `CHAT_EVAL_BASE_TOKEN`/`CHAT_EVAL_CANDIDATE_TOKEN`, cases in `docs/chatbot/retrieval-cases.json`.

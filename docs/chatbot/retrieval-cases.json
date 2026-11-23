@@ -1,0 +1,23 @@
+[
+  {"language":"de","question":"Wie groß ist das Hallenspielfeld?","chunks":[20]},
+  {"language":"en","question":"What are the dimensions of an indoor volleyball court?","chunks":[20]},
+  {"language":"ru","question":"Каковы размеры площадки для волейбола в зале?","chunks":[20]},
+  {"language":"it","question":"Quali sono le dimensioni del campo di pallavolo indoor?","chunks":[7]},
+  {"language":"de","question":"Wie hoch hängt das Netz bei Männern und Frauen?","chunks":[23]},
+  {"language":"en","question":"How high is the net for men and women indoors?","chunks":[23]},
+  {"language":"ru","question":"Какая высота сетки у мужчин и женщин в зале?","chunks":[23]},
+  {"language":"it","question":"A che altezza si trova la rete per uomini e donne?","chunks":[10]},
+  {"language":"de","question":"Wie viele Punkte sind für einen normalen Satz nötig?","chunks":[33]},
+  {"language":"en","question":"How many points win a non-deciding indoor set?","chunks":[33]},
+  {"language":"ru","question":"До скольких очков играют недешающую партию в зале?","chunks":[33]},
+  {"language":"it","question":"Quanti punti servono per vincere un set non decisivo?","chunks":[21]},
+  {"language":"de","question":"Wie viele reguläre Auswechslungen hat eine Mannschaft pro Satz?","chunks":[53]},
+  {"language":"en","question":"How many regular substitutions may a team request per set?","chunks":[53]},
+  {"language":"ru","question":"Сколько обычных замен разрешено команде за партию?","chunks":[53]},
+  {"language":"it","question":"Quante sostituzioni regolari può chiedere una squadra per set?","chunks":[41]},
+  {"language":"de","question":"Wie viele Auszeiten stehen einem Team pro Satz zu?","chunks":[53]},
+  {"language":"en","question":"How many timeouts may each indoor team request in one set?","chunks":[53]},
+  {"language":"ru","question":"Сколько тайм-аутов у команды в партии классического волейбола?","chunks":[53]},
+  {"language":"it","question":"Quanti tempi di riposo può richiedere ogni squadra per set?","chunks":[41]},
+  {"language":"ru","question":"Какова высота волейбольной сетки для мужчин и женщин?","sourceLanguage":"de","chunks":[23]}
+]

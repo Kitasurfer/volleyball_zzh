@@ -12,7 +12,7 @@ interface MessageFeedback {
 
 interface UseMessageFeedbackReturn {
   feedback: MessageFeedback;
-  submitFeedback: (messageId: string, sessionId: string, type: FeedbackType) => Promise<void>;
+  submitFeedback: (messageId: string, sessionId: string, type: FeedbackType) => Promise<boolean>;
   getFeedback: (messageId: string) => FeedbackType;
   isSubmitting: boolean;
   showThankYou: boolean;
@@ -28,8 +28,8 @@ export function useMessageFeedback(): UseMessageFeedbackReturn {
     messageId: string,
     sessionId: string,
     type: FeedbackType
-  ): Promise<void> => {
-    if (!type) return;
+  ): Promise<boolean> => {
+    if (!type || !supabase) return false;
     
     setIsSubmitting(true);
     
@@ -44,7 +44,7 @@ export function useMessageFeedback(): UseMessageFeedbackReturn {
 
       if (error) {
         console.error('Failed to submit feedback:', error);
-        return;
+        return false;
       }
 
       setFeedback((prev) => ({
@@ -54,8 +54,10 @@ export function useMessageFeedback(): UseMessageFeedbackReturn {
 
       setShowThankYou(true);
       setTimeout(() => setShowThankYou(false), 3000);
+      return true;
     } catch (err) {
       console.error('Feedback submission error:', err);
+      return false;
     } finally {
       setIsSubmitting(false);
     }

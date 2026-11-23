@@ -1,7 +1,7 @@
 /**
  * Hook for rate limiting and retry logic
  */
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 interface UseRateLimiterOptions {
   maxRequests?: number;
@@ -38,6 +38,12 @@ export function useRateLimiter(options: UseRateLimiterOptions = {}): UseRateLimi
   const requestTimestamps = useRef<number[]>([]);
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  useEffect(() => {
+    if (!isRateLimited) return;
+    const wait = Math.max(1, requestTimestamps.current[0] + windowMs - Date.now());
+    const timer = window.setTimeout(() => setIsRateLimited(false), wait);
+    return () => window.clearTimeout(timer);
+  }, [isRateLimited, windowMs]);
 
   const cleanOldRequests = useCallback(() => {
     const now = Date.now();

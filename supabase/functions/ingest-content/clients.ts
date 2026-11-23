@@ -1,34 +1,4 @@
-// API clients for OpenAI and Qdrant
-
-export interface OpenAIConfig {
-  apiKey: string;
-  model: string;
-}
-
-export const generateOpenAIEmbedding = async (
-  config: OpenAIConfig,
-  text: string
-): Promise<number[]> => {
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.model,
-      input: text,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`OpenAI embedding failed (${response.status}): ${error}`);
-  }
-
-  const data = await response.json();
-  return data.data[0].embedding;
-};
+export { generateHFEmbedding, type HFEmbeddingConfig } from '../_shared/embedding.ts';
 
 export interface QdrantConfig {
   url: string;
@@ -89,7 +59,7 @@ export interface QdrantClient {
     vectorSize: number
   ) => Promise<unknown>;
 
-  collectionExists: (collection: string) => Promise<boolean>;
+  collectionSize: (collection: string) => Promise<number | null>;
 }
 
 export const createQdrantClient = (config: QdrantConfig): QdrantClient => {
@@ -123,17 +93,14 @@ export const createQdrantClient = (config: QdrantConfig): QdrantClient => {
         }),
       }),
 
-    collectionExists: async (collection) => {
-      try {
-        const url = `${config.url.replace(/\/$/, '')}/collections/${collection}`;
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: buildQdrantHeaders(config),
-        });
-        return response.ok;
-      } catch {
-        return false;
-      }
+    collectionSize: async (collection) => {
+      const url = `${config.url.replace(/\/$/, '')}/collections/${collection}`;
+      const response = await fetch(url, { headers: buildQdrantHeaders(config) });
+      if (response.status === 404) return null;
+      if (!response.ok) throw new Error(`collection_check_failed_${response.status}`);
+      const size = (await response.json()).result?.config?.params?.vectors?.size;
+      if (!Number.isSafeInteger(size)) throw new Error('unsupported_collection_schema');
+      return size;
     },
   };
 };

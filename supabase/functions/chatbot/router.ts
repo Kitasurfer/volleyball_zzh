@@ -1,322 +1,111 @@
-// Router Agent - анализирует запрос и обогащает промпт для LLM
-// НЕ даёт готовых ответов - только контекст и инструкции для умного ответа
-import { getWeatherForecast, formatWeatherResponse, type WeatherForecast } from './weather.ts';
+import { beachSchedule2026, contactEmail, hallSchedule2026, publishedYear, scheduleLabels, venues } from '../_shared/clubSchedule.ts';
+import type { Route, Venue } from './intent.ts';
+import { messages } from './messages.ts';
+import { publicRows } from './publicData.ts';
+import type { Answer, Citation } from './types.ts';
+import { weatherAnswer } from './weather.ts';
 
-// ============================================================
-// КЛУБНЫЕ АДРЕСА (hardcoded facts — не зависят от RAG)
-// ============================================================
-const HALL_ADDRESS = 'Bettwiesenhalle, Schulstraße 43, 72669 Unterensingen';
-const HALL_MAPS = 'https://maps.google.com/?q=Schulstraße+43,+72669+Unterensingen';
-const BEACH_ADDRESS = 'Beachanlage Zizishausen (TSV Zizishausen), Auf d. Insel 1, 72622 Nürtingen';
-const BEACH_MAPS = 'https://maps.google.com/?q=Auf+d.+Insel+1,+72622+Nürtingen';
-
-const buildLocationAnswer = (language: string): string => {
-  switch (language) {
-    case 'ru':
-      return [
-        '**🏐 Зал (октябрь – апрель):**',
-        HALL_ADDRESS,
-        `📍 ${HALL_MAPS}`,
-        '',
-        '**🏖️ Пляж (апрель – сентябрь):**',
-        BEACH_ADDRESS,
-        `📍 ${BEACH_MAPS}`,
-      ].join('\n');
-    case 'en':
-      return [
-        '**🏐 Indoor Hall (October – April):**',
-        HALL_ADDRESS,
-        `📍 ${HALL_MAPS}`,
-        '',
-        '**🏖️ Beach Courts (April – September):**',
-        BEACH_ADDRESS,
-        `📍 ${BEACH_MAPS}`,
-      ].join('\n');
-    case 'it':
-      return [
-        '**🏐 Palestra (ottobre – aprile):**',
-        HALL_ADDRESS,
-        `📍 ${HALL_MAPS}`,
-        '',
-        '**🏖️ Campi Beach (aprile – settembre):**',
-        BEACH_ADDRESS,
-        `📍 ${BEACH_MAPS}`,
-      ].join('\n');
-    default: // de
-      return [
-        '**🏐 Halle (Oktober – April):**',
-        HALL_ADDRESS,
-        `📍 ${HALL_MAPS}`,
-        '',
-        '**🏖️ Beach (April – September):**',
-        BEACH_ADDRESS,
-        `📍 ${BEACH_MAPS}`,
-      ].join('\n');
-  }
-};
-
-export interface RouterResult {
-  originalQuestion: string;
-  enrichedQuestion: string;        // Обогащённый вопрос для поиска в базе знаний
-  questionType: 'location' | 'schedule' | 'rules' | 'weather' | 'contact' | 'general';
-  needsKnowledgeBase: boolean;
-  context: string;                 // Контекст для LLM - что учитывать при ответе
-  instructions: string;            // Инструкции для LLM - как отвечать
-  isAmbiguous: boolean;            // Вопрос неоднозначный (пляжный/классический)?
-  directAnswer?: string;           // Только для погоды (реальные данные API)
-  weatherData?: WeatherForecast;
+const source = (title: string, url: string): Citation => ({ id: url, score: 1, title, url });
+const literal = (text: string) => text.replace(/[\r\n]/g, ' ').replace(/([\\`*_~<>[\]])/g, '\\$1');
+interface ScoreRow {
+  match_id: string; team_a: string; team_b: string; scheduled_at: string | null;
+  state: { status: string; sets: { a: number; b: number; winner: string | null }[];
+    outcome: string | null; winner: 'a' | 'b' | null };
 }
 
-// История сообщений для анализа контекста
-export interface ChatHistoryItem {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
+async function matchAnswer(route: Route, now: Date): Promise<Answer> {
+  const { language, kind } = route;
+  const m = messages[language];
+  const params = new URLSearchParams({
+    select: 'match_id,team_a,team_b,scheduled_at,state', limit: '5',
+    'state->>status': kind === 'live' ? 'in.(live,paused)' : kind === 'next' ? 'eq.scheduled' : 'eq.completed',
+    order: kind === 'next' ? 'scheduled_at.asc' : kind === 'results' ? 'finished_at.desc.nullslast' : 'updated_at.desc',
+  });
+  if (kind === 'next') params.set('scheduled_at', `gte.${now.toISOString()}`);
+  const citations = [source(m.board, '/scoreboard')];
+  const rows = await publicRows<ScoreRow>('skv_public_scores', params);
+  if (!rows.length) return { answer: m.empty, citations };
+  const date = new Intl.DateTimeFormat(language, {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin',
+  });
+  // Label this as an overview, not a claim about a specific team mentioned in the question.
+  const lines = rows.map(r => {
+    const s = r.state;
+    const names = `${literal(r.team_a)} – ${literal(r.team_b)}`;
+    const link = `/scoreboard/${encodeURIComponent(r.match_id)}`;
+    const current = s.sets.at(-1);
+    const sets = (side: string) => s.sets.filter(set => set.winner === side).length;
+    let score = `${m.sets} ${sets('a')}:${sets('b')}`;
+    if (kind === 'live' && current) score += ` · ${m.set} ${s.sets.length}: ${current.a}:${current.b}`;
+    if (s.status === 'paused') score += ` (${m.paused})`;
+    if (s.outcome === 'walkover' && s.winner) score = `${m.walkover}: ${literal(s.winner === 'a' ? r.team_a : r.team_b)}`;
+    return `- [${names}](${link}): ${kind === 'next' && r.scheduled_at ? date.format(new Date(r.scheduled_at)) : score}`;
+  });
+  return { answer: `**${kind === 'next' ? m.next : kind === 'live' ? m.live : m.results}**\n${lines.join('\n')}`, citations };
 }
 
-// Главная функция роутера - анализирует вопрос с учётом истории чата
-export async function routeQuestion(
-  question: string, 
-  language: string,
-  history?: ChatHistoryItem[]
-): Promise<RouterResult> {
-  // Прямой ответ с адресами — не требует RAG
-  if (isLocationQuestion(question)) {
-    console.log('[Router] Location question - returning hardcoded addresses');
-    return {
-      originalQuestion: question,
-      enrichedQuestion: question,
-      questionType: 'location',
-      needsKnowledgeBase: false,
-      context: '',
-      instructions: '',
-      isAmbiguous: false,
-      directAnswer: buildLocationAnswer(language),
-    };
-  }
-
-  // Только для погоды используем прямой ответ (реальные данные API)
-  if (isWeatherQuestion(question)) {
-    console.log('[Router] Weather question - fetching real data');
-    const forecast = await getWeatherForecast();
-    if (forecast) {
-      return {
-        originalQuestion: question,
-        enrichedQuestion: question,
-        questionType: 'weather',
-        needsKnowledgeBase: false,
-        context: 'Погода для пляжного волейбола в Zizishausen',
-        instructions: '',
-        isAmbiguous: false,
-        directAnswer: formatWeatherResponse(forecast, language),
-        weatherData: forecast,
-      };
+export async function directAnswer(route: Route, now = new Date(), question = route.search): Promise<Answer | undefined> {
+  const { kind, language: lang, venue } = route;
+  const m = messages[lang], labels = scheduleLabels[lang];
+  const contact = source(m.contact, '/contact');
+  if (kind === 'greeting') return { answer: m.hello, citations: [] };
+  if (kind === 'confirmation') return { answer: m.confirmation, citations: [contact] };
+  if (kind === 'contact') return { answer: `${m.contact}: ${contactEmail}`, citations: [contact] };
+  if (kind === 'league') return { answer: m.league, citations: [source(m.table, '/competitions')] };
+  if (kind === 'live' || kind === 'next' || kind === 'results') {
+    try { return await matchAnswer(route, now); } catch {
+      return { answer: m.unavailable, citations: [source(m.board, '/scoreboard')] };
     }
   }
-  
-  // Анализируем вопрос и историю для создания умного промпта
-  const analysis = analyzeQuestion(question, language, history);
-  
-  console.log('[Router] Analysis:', JSON.stringify(analysis, null, 2));
-  
-  return analysis;
-}
-
-// Проверка на вопрос о погоде
-function isWeatherQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-  const weatherKeywords = [
-    'погод', 'weather', 'wetter',
-    'дождь', 'rain', 'regen',
-    'солнц', 'sun', 'sonne',
-    'можно играть', 'can we play', 'können wir spielen',
-  ];
-  return weatherKeywords.some(kw => lowerQ.includes(kw));
-}
-
-// Проверка на вопрос об адресе / местоположении
-// Только специфичные локейшн-слова — не захватываем 'пляж' или 'зал',
-// чтобы не перехватывать вопросы о правилах.
-function isLocationQuestion(question: string): boolean {
-  const lowerQ = question.toLowerCase();
-  const locationKeywords = [
-    // RU — только явные запросы адреса/маршрута
-    'адрес', 'где играем', 'где тренир', 'как добраться', 'как найти',
-    'куда ехать', 'где находится зал', 'где находится пляж',
-    // DE
-    'adresse', 'wo spielen wir', 'wo trainieren', 'wie komme ich', 'anfahrt',
-    'wo ist die halle', 'wo ist der beach', 'standort',
-    // EN
-    'address', 'where do we play', 'where is the hall', 'where is the beach',
-    'how to get there', 'how to find', 'location', 'venue', 'directions', 'find us',
-    // IT
-    'indirizzo', 'dove giochiamo', 'come arrivare',
-  ];
-  return locationKeywords.some(kw => lowerQ.includes(kw));
-}
-
-// Умный анализ вопроса с учётом истории чата
-function analyzeQuestion(
-  question: string, 
-  language: string, 
-  history?: ChatHistoryItem[]
-): RouterResult {
-  const lowerQ = question.toLowerCase();
-  
-  // Определяем тип вопроса
-  let questionType: RouterResult['questionType'] = 'general';
-  let isAmbiguous = false;
-  let enrichedQuestion = question;
-  let context = '';
-  let instructions = '';
-  
-  // Анализируем историю чата для понимания контекста
-  const historyContext = analyzeHistory(history);
-  
-  // Ключевые слова для определения типа
-  const rulesKeywords = ['размер', 'поле', 'площадк', 'игрок', 'команд', 'правил', 'очк', 'сет', 'подач', 'блок', 'атак',
-                         'size', 'field', 'court', 'player', 'team', 'rule', 'point', 'set', 'serve', 'block', 'attack',
-                         'größe', 'feld', 'spieler', 'mannschaft', 'regel', 'punkt', 'satz', 'aufschlag'];
-  const locationKeywords = ['адрес', 'где', 'место', 'как добраться', 'address', 'where', 'location', 'adresse', 'wo'];
-  const scheduleKeywords = ['расписан', 'когда', 'время', 'во сколько', 'schedule', 'when', 'time', 'wann', 'zeit'];
-  const contactKeywords = ['контакт', 'связ', 'телефон', 'email', 'contact', 'kontakt'];
-  
-  // Определяем тип вопроса
-  if (rulesKeywords.some(kw => lowerQ.includes(kw))) {
-    questionType = 'rules';
-    
-    // Проверяем, неоднозначный ли вопрос (может относиться к обоим видам волейбола)
-    const mentionsBeach = lowerQ.includes('пляж') || lowerQ.includes('beach') || lowerQ.includes('strand');
-    const mentionsIndoor = lowerQ.includes('зал') || lowerQ.includes('классич') || lowerQ.includes('indoor') || lowerQ.includes('halle');
-    
-    // Если не указан конкретный вид - вопрос неоднозначный
-    if (!mentionsBeach && !mentionsIndoor) {
-      isAmbiguous = true;
-      
-      // Проверяем историю - может пользователь уже уточнял
-      if (historyContext.lastTopic === 'beach') {
-        enrichedQuestion = `${question} (для пляжного волейбола)`;
-        context = 'Из контекста чата: пользователь спрашивает про пляжный волейбол';
-      } else if (historyContext.lastTopic === 'indoor') {
-        enrichedQuestion = `${question} (для классического волейбола в зале)`;
-        context = 'Из контекста чата: пользователь спрашивает про классический волейбол';
-      } else {
-        // Обогащаем вопрос для поиска обоих вариантов
-        enrichedQuestion = `${question} - правила и размеры для классического волейбола (зал, 18x9м, 6 игроков) и пляжного волейбола (песок, 16x8м, 2 игрока)`;
-        context = 'Вопрос неоднозначный - в клубе есть ДВА вида волейбола';
+  if (kind === 'weather') {
+    try { return { answer: await weatherAnswer(lang), citations: [source('Open-Meteo', 'https://open-meteo.com/')] }; }
+    catch { return { answer: m.unavailable, citations: [] }; }
+  }
+  if (kind !== 'schedule' && kind !== 'location') return;
+  const year = new Intl.DateTimeFormat('en', { year: 'numeric', timeZone: 'Europe/Berlin' }).format(now);
+  const requestedYear = route.search.match(/\b20\d{2}\b/)?.[0] ?? year;
+  if (kind === 'schedule' && Number(requestedYear) !== publishedYear) return { answer: m.unknown, citations: [contact] };
+  const keys: Venue[] = venue ? [venue] : ['hall', 'beach'];
+  const citations: Citation[] = [];
+  const month = (n: number) => new Intl.DateTimeFormat(lang, { month: 'long', timeZone: 'UTC' })
+    .format(new Date(Date.UTC(publishedYear, n - 1, 1)));
+  const today = /сегодня|\btoday\b|\bheute\b|\boggi\b/iu.test(question);
+  const tomorrow = /завтра|\btomorrow\b|\bmorgen\b|\bdomani\b/iu.test(question);
+  const next = /ближайш|следующ|\bnext\b|nächst|prossim/iu.test(question);
+  if (kind === 'schedule' && (today || tomorrow || next)) {
+    const local = new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short',
+      timeZone: 'Europe/Berlin' }).format(now);
+    const [day, clock] = local.split(' ');
+    const date = new Date(`${day}T12:00:00Z`);
+    if (tomorrow) date.setUTCDate(date.getUTCDate() + 1);
+    const dateLabel = new Intl.DateTimeFormat(lang, { dateStyle: 'full', timeZone: 'UTC' });
+    const weekday = new Intl.DateTimeFormat('en', { weekday: 'long', timeZone: 'UTC' });
+    for (let i = 0; i < (next && !today && !tomorrow ? 366 : 1); i++, date.setUTCDate(date.getUTCDate() + 1)) {
+      if (date.getUTCFullYear() !== publishedYear) break;
+      const n = date.getUTCMonth() + 1, sessions = [];
+      for (const key of keys) {
+        const { from, until } = venues[key];
+        if (from > until ? n < from && n > until : n < from || n > until) continue;
+        const entries = key === 'hall' ? hallSchedule2026 : beachSchedule2026;
+        for (const e of entries) {
+          if (e.day.en !== weekday.format(date) || (next && !tomorrow && !today && !i && e.time.slice(0, 5) <= clock)) continue;
+          sessions.push(`${e.time} · ${e.location?.[lang] ?? venues[key].address}`);
+          citations.push(source(key === 'hall' ? labels.hallTitle : labels.beachTitle, `/${key}`));
+        }
       }
+      if (sessions.length) return { answer: `**${dateLabel.format(date)}** (Europe/Berlin)\n${sessions.sort().map(s => `- ${s}`).join('\n')}\n\n${labels.note}`, citations };
     }
-  } else if (locationKeywords.some(kw => lowerQ.includes(kw))) {
-    questionType = 'location';
-    enrichedQuestion = `${question} - адреса тренировок: зал Bettwiesenhalle и пляж Beachanlage Zizishausen`;
-    context = 'Показать ОБА места тренировок с адресами и картами';
-  } else if (scheduleKeywords.some(kw => lowerQ.includes(kw))) {
-    questionType = 'schedule';
-    enrichedQuestion = `${question} - расписание тренировок в зале и на пляже`;
-    context = 'Показать расписание для обоих видов волейбола';
-  } else if (contactKeywords.some(kw => lowerQ.includes(kw))) {
-    questionType = 'contact';
+    return { answer: m.noSession, citations: [...keys.map(k => source(k === 'hall' ? labels.hallTitle : labels.beachTitle, `/${k}`)), contact] };
   }
-  
-  // Генерируем инструкции для LLM на основе анализа
-  instructions = generateInstructions(questionType, isAmbiguous, language, historyContext);
-  
-  return {
-    originalQuestion: question,
-    enrichedQuestion,
-    questionType,
-    needsKnowledgeBase: true,
-    context,
-    instructions,
-    isAmbiguous,
-  };
-}
-
-// Анализ истории чата для понимания контекста
-function analyzeHistory(history?: ChatHistoryItem[]): { lastTopic: 'beach' | 'indoor' | 'unknown' } {
-  if (!history || history.length === 0) {
-    return { lastTopic: 'unknown' };
-  }
-  
-  // Смотрим последние сообщения
-  const recentMessages = history.slice(-6);
-  const allText = recentMessages.map(m => m.content.toLowerCase()).join(' ');
-  
-  const beachKeywords = ['пляж', 'beach', 'песок', 'sand', 'zizishausen', '16x8', '16×8', '2 игрок'];
-  const indoorKeywords = ['зал', 'indoor', 'halle', 'bettwiesenhalle', '18x9', '18×9', '6 игрок'];
-  
-  const beachScore = beachKeywords.filter(kw => allText.includes(kw)).length;
-  const indoorScore = indoorKeywords.filter(kw => allText.includes(kw)).length;
-  
-  if (beachScore > indoorScore) return { lastTopic: 'beach' };
-  if (indoorScore > beachScore) return { lastTopic: 'indoor' };
-  return { lastTopic: 'unknown' };
-}
-
-// Генерация инструкций для LLM
-function generateInstructions(
-  questionType: RouterResult['questionType'],
-  isAmbiguous: boolean,
-  language: string,
-  historyContext: { lastTopic: 'beach' | 'indoor' | 'unknown' }
-): string {
-  const instructions: string[] = [];
-  
-  if (isAmbiguous) {
-    if (language === 'ru') {
-      instructions.push('⚠️ ВАЖНО: Вопрос может относиться к ДВУМ видам волейбола!');
-      instructions.push('');
-      instructions.push('ОБЯЗАТЕЛЬНО дай информацию про ОБА вида, структурируй ответ:');
-      instructions.push('');
-      instructions.push('**🏐 Классический волейбол (в зале):**');
-      instructions.push('[информация из базы знаний]');
-      instructions.push('');
-      instructions.push('**🏖️ Пляжный волейбол:**');
-      instructions.push('[информация из базы знаний]');
-    } else if (language === 'en') {
-      instructions.push('⚠️ IMPORTANT: Question may refer to TWO types of volleyball!');
-      instructions.push('Give info about BOTH: Indoor and Beach volleyball');
-    } else {
-      instructions.push('⚠️ WICHTIG: Frage kann sich auf ZWEI Volleyballarten beziehen!');
-      instructions.push('Gib Infos zu BEIDEN: Hallen- und Beachvolleyball');
-    }
-  }
-  
-  // Специфичные инструкции по типу вопроса
-  switch (questionType) {
-    case 'location':
-      if (language === 'ru') {
-        instructions.push('Покажи ОБА места с Google Maps ссылками');
-      }
-      break;
-    case 'schedule':
-      if (language === 'ru') {
-        instructions.push('Дай расписание для обоих видов волейбола');
-      }
-      break;
-  }
-  
-  // Учитываем контекст из истории
-  if (historyContext.lastTopic !== 'unknown') {
-    const topic = historyContext.lastTopic === 'beach' ? 'пляжный волейбол' : 'классический волейбол';
-    instructions.push(`Из контекста чата: пользователь интересуется ${topic}`);
-  }
-  
-  return instructions.join('\n');
-}
-
-// Генерирует дополнительные инструкции для основного агента
-export function getRouterInstructions(result: RouterResult, _language: string): string {
-  const parts: string[] = [];
-  
-  // Добавляем контекст
-  if (result.context) {
-    parts.push(`КОНТЕКСТ: ${result.context}`);
-  }
-  
-  // Добавляем инструкции от анализатора
-  if (result.instructions) {
-    parts.push(result.instructions);
-  }
-  
-  return parts.join('\n\n');
+  const sections = keys.map(key => {
+    const v = venues[key];
+    const title = key === 'hall' ? labels.hallTitle : labels.beachTitle;
+    citations.push(source(title, `/${key}`));
+    if (kind === 'location') return `**${title}:** ${v.address}\n[${m.map}](https://maps.google.com/?q=${encodeURIComponent(v.address)})`;
+    const entries = key === 'hall' ? hallSchedule2026 : beachSchedule2026;
+    return `**${title} (${month(v.from)} – ${month(v.until)}):**\n${entries.map(e =>
+      `- ${e.day[lang]}, ${e.time}${e.location ? ` · ${e.location[lang]}` : ''}`).join('\n')}`;
+  });
+  return { answer: kind === 'location' ? sections.join('\n\n') :
+    `${labels.title} (Europe/Berlin)\n\n${sections.join('\n\n')}\n\n${labels.note}`, citations };
 }

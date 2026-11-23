@@ -22,6 +22,7 @@ export interface Citation {
 }
 
 export interface ChatMessage {
+  sessionId?: string;
   id: string;
   text: string;
   sender: 'user' | 'bot';
@@ -29,6 +30,7 @@ export interface ChatMessage {
 }
 
 export interface ChatbotResponse {
+  messageId?: string;
   answer: string;
   citations?: Citation[];
   sessionId?: string;

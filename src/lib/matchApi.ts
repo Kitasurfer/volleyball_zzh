@@ -24,6 +24,7 @@ export interface ControlledMatch extends Omit<PublicScore, 'match_id' | 'competi
   published: boolean;
   duration_minutes: number;
   started_at: string | null;
+  referee_team: string | null;
 }
 
 export interface HistoryEvent {

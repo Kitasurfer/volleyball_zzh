@@ -149,6 +149,15 @@ const labels = {
   checkSw: ['Offline-Modus bereit', 'Offline mode ready', 'Офлайн-режим готов', 'Modalità offline pronta'],
   checkWake: ['Bildschirm-Wachhaltung möglich', 'Screen wake lock available', 'Удержание экрана доступно', 'Blocco spegnimento disponibile'],
   deleteMatch: ['Spiel löschen', 'Delete match', 'Удалить матч', 'Elimina partita'],
+  refereeRequest: ['Als Schiedsrichter anfragen', 'Request to referee', 'Стать судьёй', 'Diventa arbitro'],
+  refereeHint: ['Kein Konto nötig: Name eintragen, der Organisator gibt dich frei.', 'No account needed: enter your name and the organizer will approve you.', 'Аккаунт не нужен: введите имя — организатор подтвердит доступ.', 'Nessun account: inserisci il nome, l’organizzatore ti approva.'],
+  refereePending: ['Anfrage gesendet · Warte auf Freigabe…', 'Request sent · Waiting for approval…', 'Заявка отправлена · Ждём подтверждения…', 'Richiesta inviata · In attesa di conferma…'],
+  refereeRejected: ['Die Anfrage wurde abgelehnt.', 'The request was declined.', 'Заявка отклонена.', 'La richiesta è stata rifiutata.'],
+  refereeRequests: ['Schiedsrichter-Anfragen', 'Referee requests', 'Заявки судей', 'Richieste arbitri'],
+  approve: ['Bestätigen', 'Approve', 'Принять', 'Approva'],
+  approveCourt: ['Für das ganze Feld', 'For the whole court', 'На всю площадку', 'Per tutto il campo'],
+  approveTournament: ['Für das ganze Turnier', 'For the whole tournament', 'На весь турнир', 'Per tutto il torneo'],
+  reject: ['Ablehnen', 'Decline', 'Отклонить', 'Rifiuta'],
 } as const;
 
 export function useMatchText() {

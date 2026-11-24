@@ -32,6 +32,7 @@ function useSave() {
         client.invalidateQueries({ queryKey: ['skv-standings'] }),
         client.invalidateQueries({ queryKey: ['skv-admin-matches'] }),
         client.invalidateQueries({ queryKey: ['skv-managed'] }),
+        client.invalidateQueries({ queryKey: ['skv-referee-requests'] }),
         client.invalidateQueries({ queryKey: scoresKey }),
       ]);
     } catch (cause) { setError(cause); }
@@ -215,6 +216,7 @@ export default function AdminMatchCenterPage({ matchesOnly = false }: { matchesO
     <h1 className="text-2xl font-bold text-primary-900">{t(matchesOnly ? 'nav' : 'tournaments')}</h1>
     {matchesOnly ? <>
       <Button asChild variant="accent"><Link to="/scoreboard/new">{t('newMatch')}</Link></Button>
+      <RefereeRequests />
       <AdminFixtures />
     </> : <>
       {query.isError && <p role="alert">{t('error')}</p>}
@@ -259,6 +261,7 @@ function CompetitionManagement({ competition }: { competition: Competition }) {
       <Button disabled={save.busy} type="submit">{t('addTeam')}</Button>
     </form>
     <TournamentFixtures competition={competition} teams={teams.data ?? []} />
+    <RefereeRequests cid={competition.id} />
     <AdminFixtures cid={competition.id} />
     <h2 className="text-xl font-bold text-primary-900">{t('standings')}</h2>
     <StandingsTable rows={standings.data ?? []} />
@@ -266,6 +269,54 @@ function CompetitionManagement({ competition }: { competition: Competition }) {
       <Link to={`/competitions/${competition.id}`}>{t('schedule')}</Link>
     </Button>}
   </>;
+}
+
+interface RefereeRequest {
+  id: string;
+  match_id: string;
+  name: string;
+  status: 'pending' | 'approved';
+  created_at: string;
+  team_a: string;
+  team_b: string;
+  court: string;
+  scheduled_at: string | null;
+  competition_id: string | null;
+}
+
+function RefereeRequests({ cid }: { cid?: string }) {
+  const { t, language } = useMatchText();
+  const review = useSave();
+  const requests = useQuery({ queryKey: ['skv-referee-requests', cid ?? 'all'],
+    queryFn: () => matchRpc<RefereeRequest[]>('skv_referee_requests', { cid: cid ?? null }),
+    staleTime: 0, refetchInterval: 10000 });
+  if (!requests.data?.length) return null;
+  const send = (id: string, approve: boolean, scope: string) =>
+    void review.run(() => matchRpc('skv_review_referee',
+      { rid: id, approve, scope, expires: null }));
+  return <section className={`${matchCard} space-y-3`}>
+    <h2 className="font-bold">{t('refereeRequests')}</h2>
+    {requests.data.map(request => <div key={request.id}
+      className="flex flex-wrap items-center gap-2 border-t border-neutral-200 pt-3">
+      <span className="font-semibold">{request.name}</span>
+      <span className="min-w-0 break-words text-sm">{request.team_a} – {request.team_b}
+        {request.court && ` · ${request.court}`}
+        {request.scheduled_at && ` · ${formatMatchDate(request.scheduled_at, language)}`}</span>
+      {request.status === 'pending' ? <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={review.busy}
+          onClick={() => send(request.id, true, 'match')}>{t('approve')}</Button>
+        {request.competition_id && request.court && <Button size="sm" variant="outline"
+          disabled={review.busy}
+          onClick={() => send(request.id, true, 'court')}>{t('approveCourt')}</Button>}
+        {request.competition_id && <Button size="sm" variant="outline" disabled={review.busy}
+          onClick={() => send(request.id, true, 'competition')}>{t('approveTournament')}</Button>}
+        <Button size="sm" variant="danger" disabled={review.busy}
+          onClick={() => send(request.id, false, 'match')}>{t('reject')}</Button>
+      </div> : <Button size="sm" variant="danger" disabled={review.busy}
+        onClick={() => send(request.id, false, 'match')}>{t('revoke')}</Button>}
+    </div>)}
+    <Result save={review} />
+  </section>;
 }
 
 function AdminFixtures({ cid }: { cid?: string }) {

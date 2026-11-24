@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import { MatchLogin, RuleFields, SetReport, matchCard, matchInput, matchPage } from '@/components/MatchScore';
+import RefereeGate from '@/components/RefereeGate';
 import { matchError, useMatchText, type MatchText } from '@/data/matchTranslations';
 import { useMatchControl } from '@/hooks/useMatchControl';
 import { useMatchShell } from '@/hooks/useMatchShell';
@@ -35,10 +36,13 @@ export default function MatchControlPage() {
     else if (!loading) sessionStorage.removeItem('skv-last-referee');
   } catch { /* Storage can be disabled in the browser. */ }
   if (!local && loading && !actor) return <main className={matchPage}>{t('loading')}</main>;
-  if (!local && !actor) return <main className={matchPage}><MatchLogin /></main>;
-  return <Control key={`${actor ?? 'local'}:${matchId}`} id={matchId}
+  const control = actor ? <Control key={`${actor}:${matchId}`} id={matchId}
     actor={actor} authenticated={Boolean(user)} admin={role === 'admin'}
-    autoTake={location.state?.takeControl === true} />;
+    autoTake={location.state?.takeControl === true} /> : undefined;
+  if (!local && role !== 'admin' && (navigator.onLine || !actor)) {
+    return <main className={matchPage}><RefereeGate id={matchId}>{control}</RefereeGate></main>;
+  }
+  return control;
 }
 
 function Control({ id, actor, authenticated, admin, autoTake }: {

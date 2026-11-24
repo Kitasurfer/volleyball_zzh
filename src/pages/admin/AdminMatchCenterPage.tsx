@@ -141,6 +141,7 @@ function TournamentFixtures({ competition, teams }: { competition: Competition; 
         competition_id: competition.id, team_a_id: a, team_b_id: b,
         court: text(form, 'court'), scheduled_at: berlinTime(text(form, 'starts')),
         duration_minutes: +text(form, 'duration'), published: form.has('published'),
+        referee_team: text(form, 'referee_team'),
       } }));
     }}>
       <h2 className="font-bold">{t('newMatch')}</h2>
@@ -154,6 +155,7 @@ function TournamentFixtures({ competition, teams }: { competition: Competition; 
         </Field>)}
       <FixtureTime defaultStart={competition.starts_at} requiredTime={false} />
       <Field label={t('court')}><input className={matchInput} name="court" maxLength={80} /></Field>
+      <Field label={t('refereeTeam')}><input className={matchInput} name="referee_team" maxLength={100} /></Field>
       <Result save={save} />
       <Button type="submit" disabled={save.busy || teams.length < 2}>{t('save')}</Button>
     </form>
@@ -282,6 +284,7 @@ interface RefereeRequest {
   court: string;
   scheduled_at: string | null;
   competition_id: string | null;
+  referee_team: string | null;
 }
 
 function RefereeRequests({ cid }: { cid?: string }) {
@@ -301,6 +304,7 @@ function RefereeRequests({ cid }: { cid?: string }) {
       <span className="font-semibold">{request.name}</span>
       <span className="min-w-0 break-words text-sm">{request.team_a} – {request.team_b}
         {request.court && ` · ${request.court}`}
+        {request.referee_team && ` · ${t('refereeTeam')}: ${request.referee_team}`}
         {request.scheduled_at && ` · ${formatMatchDate(request.scheduled_at, language)}`}</span>
       {request.status === 'pending' ? <div className="flex flex-wrap gap-2">
         <Button size="sm" disabled={review.busy}
@@ -358,6 +362,7 @@ function Fixture({ match }: { match: ControlledMatch }) {
   return <details className={matchCard}>
     <summary className="cursor-pointer break-words font-semibold">
       {match.team_a} – {match.team_b} · {match.court} · {t(match.state.status)}
+      {match.referee_team && ` · ${t('refereeTeam')}: ${match.referee_team}`}
       {match.scheduled_at && ` · ${formatMatchDate(match.scheduled_at, language)}`}
     </summary>
     <Button asChild className="my-3"><Link to={`/scoreboard/${match.id}/control`}>
@@ -368,10 +373,13 @@ function Fixture({ match }: { match: ControlledMatch }) {
         void edit.run(() => matchRpc('skv_edit_match', { mid: match.id, config: {
           court: text(form, 'court'), scheduled_at: berlinTime(text(form, 'starts')),
           duration_minutes: +text(form, 'duration'), published: form.has('published'),
+          referee_team: text(form, 'referee_team'),
         } }));
       }}>
         <Field label={t('court')}><input name="court" className={matchInput}
           disabled={!scheduled} maxLength={80} defaultValue={match.court} /></Field>
+        <Field label={t('refereeTeam')}><input name="referee_team" className={matchInput}
+          maxLength={100} defaultValue={match.referee_team ?? ''} /></Field>
         <Field label={t('starts')}><input name="starts" className={matchInput}
           disabled={!scheduled} type="datetime-local" defaultValue={berlinInput(match.scheduled_at)} /></Field>
         <Field label={t('duration')}><input name="duration" className={matchInput}

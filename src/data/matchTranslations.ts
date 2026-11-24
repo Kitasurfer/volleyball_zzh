@@ -158,6 +158,7 @@ const labels = {
   approveCourt: ['Für das ganze Feld', 'For the whole court', 'На всю площадку', 'Per tutto il campo'],
   approveTournament: ['Für das ganze Turnier', 'For the whole tournament', 'На весь турнир', 'Per tutto il torneo'],
   reject: ['Ablehnen', 'Decline', 'Отклонить', 'Rifiuta'],
+  refereeTeam: ['Schiri-Team', 'Referee team', 'Команда судьи', 'Squadra arbitro'],
 } as const;
 
 export function useMatchText() {

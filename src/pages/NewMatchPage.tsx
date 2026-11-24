@@ -47,6 +47,7 @@ export default function NewMatchPage() {
           id, team_a, team_b, court, rules, state: initialMatch(), competition_id: null,
           external_match_id: null, published: false, scheduled_at: null, duration_minutes: 60,
           updated_at: new Date().toISOString(), started_at: null, finished_at: null, version: 0,
+          referee_team: null,
         };
         await saveDraft(seedDraft(id, match), undefined);
       } else {

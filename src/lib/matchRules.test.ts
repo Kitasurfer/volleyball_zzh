@@ -182,6 +182,7 @@ describe('durable event projection', () => {
       id: 'test', team_a: 'A', team_b: 'B', court: '1', rules: indoorRules(1), state: initialMatch(),
       version: 0, published: true, competition_id: null, external_match_id: null, scheduled_at: null,
       started_at: null, finished_at: null, updated_at: new Date().toISOString(), duration_minutes: 60,
+      referee_team: null,
     };
     let draft = seedDraft('test', match);
     draft = queueAction(draft, { type: 'MATCH_STARTED', side: 'a' }, false);

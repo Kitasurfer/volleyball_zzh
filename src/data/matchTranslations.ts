@@ -159,6 +159,7 @@ const labels = {
   approveTournament: ['Für das ganze Turnier', 'For the whole tournament', 'На весь турнир', 'Per tutto il torneo'],
   reject: ['Ablehnen', 'Decline', 'Отклонить', 'Rifiuta'],
   refereeTeam: ['Schiri-Team', 'Referee team', 'Команда судьи', 'Squadra arbitro'],
+  renameTeam: ['Team umbenennen', 'Rename team', 'Переименовать команду', 'Rinomina squadra'],
   group: ['Gruppe', 'Group', 'Группа', 'Girone'],
   playoff: ['Playoff', 'Playoff', 'Плей-офф', 'Playoff'],
   playoffs: ['Finalrunde', 'Playoffs', 'Плей-офф', 'Fase finale'],

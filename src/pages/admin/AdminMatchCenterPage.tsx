@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useId, useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui';
@@ -138,6 +138,21 @@ function CompetitionForm({ competition, onSave }: {
   </form>;
 }
 
+/** Referee team input offering the competition teams as suggestions while
+ *  still allowing free text for external referees. */
+function RefereeTeamInput({ teams, name = 'referee_team', defaultValue = '' }: {
+  teams: Team[]; name?: string; defaultValue?: string;
+}) {
+  const listId = useId();
+  return <>
+    <input className={matchInput} name={name} maxLength={100} list={listId}
+      defaultValue={defaultValue} autoComplete="off" />
+    <datalist id={listId}>
+      {teams.map(team => <option key={team.id} value={team.name} />)}
+    </datalist>
+  </>;
+}
+
 function groupSplit<T>(items: T[], count: number): T[][] {
   const groups: T[][] = Array.from({ length: count }, () => []);
   items.forEach((item, index) => {
@@ -189,6 +204,27 @@ function SchedulePlanner({ competition, teams }: { competition: Competition; tea
               });
             });
             slot += Math.ceil(round.length / courts.length);
+          }
+        }
+        // Auto-assign referee teams: within one time slot a team may neither
+        // play nor cover two matches; the least-loaded idle team gets the duty.
+        const load = new Map<string, number>(teams.map(team => [team.id, 0]));
+        const slots = new Map<string, typeof fixtures>();
+        for (const fixture of fixtures) {
+          const key = String(fixture.scheduled_at);
+          slots.set(key, [...slots.get(key) ?? [], fixture]);
+        }
+        for (const sameSlot of slots.values()) {
+          const busy = new Set(sameSlot.flatMap(f => [f.team_a_id, f.team_b_id]));
+          const covering = new Set<string>();
+          for (const fixture of sameSlot) {
+            const idle = teams.filter(team => !busy.has(team.id) && !covering.has(team.id));
+            idle.sort((x, y) => (load.get(x.id) ?? 0) - (load.get(y.id) ?? 0));
+            const pick = idle[0];
+            if (!pick) continue;
+            fixture.referee_team = pick.name;
+            load.set(pick.id, (load.get(pick.id) ?? 0) + 1);
+            covering.add(pick.id);
           }
         }
         await matchRpc('skv_create_schedule', { fixtures });
@@ -249,7 +285,7 @@ function TournamentFixtures({ competition, teams }: { competition: Competition; 
       <Field label={t('court')}><input className={matchInput} name="court" maxLength={80} /></Field>
       <Field label={t('stageOptional')}><input className={matchInput} name="stage" maxLength={40}
         placeholder="group:A" /></Field>
-      <Field label={t('refereeTeam')}><input className={matchInput} name="referee_team" maxLength={100} /></Field>
+      <Field label={t('refereeTeam')}><RefereeTeamInput teams={teams} /></Field>
       <Result save={save} />
       <Button type="submit" disabled={save.busy || teams.length < 2}>{t('save')}</Button>
     </form>
@@ -413,8 +449,8 @@ export default function AdminMatchCenterPage({ matchesOnly = false }: { matchesO
         <option value="">{t('newTournament')}</option>
         {query.data?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
       </select></Field>
-      <CompetitionForm key={competition?.id ?? 'new'} competition={competition} onSave={select} />
-      {competition && <CompetitionManagement key={competition.id} competition={competition} />}
+      <CompetitionForm key={`form-${competition?.id ?? 'new'}`} competition={competition} onSave={select} />
+      {competition && <CompetitionManagement key={`mgmt-${competition.id}`} competition={competition} />}
     </>}
   </div>;
 }
@@ -435,8 +471,17 @@ function CompetitionManagement({ competition }: { competition: Competition }) {
     }}>
       <h2 className="font-bold">{t('team')} · {teams.data?.length ?? 0}</h2>
       <ul className="flex flex-wrap gap-2">
-        {teams.data?.map(team => <li key={team.id} className="rounded bg-neutral-100 px-2 py-1">
-          {team.name}</li>)}
+        {teams.data?.map(team => <li key={team.id}
+          className="flex items-center gap-1 rounded bg-neutral-100 px-2 py-1 dark:bg-neutral-800">
+          {team.name}
+          <button type="button" className="ml-1 text-neutral-400 hover:text-primary-600"
+            title={t('renameTeam')} aria-label={t('renameTeam')} onClick={() => {
+              const renamed = window.prompt(t('renameTeam'), team.name)?.trim();
+              if (renamed && renamed !== team.name) {
+                void save.run(() => matchRpc('skv_rename_team', { tid: team.id, new_name: renamed }));
+              }
+            }}>✎</button>
+        </li>)}
       </ul>
       <Field label={t('name')}><input name="name" className={matchInput} required maxLength={80} /></Field>
       {teams.isError && <p role="alert">{t('error')}</p>}
@@ -535,6 +580,7 @@ function AdminFixtures({ cid }: { cid?: string }) {
 
 function Fixture({ match }: { match: ControlledMatch }) {
   const { t, language } = useMatchText();
+  const editTeams = useTeamsQuery(match.competition_id);
   const edit = useSave();
   const access = useSave();
   const del = useSave();
@@ -567,8 +613,8 @@ function Fixture({ match }: { match: ControlledMatch }) {
       }}>
         <Field label={t('court')}><input name="court" className={matchInput}
           disabled={!scheduled} maxLength={80} defaultValue={match.court} /></Field>
-        <Field label={t('refereeTeam')}><input name="referee_team" className={matchInput}
-          maxLength={100} defaultValue={match.referee_team ?? ''} /></Field>
+        <Field label={t('refereeTeam')}><RefereeTeamInput teams={editTeams.data ?? []}
+          defaultValue={match.referee_team ?? ''} /></Field>
         <Field label={t('starts')}><input name="starts" className={matchInput}
           disabled={!scheduled} type="datetime-local" defaultValue={berlinInput(match.scheduled_at)} /></Field>
         <Field label={t('duration')}><input name="duration" className={matchInput}

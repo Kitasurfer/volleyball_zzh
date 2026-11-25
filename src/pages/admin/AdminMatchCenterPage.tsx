@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui';
@@ -138,19 +138,18 @@ function CompetitionForm({ competition, onSave }: {
   </form>;
 }
 
-/** Referee team input offering the competition teams as suggestions while
- *  still allowing free text for external referees. */
+/** Referee team select listing all competition teams; keeps a foreign current
+ *  value selectable so nothing is lost when editing older matches. */
 function RefereeTeamInput({ teams, name = 'referee_team', defaultValue = '' }: {
   teams: Team[]; name?: string; defaultValue?: string;
 }) {
-  const listId = useId();
-  return <>
-    <input className={matchInput} name={name} maxLength={100} list={listId}
-      defaultValue={defaultValue} autoComplete="off" />
-    <datalist id={listId}>
-      {teams.map(team => <option key={team.id} value={team.name} />)}
-    </datalist>
-  </>;
+  const known = teams.some(team => team.name === defaultValue);
+  return <select key={teams.length ? 'ready' : 'loading'} className={matchInput}
+    name={name} defaultValue={defaultValue}>
+    <option value="">—</option>
+    {teams.map(team => <option key={team.id} value={team.name}>{team.name}</option>)}
+    {defaultValue && !known && <option value={defaultValue}>{defaultValue}</option>}
+  </select>;
 }
 
 function groupSplit<T>(items: T[], count: number): T[][] {
@@ -605,12 +604,29 @@ function Fixture({ match }: { match: ControlledMatch }) {
     <div className="grid gap-4 lg:grid-cols-2">
       <form className="space-y-2" onSubmit={event => {
         const form = formData(event);
+        const aId = text(form, 'team_a_id');
+        const bId = text(form, 'team_b_id');
+        const swap = aId && bId && (aId !== (match.team_a_id ?? '') || bId !== (match.team_b_id ?? ''));
         void edit.run(() => matchRpc('skv_edit_match', { mid: match.id, config: {
           court: text(form, 'court'), scheduled_at: berlinTime(text(form, 'starts')),
           duration_minutes: +text(form, 'duration'), published: form.has('published'),
           referee_team: text(form, 'referee_team'),
+          ...(swap ? { team_a_id: aId, team_b_id: bId } : {}),
         } }));
       }}>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {([['team_a_id', 'teamA', match.team_a_id], ['team_b_id', 'teamB', match.team_b_id]] as const)
+            .map(([name, label, current]) =>
+              <Field key={name} label={t(label)}>
+                <select key={(editTeams.data?.length ? 'ready' : 'loading') + name}
+                  name={name} className={matchInput} disabled={!scheduled}
+                  defaultValue={current ?? ''} required={scheduled}>
+                  <option value="">{t('chooseTeam')}</option>
+                  {(editTeams.data ?? []).map(team =>
+                    <option key={team.id} value={team.id}>{team.name}</option>)}
+                </select>
+              </Field>)}
+        </div>
         <Field label={t('court')}><input name="court" className={matchInput}
           disabled={!scheduled} maxLength={80} defaultValue={match.court} /></Field>
         <Field label={t('refereeTeam')}><RefereeTeamInput teams={editTeams.data ?? []}

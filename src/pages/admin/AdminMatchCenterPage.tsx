@@ -553,6 +553,25 @@ function AdminFixtures({ cid }: { cid?: string }) {
   const fixtures = useQuery({ queryKey: ['skv-admin-matches', cid],
     queryFn: () => matchRpc<ControlledMatch[]>('skv_list_matches', { cid: cid ?? null }),
     staleTime: 0, refetchInterval: 10000 });
+  const comps = useQuery({ queryKey: ['skv-competitions', 'admin'],
+    queryFn: () => listCompetitions(true), enabled: !cid });
+  const [fComp, setFComp] = useState('');
+  const [fDate, setFDate] = useState('');
+  const [fStatus, setFStatus] = useState('');
+  const compName = (id: string | null) =>
+    id ? comps.data?.find(c => c.id === id)?.name ?? '' : '';
+  const visible = fixtures.data?.filter(match => {
+    if (!cid) {
+      if (fComp === 'standalone' && match.competition_id) return false;
+      if (fComp && fComp !== 'standalone' && match.competition_id !== fComp) return false;
+      if (fStatus && match.state.status !== fStatus) return false;
+      if (fDate) {
+        const day = match.scheduled_at ? berlinInput(match.scheduled_at).slice(0, 10) : '';
+        if (day !== fDate) return false;
+      }
+    }
+    return true;
+  }) ?? [];
   const completed = fixtures.data?.filter(match => match.state.status === 'completed') ?? [];
   return <section className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -571,13 +590,34 @@ function AdminFixtures({ cid }: { cid?: string }) {
           rows.map(row => row.map(csvField).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
       }}>{t('export')}</Button>
     </div>
+    {!cid && <div className="flex flex-wrap items-end gap-3">
+      <Field label={t('tournaments')}>
+        <select className={matchInput} value={fComp} onChange={e => setFComp(e.target.value)}>
+          <option value="">{t('allCompetitions')}</option>
+          <option value="standalone">{t('standaloneMatches')}</option>
+          {(comps.data ?? []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </Field>
+      <Field label={t('filterDate')}>
+        <input type="date" className={matchInput} value={fDate} onChange={e => setFDate(e.target.value)} />
+      </Field>
+      <Field label={t('filterStatus')}>
+        <select className={matchInput} value={fStatus} onChange={e => setFStatus(e.target.value)}>
+          <option value="">—</option>
+          {(['scheduled', 'live', 'paused', 'completed', 'cancelled'] as const).map(st =>
+            <option key={st} value={st}>{t(st === 'live' || st === 'paused' ? 'statusLive' :
+              st === 'scheduled' ? 'statusScheduled' : st === 'completed' ? 'statusCompleted' : 'statusCancelled')}</option>)}
+        </select>
+      </Field>
+    </div>}
     {fixtures.isError && <p role="alert">{t('error')}</p>}
     {fixtures.data?.length === 0 && <p>{t('empty')}</p>}
-    {fixtures.data?.map(match => <Fixture match={match} key={match.id} />)}
+    {visible.map(match => <Fixture match={match} key={match.id}
+      compLabel={!cid && match.competition_id ? compName(match.competition_id) : ''} />)}
   </section>;
 }
 
-function Fixture({ match }: { match: ControlledMatch }) {
+function Fixture({ match, compLabel = '' }: { match: ControlledMatch; compLabel?: string }) {
   const { t, language } = useMatchText();
   const editTeams = useTeamsQuery(match.competition_id);
   const edit = useSave();
@@ -586,6 +626,10 @@ function Fixture({ match }: { match: ControlledMatch }) {
   const scheduled = match.state.status === 'scheduled';
   const deletable = match.state.status !== 'completed';
   return <details className={matchCard}>
+    {compLabel && match.competition_id && <div className="mb-1 flex items-center gap-2 px-2 pt-1 text-sm">
+      <Link className="font-semibold text-primary-700 underline" to={`/competitions/${match.competition_id}`}>{compLabel}</Link>
+      <Link className="text-accent-700 underline" to={`/competitions/${match.competition_id}/courts`}>{t('courtsOverview')}</Link>
+    </div>}
     <summary className="cursor-pointer break-words font-semibold">
       {match.match_number ? `#${match.match_number} · ` : ''}
       {match.stage ? `${match.stage} · ` : ''}

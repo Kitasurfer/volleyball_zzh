@@ -584,7 +584,7 @@ function Fixture({ match }: { match: ControlledMatch }) {
   const access = useSave();
   const del = useSave();
   const scheduled = match.state.status === 'scheduled';
-  const deletable = !match.published && match.state.status !== 'completed';
+  const deletable = match.state.status !== 'completed';
   return <details className={matchCard}>
     <summary className="cursor-pointer break-words font-semibold">
       {match.match_number ? `#${match.match_number} · ` : ''}

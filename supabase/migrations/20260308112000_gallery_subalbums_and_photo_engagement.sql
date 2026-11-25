@@ -1,5 +1,10 @@
 -- Gallery subalbums, photo engagement, and album-detail metadata
 
+-- Ensure media_assets has album_id column (may not exist yet)
+alter table public.media_assets
+  add column if not exists album_id uuid references public.gallery_albums(id) on delete set null;
+
+
 create table if not exists public.gallery_subalbums (
   id uuid primary key default gen_random_uuid(),
   album_id uuid not null references public.gallery_albums(id) on delete cascade,

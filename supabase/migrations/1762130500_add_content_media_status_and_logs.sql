@@ -24,3 +24,11 @@ create table if not exists public.media_action_logs (
 );
 
 create index if not exists media_action_logs_media_idx on public.media_action_logs (media_id, created_at desc);
+
+-- Backfill: content inserted before this column existed (e.g. volleyball rules
+-- articles from 1762130000) was already published and must stay visible to the
+-- chatbot pipeline, which filters on status = 'published'.
+update public.content_items
+  set status = 'published'
+  where published_at is not null
+    and published_at <= now();

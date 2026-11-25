@@ -1,6 +1,7 @@
 -- Allow admins to enqueue vector jobs manually
 
-create policy if not exists "Admin insert vector jobs"
+drop policy if exists "Admin insert vector jobs" on public.vector_jobs;
+create policy "Admin insert vector jobs"
   on public.vector_jobs
   for insert
   with check ((auth.jwt()->>'role') = 'admin');

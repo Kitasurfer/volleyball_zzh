@@ -121,52 +121,61 @@ alter table public.vector_jobs enable row level security;
 alter table public.chat_sessions enable row level security;
 alter table public.chat_messages enable row level security;
 
-create policy if not exists "Read published content"
+drop policy if exists "Read published content" on public.content_items;
+create policy "Read published content"
   on public.content_items
   for select
   using (published_at is not null and published_at <= now());
 
-create policy if not exists "Service role manage content"
+drop policy if exists "Service role manage content" on public.content_items;
+create policy "Service role manage content"
   on public.content_items
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
 
-create policy if not exists "Public read media"
+drop policy if exists "Public read media" on public.media_assets;
+create policy "Public read media"
   on public.media_assets
   for select
   using (true);
 
-create policy if not exists "Service role manage media"
+drop policy if exists "Service role manage media" on public.media_assets;
+create policy "Service role manage media"
   on public.media_assets
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
 
-create policy if not exists "Public read content-media links"
+drop policy if exists "Public read content-media links" on public.content_media_links;
+create policy "Public read content-media links"
   on public.content_media_links
   for select
   using (true);
 
-create policy if not exists "Service role manage content-media links"
+drop policy if exists "Service role manage content-media links" on public.content_media_links;
+create policy "Service role manage content-media links"
   on public.content_media_links
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
 
-create policy if not exists "Service role manage vector jobs"
+drop policy if exists "Service role manage vector jobs" on public.vector_jobs;
+create policy "Service role manage vector jobs"
   on public.vector_jobs
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
 
-create policy if not exists "Service role manage chat sessions"
+drop policy if exists "Service role manage chat sessions" on public.chat_sessions;
+create policy "Service role manage chat sessions"
   on public.chat_sessions
   for all
   using (auth.role() = 'service_role')
   with check (auth.role() = 'service_role');
 
-create policy if not exists "Service role manage chat messages"
+drop policy if exists "Service role manage chat messages" on public.chat_messages;
+create policy "Service role manage chat messages"
   on public.chat_messages
   for all
   using (auth.role() = 'service_role')

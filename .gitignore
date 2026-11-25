@@ -27,3 +27,7 @@ dist-ssr
 
 # Local documentation
 GIT_PUSH_GUIDE.md
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/

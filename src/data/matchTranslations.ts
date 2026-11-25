@@ -62,6 +62,7 @@ const labels = {
   board: ['Tafel öffnen', 'Open scoreboard', 'Открыть табло', 'Apri tabellone'],
   share: ['Link kopieren', 'Copy link', 'Скопировать ссылку', 'Copia link'],
   copied: ['Link kopiert', 'Link copied', 'Ссылка скопирована', 'Link copiato'],
+  matchWonHint: ['Match entschieden – jetzt beenden, damit das Ergebnis in die Tabelle geht.', 'Match decided – finish it now so the result counts for the standings.', 'Матч решён — нажмите «Завершить», чтобы результат попал в таблицу.', 'Partita decisa – terminala ora per aggiornare la classifica.'],
   updated: ['Letzte Aktualisierung', 'Last updated', 'Обновлено', 'Ultimo aggiornamento'],
   offline: ['Offline · Letzter bekannter Stand', 'Offline · Last known score', 'Нет связи · Последний известный счёт', 'Offline · Ultimo punteggio noto'],
   syncing: ['Synchronisierung läuft', 'Synchronizing', 'Синхронизация', 'Sincronizzazione'],

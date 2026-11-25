@@ -453,6 +453,13 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             {teamName(match, side)}
           </Button>)}
         </div>}
+        {state.status === 'live' && state.winner &&
+          <div className="space-y-3 rounded-xl border-2 border-accent-500 bg-accent-50 p-4 text-center">
+            <p className="text-lg font-bold text-accent-900">
+              {t('matchWonHint')}</p>
+            <Button variant="accent" size="lg" onClick={() =>
+              confirmAction({ type: 'MATCH_COMPLETED' }, t('finish'))}>{t('finish')}</Button>
+          </div>}
         <div className="flex flex-wrap gap-2">
           {['live', 'paused'].includes(state.status) && undoTarget(draft.history) &&
             <Button variant="outline" onClick={() => void dispatch({ type: 'EVENT_UNDONE' })}>
@@ -474,8 +481,6 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             }}>
               {t('correct')}
             </Button>}
-            {state.winner && <Button variant="accent" onClick={() =>
-              confirmAction({ type: 'MATCH_COMPLETED' }, t('finish'))}>{t('finish')}</Button>}
           </>}
           {state.status === 'paused' && <Button variant="accent" onClick={() =>
             void dispatch({ type: 'MATCH_RESUMED' })}>{t('resume')}</Button>}

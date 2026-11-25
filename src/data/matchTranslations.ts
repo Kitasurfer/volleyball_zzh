@@ -171,6 +171,7 @@ const labels = {
   refereeRejected: ['Die Anfrage wurde abgelehnt.', 'The request was declined.', 'Заявка отклонена.', 'La richiesta è stata rifiutata.'],
   refereeRequests: ['Schiedsrichter-Anfragen', 'Referee requests', 'Заявки судей', 'Richieste arbitri'],
   approve: ['Bestätigen', 'Approve', 'Принять', 'Approva'],
+  approveMatch: ['Nur dieses Spiel', 'This match only', 'Только этот матч', 'Solo questa partita'],
   approveCourt: ['Für das ganze Feld', 'For the whole court', 'На всю площадку', 'Per tutto il campo'],
   approveTournament: ['Für das ganze Turnier', 'For the whole tournament', 'На весь турнир', 'Per tutto il torneo'],
   reject: ['Ablehnen', 'Decline', 'Отклонить', 'Rifiuta'],

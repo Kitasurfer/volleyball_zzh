@@ -573,13 +573,15 @@ function RefereeRequests({ cid }: { cid?: string }) {
         {request.referee_team && ` · ${t('refereeTeam')}: ${request.referee_team}`}
         {request.scheduled_at && ` · ${formatMatchDate(request.scheduled_at, language)}`}</span>
       {request.status === 'pending' ? <div className="flex flex-wrap gap-2">
-        <Button size="sm" disabled={review.busy}
-          onClick={() => send(request.id, true, 'match')}>{t('approve')}</Button>
+        {request.competition_id && <Button size="sm" disabled={review.busy}
+          onClick={() => send(request.id, true, 'competition')}>{t('approveTournament')}</Button>}
+        <Button size="sm" variant={request.competition_id ? 'outline' : 'default'}
+          disabled={review.busy}
+          onClick={() => send(request.id, true, 'match')}>
+          {request.competition_id ? t('approveMatch') : t('approve')}</Button>
         {request.competition_id && request.court && <Button size="sm" variant="outline"
           disabled={review.busy}
           onClick={() => send(request.id, true, 'court')}>{t('approveCourt')}</Button>}
-        {request.competition_id && <Button size="sm" variant="outline" disabled={review.busy}
-          onClick={() => send(request.id, true, 'competition')}>{t('approveTournament')}</Button>}
         <Button size="sm" variant="danger" disabled={review.busy}
           onClick={() => send(request.id, false, 'match')}>{t('reject')}</Button>
       </div> : <Button size="sm" variant="danger" disabled={review.busy}

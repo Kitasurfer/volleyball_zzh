@@ -11,15 +11,27 @@ const Header: React.FC = () => {
   const { t: matchText } = useMatchText();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
+    let lastY = window.scrollY;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const y = window.scrollY;
+      setIsScrolled(y > 50);
+      if (!isMenuOpen) {
+        if (y > lastY + 4 && y > 100) setIsHidden(true);
+        else if (y < lastY - 4 || y <= 100) setIsHidden(false);
+      }
+      lastY = y;
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (isMenuOpen) setIsHidden(false);
+  }, [isMenuOpen]);
 
   const navLinks = [
     { to: '/', label: t.nav.home },
@@ -41,6 +53,8 @@ const Header: React.FC = () => {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 text-white ${
+        isHidden && !isMenuOpen ? '-translate-y-full' : 'translate-y-0'
+      } ${
         isScrolled ? 'bg-gradient-to-r from-[#1f4588] to-[#25509a] shadow-lg' : 'bg-gradient-to-r from-[#25509a] to-[#1f4588] shadow-md'
       }`}
     >

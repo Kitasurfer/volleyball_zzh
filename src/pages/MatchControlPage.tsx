@@ -466,10 +466,10 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
               {t('undo')}
             </Button>}
           {state.status === 'live' && <>
-            <Button variant="outline" onClick={() => void dispatch({ type: 'MATCH_PAUSED' })}>
+            <Button variant="accent" onClick={() => void dispatch({ type: 'MATCH_PAUSED' })}>
               {t('pause')}
             </Button>
-            <Button variant="outline" onClick={() => void dispatch({ type: 'SIDES_SWITCHED' })}>
+            <Button onClick={() => void dispatch({ type: 'SIDES_SWITCHED' })}>
               {t('switchSide')}
             </Button>
             {canPoint && <Button variant="outline" onClick={() => void dispatch({

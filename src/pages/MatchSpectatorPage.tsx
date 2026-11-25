@@ -170,6 +170,9 @@ function Spectator({ id, display }: { id: string; display: boolean }) {
             if (!request) setNotice(t('unavailable'));
             void request?.catch(() => setNotice(t('unavailable')));
           }}>{t('fullscreen')}</Button>
+          {match.competition_id && <Button asChild variant="outline">
+            <Link to={`/competitions/${match.competition_id}`}>{t('standings')}</Link>
+          </Button>}
         </div>}
       </header>
       {match.state.status === 'scheduled' && match.scheduled_at && (() => {
@@ -195,6 +198,9 @@ function Spectator({ id, display }: { id: string; display: boolean }) {
       </p>}
       {!display && (
         <div className="flex flex-wrap gap-2 print:hidden">
+          {match.competition_id && <Button asChild variant="accent">
+            <Link to={`/competitions/${match.competition_id}`}>{t('standings')}</Link>
+          </Button>}
           <Button asChild><Link to={`/scoreboard/${id}/display`}>{t('display')}</Link></Button>
           <Button variant="outline" onClick={() => {
             if (!navigator.clipboard) setNotice(spectatorUrl);

@@ -1,4 +1,6 @@
 -- Gallery albums base table (required by gallery_subalbums migration)
+-- Convergent: production already has these tables from manual setup with a
+-- slightly different shape, so every statement is idempotent.
 
 create table if not exists public.gallery_albums (
   id uuid primary key default gen_random_uuid(),
@@ -11,6 +13,15 @@ create table if not exists public.gallery_albums (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- Convergence for pre-existing production tables (missing columns only;
+-- type differences like varchar/text or date/timestamptz are compatible).
+alter table public.gallery_albums
+  add column if not exists sort_order integer not null default 0;
+alter table public.gallery_albums
+  add column if not exists cover_image_id uuid;
+alter table public.gallery_albums
+  add column if not exists metadata jsonb not null default '{}'::jsonb;
 
 create table if not exists public.gallery_album_translations (
   id uuid primary key default gen_random_uuid(),
@@ -25,6 +36,7 @@ create table if not exists public.gallery_album_translations (
 create index if not exists gallery_albums_status_idx on public.gallery_albums (status, sort_order, event_date desc nulls last);
 create index if not exists gallery_album_translations_album_idx on public.gallery_album_translations (album_id, language);
 
+drop trigger if exists gallery_albums_set_updated_at on public.gallery_albums;
 create trigger gallery_albums_set_updated_at
   before update on public.gallery_albums
   for each row execute function public.set_updated_at();

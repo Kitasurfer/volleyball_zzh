@@ -47,6 +47,7 @@ create index if not exists media_assets_subalbum_idx on public.media_assets (sub
 create index if not exists media_assets_featured_idx on public.media_assets (is_featured_gallery, is_best_of_tournament);
 create index if not exists gallery_image_likes_image_idx on public.gallery_image_likes (image_id, created_at desc);
 
+drop trigger if exists gallery_subalbums_set_updated_at on public.gallery_subalbums;
 create trigger gallery_subalbums_set_updated_at
   before update on public.gallery_subalbums
   for each row execute function public.set_updated_at();
@@ -55,43 +56,51 @@ alter table public.gallery_subalbums enable row level security;
 alter table public.gallery_subalbum_translations enable row level security;
 alter table public.gallery_image_likes enable row level security;
 
+drop policy if exists "Public read published subalbums" on public.gallery_subalbums;
 create policy "Public read published subalbums"
   on public.gallery_subalbums
   for select
   using (status = 'published');
 
+drop policy if exists "Admin manage subalbums" on public.gallery_subalbums;
 create policy "Admin manage subalbums"
   on public.gallery_subalbums
   for all
   using ((auth.jwt()->'app_metadata'->>'role') = 'admin' or auth.role() = 'service_role')
   with check ((auth.jwt()->'app_metadata'->>'role') = 'admin' or auth.role() = 'service_role');
 
+drop policy if exists "Public read subalbum translations" on public.gallery_subalbum_translations;
 create policy "Public read subalbum translations"
   on public.gallery_subalbum_translations
   for select
   using (true);
 
+drop policy if exists "Admin manage subalbum translations" on public.gallery_subalbum_translations;
 create policy "Admin manage subalbum translations"
   on public.gallery_subalbum_translations
   for all
   using ((auth.jwt()->'app_metadata'->>'role') = 'admin' or auth.role() = 'service_role')
   with check ((auth.jwt()->'app_metadata'->>'role') = 'admin' or auth.role() = 'service_role');
 
+drop policy if exists "Public read gallery image likes" on public.gallery_image_likes;
 create policy "Public read gallery image likes"
   on public.gallery_image_likes
   for select
   using (true);
 
+drop policy if exists "Public insert gallery image likes" on public.gallery_image_likes;
 create policy "Public insert gallery image likes"
   on public.gallery_image_likes
   for insert
   with check (true);
 
+drop policy if exists "Public delete own gallery image likes" on public.gallery_image_likes;
 create policy "Public delete own gallery image likes"
   on public.gallery_image_likes
   for delete
   using (true);
 
+drop policy if exists "Seed subalbums from albums if missing" on public.gallery_subalbums;
 create policy "Seed subalbums from albums if missing"
   on public.gallery_subalbums
   as permissive

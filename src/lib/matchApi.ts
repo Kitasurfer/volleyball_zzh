@@ -16,6 +16,10 @@ export interface PublicScore {
   state: MatchState;
   version: number;
   updated_at: string;
+  stage: string;
+  match_number: number | null;
+  rules: MatchRules | null;
+  referee_team: string | null;
 }
 
 export interface ControlledMatch extends Omit<PublicScore, 'match_id' | 'competition_name'> {
@@ -25,6 +29,8 @@ export interface ControlledMatch extends Omit<PublicScore, 'match_id' | 'competi
   duration_minutes: number;
   started_at: string | null;
   referee_team: string | null;
+  team_a_id: string | null;
+  team_b_id: string | null;
 }
 
 export interface HistoryEvent {
@@ -37,7 +43,7 @@ export interface HistoryEvent {
 }
 
 export const decisionKeys = [
-  'points', 'wins', 'setDifference', 'ballDifference', 'ballFor',
+  'points', 'wins', 'headToHead', 'setDifference', 'ballDifference', 'ballFor',
 ] as const;
 export const awardKeys = [
   'win', 'loss', 'decidingWin', 'decidingLoss', 'walkoverWin', 'walkoverLoss',

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/lib/AuthContext';
-import { currentSet, opposite, setWins, teamName, type MatchRules, type MatchState } from '@/lib/matchRules';
+import { currentSet, opposite, setWins, teamName, timeoutLimit, type MatchRules, type MatchState } from '@/lib/matchRules';
 import { useMatchText } from '@/data/matchTranslations';
 import { formatMatchDate, type PublicScore } from '@/lib/matchApi';
 
@@ -44,12 +44,14 @@ export function MatchLogin() {
 export function MatchScore({
   match, display = false,
 }: {
-  match: { team_a: string; team_b: string; court: string; state: MatchState };
+  match: { team_a: string; team_b: string; court: string; state: MatchState;
+    rules?: MatchRules | null };
   display?: boolean;
 }) {
   const { t } = useMatchText();
   const s = match.state;
   const set = currentSet(s);
+  const timeoutsMax = timeoutLimit(match.rules);
   return (
     <section className={`rounded-xl bg-gradient-to-br from-[#1f4588] via-[#25509a] to-[#1f4588]
       p-4 text-white sm:p-7 ${display ? 'flex flex-1 flex-col justify-center' : 'shadow-lg'}`}>
@@ -75,8 +77,8 @@ export function MatchScore({
             </strong>
             <span className="mt-1 flex h-3 items-center justify-center gap-1.5"
               title={t('timeout')}>
-              {set && [0, 1].map(i => <span key={i} className={`rounded-full ${
-                display ? 'h-3 w-3' : 'h-2 w-2'} ${
+              {set && Array.from({ length: timeoutsMax }, (_, i) => <span key={i}
+                className={`rounded-full ${display ? 'h-3 w-3' : 'h-2 w-2'} ${
                 i < (side === 'a' ? set.timeouts_a ?? 0 : set.timeouts_b ?? 0)
                   ? 'bg-accent-500' : 'bg-white/25'}`} />)}
             </span>
@@ -140,6 +142,26 @@ export function RuleFields({ rules, onChange }: {
       <input className={matchInput} type="number" min={1} max={5} required
         value={rules.margin || ''} onChange={e => onChange({ ...rules, margin: +e.target.value })} />
     </label>
+    <label>{t('timeoutsPerSet')}
+      <input className={matchInput} type="number" min={0} max={3} required
+        value={rules.timeouts ?? 2} onChange={e =>
+          onChange({ ...rules, timeouts: +e.target.value })} />
+    </label>
+    <label>{t('subsPerSet')}
+      <input className={matchInput} type="number" min={0} max={12} required
+        value={rules.substitutions ?? 6} onChange={e =>
+          onChange({ ...rules, substitutions: +e.target.value })} />
+    </label>
+    <label>{t('switchEvery')}
+      <input className={matchInput} type="number" min={0} max={50} required
+        value={rules.switchEvery ?? 0} onChange={e =>
+          onChange({ ...rules, switchEvery: +e.target.value })} />
+    </label>
+    {rules.bestOf > 1 && <label>{t('switchEveryDecider')}
+      <input className={matchInput} type="number" min={0} max={50} required
+        value={rules.switchEveryDecider ?? 0} onChange={e =>
+          onChange({ ...rules, switchEveryDecider: +e.target.value })} />
+    </label>}
   </div>;
 }
 
@@ -159,7 +181,8 @@ export function PublicMatchCards({ matches }: { matches: PublicScore[] }) {
         const set = currentSet(state);
         return <article key={match.match_id} className={`${matchCard} min-w-0 space-y-2`}>
           <p className="text-xs font-bold uppercase tracking-wide text-primary-700">
-            {[t(state.status), match.court, match.competition_name].filter(Boolean).join(' · ')}
+            {[match.match_number ? `#${match.match_number}` : '', t(state.status), match.court,
+              stageLabel(match.stage, t), match.competition_name].filter(Boolean).join(' · ')}
           </p>
           <h3 className="break-words font-bold">{match.team_a} – {match.team_b}</h3>
           <p className="font-bold tabular-nums text-primary-900">
@@ -184,4 +207,20 @@ export function PublicMatchCards({ matches }: { matches: PublicScore[] }) {
       })}
     </div>
   );
+}
+
+type StageKey = 'group' | 'playoff' | 'stageSemi' | 'stageThird' | 'stageFinal';
+
+export function stageLabel(stage: string, t: (key: StageKey) => string) {
+  if (!stage) return '';
+  const [kind, label] = stage.split(':');
+  if (kind === 'group') return `${t('group')} ${label}`;
+  if (kind === 'playoff') {
+    if (label === 'semi1') return `${t('stageSemi')} 1`;
+    if (label === 'semi2') return `${t('stageSemi')} 2`;
+    if (label === 'third') return t('stageThird');
+    if (label === 'final') return t('stageFinal');
+    return `${t('playoff')} ${label}`;
+  }
+  return stage;
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
@@ -10,8 +10,9 @@ import { useMatchShell } from '@/hooks/useMatchShell';
 import { usePublicScores } from '@/hooks/usePublicScores';
 import { useAuth } from '@/lib/AuthContext';
 import { downloadMatchFile, localMatches, undoTarget } from '@/lib/matchStorage';
-import { canSwitchDecider, currentSet, opposite, setWins, shortScore, teamName,
-  type Action, type MatchRules, type Side } from '@/lib/matchRules';
+import { currentSet, opposite, setWins, shortScore, subLimit, switchDue,
+  teamName, timeoutLimit, type Action, type MatchRules, type SanctionKind, type Side,
+} from '@/lib/matchRules';
 import { formatMatchDate, matchRpc } from '@/lib/matchApi';
 
 const actionLabels: Record<Action['type'], Parameters<MatchText>[0]> = {
@@ -19,8 +20,46 @@ const actionLabels: Record<Action['type'], Parameters<MatchText>[0]> = {
   POINT_CORRECTED: 'correct', EARLIER_SET_CORRECTED: 'correct', EVENT_UNDONE: 'undo', SERVE_CHANGED: 'serve',
   SIDES_SWITCHED: 'switchSide', MATCH_PAUSED: 'pause', MATCH_RESUMED: 'resume',
   MATCH_COMPLETED: 'finish', MATCH_REOPENED: 'reopen', MATCH_CANCELLED: 'cancel',
-  WALKOVER: 'forfeit', TIMEOUT_CALLED: 'timeout',
+  WALKOVER: 'forfeit', TIMEOUT_CALLED: 'timeout', POINT_REMOVED: 'removePoint',
+  SUBSTITUTION: 'substitution', SANCTION: 'sanction',
 };
+
+const sanctionKeys: SanctionKind[] = ['warning', 'penalty', 'expulsion', 'disqualification'];
+const TIMEOUT_SECONDS = 30;
+
+function useNow(intervalMs = 1000) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), intervalMs);
+    return () => window.clearInterval(timer);
+  }, [intervalMs]);
+  return now;
+}
+
+function useMatchBeeps(enabled: boolean) {
+  const context = useRef<AudioContext>();
+  return useCallback((kind: 'set' | 'match' | 'timeout') => {
+    if (!enabled) return;
+    try {
+      context.current ??= new AudioContext();
+      const audio = context.current;
+      if (audio.state === 'suspended') void audio.resume();
+      const pattern = kind === 'match' ? [880, 660, 880] : kind === 'set' ? [880, 880] : [660];
+      pattern.forEach((frequency, index) => {
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'square';
+        gain.gain.setValueAtTime(0.0001, audio.currentTime + index * 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.12, audio.currentTime + index * 0.35 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + index * 0.35 + 0.3);
+        oscillator.connect(gain).connect(audio.destination);
+        oscillator.start(audio.currentTime + index * 0.35);
+        oscillator.stop(audio.currentTime + index * 0.35 + 0.32);
+      });
+    } catch { /* Audio is optional. */ }
+  }, [enabled]);
+}
 
 export default function MatchControlPage() {
   const { matchId = '' } = useParams();
@@ -57,6 +96,10 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
   const [correction, setCorrection] = useState<Action['type']>();
   const [setNumber, setSetNumber] = useState(1);
   const [publishing, setPublishing] = useState(false);
+  const [sanction, setSanction] = useState<SanctionKind>('warning');
+  const [soundOn, setSoundOn] = useState(() => {
+    try { return localStorage.getItem('skv-sound') === '1'; } catch { return false; }
+  });
   const navigate = useNavigate();
   const [wake, setWake] = useState<WakeLockSentinel>();
   const local = id.startsWith('local-');
@@ -65,31 +108,64 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
   const set = state ? currentSet(state) : undefined;
   const writable = Boolean(draft && (local || held) && !draft.conflict);
   const canPoint = writable && state?.status === 'live' && !set?.winner;
+  const canTimeout = writable && state?.status === 'live' && !set?.winner;
   const undoAvailable = writable && Boolean(draft && state &&
     ['live', 'paused'].includes(state.status) && undoTarget(draft.history));
   const left: Side = state?.left ?? 'a';
+  const now = useNow();
+  const beep = useMatchBeeps(soundOn);
+  const lastTimeout = draft?.history.reduce<string | undefined>(
+    (latest, event) => event.action.type === 'TIMEOUT_CALLED' &&
+      !draft.history.some(later => later.reference === event.id) &&
+      event.at > (latest ?? '') ? event.at : latest, undefined);
+  const timeoutLeft = lastTimeout
+    ? Math.max(0, TIMEOUT_SECONDS - Math.floor((now - Date.parse(lastTimeout)) / 1000)) : 0;
+  const timeoutActive = timeoutLeft > 0 && state?.status === 'live';
+  const elapsedMinutes = match?.started_at && !['scheduled'].includes(state?.status ?? 'scheduled')
+    ? Math.max(0, Math.floor((now - Date.parse(match.started_at)) / 60000)) : null;
+  const previousSetWinner = useRef<string | null>(null);
+  useEffect(() => {
+    const key = `${state?.sets.length}:${set?.winner ?? ''}`;
+    if (set?.winner && previousSetWinner.current !== key) {
+      previousSetWinner.current = key;
+      beep(state?.winner ? 'match' : 'set');
+    }
+  }, [set?.winner, state?.sets.length, state?.winner, beep]);
+  const wasTimeout = useRef(false);
+  useEffect(() => {
+    if (timeoutActive && timeoutLeft === TIMEOUT_SECONDS) beep('timeout');
+    if (!timeoutActive && wasTimeout.current && state?.status === 'live') beep('set');
+    wasTimeout.current = timeoutActive;
+  }, [timeoutActive, timeoutLeft, beep, state?.status]);
   useEffect(() => { if (state?.firstServe) setServe(opposite(state.firstServe)); },
     [state?.firstServe, state?.sets.length]);
   useEffect(() => () => { void wake?.release(); }, [wake]);
+  const pauseAvailable = writable && state?.status === 'live';
+  const resumeAvailable = writable && state?.status === 'paused';
   useEffect(() => {
     const press = (event: KeyboardEvent) => {
       if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || correction) return;
       const target = event.target as HTMLElement | null;
       if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
-      if (canPoint && (event.code === 'Digit1' || event.code === 'Numpad1')) {
+      const digit = event.code === 'Digit1' || event.code === 'Numpad1' ? left :
+        event.code === 'Digit2' || event.code === 'Numpad2' ? opposite(left) : undefined;
+      if (digit && event.shiftKey && canTimeout) {
         event.preventDefault();
-        void dispatch({ type: 'POINT_AWARDED', side: left });
-      } else if (canPoint && (event.code === 'Digit2' || event.code === 'Numpad2')) {
+        void dispatch({ type: 'TIMEOUT_CALLED', side: digit }).catch(() => {});
+      } else if (digit && canPoint) {
         event.preventDefault();
-        void dispatch({ type: 'POINT_AWARDED', side: opposite(left) });
+        void dispatch({ type: 'POINT_AWARDED', side: digit });
       } else if (undoAvailable && event.code === 'KeyZ') {
         event.preventDefault();
         void dispatch({ type: 'EVENT_UNDONE' });
+      } else if (event.code === 'KeyP' && (pauseAvailable || resumeAvailable)) {
+        event.preventDefault();
+        void dispatch({ type: pauseAvailable ? 'MATCH_PAUSED' : 'MATCH_RESUMED' });
       }
     };
     window.addEventListener('keydown', press);
     return () => window.removeEventListener('keydown', press);
-  }, [canPoint, undoAvailable, left, correction, dispatch]);
+  }, [canPoint, canTimeout, undoAvailable, pauseAvailable, resumeAvailable, left, correction, dispatch]);
   const siblings = usePublicScores(
     !local && match?.competition_id ? match.competition_id : undefined,
     !local && Boolean(match?.competition_id));
@@ -109,7 +185,7 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
       }))
     : (siblings.data ?? []).map(m => ({
         id: m.match_id,
-        label: `${m.team_a} – ${m.team_b} · ${setWins(m.state, 'a')}:${setWins(m.state, 'b')} · ${t(m.state.status)}`,
+        label: `${m.match_number ? `#${m.match_number} · ` : ''}${m.team_a} – ${m.team_b} · ${setWins(m.state, 'a')}:${setWins(m.state, 'b')} · ${t(m.state.status)}`,
         done: m.state.status === 'completed',
       }));
   if (!options.some(o => o.id === id)) {
@@ -145,13 +221,15 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
   };
   const quickMinus = (side: Side) => {
     if (!set || set[side] <= 0) return;
-    void dispatch({ type: 'POINT_CORRECTED',
-      a: set.a - Number(side === 'a'), b: set.b - Number(side === 'b'), reason: '−1' });
+    void dispatch({ type: 'POINT_REMOVED', side });
   };
+  const timeoutsMax = match ? timeoutLimit(match.rules) : 2;
+  const subsMax = match ? subLimit(match.rules) : 6;
   const renderSide = (side: Side) => {
     const serving = state.serve === side && ['live', 'paused'].includes(state.status) &&
       !set?.winner;
     const used = set ? (side === 'a' ? set.timeouts_a : set.timeouts_b) ?? 0 : 0;
+    const subsUsed = set ? (side === 'a' ? set.subs_a : set.subs_b) ?? 0 : 0;
     return <div key={side} className={`flex min-w-0 flex-col items-center gap-2 rounded-xl
       border p-3 text-center sm:gap-3 sm:p-5 ${side === 'a' ?
         'border-primary-100 bg-primary-50' : 'border-neutral-200 bg-neutral-100'}`}>
@@ -164,12 +242,20 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
       <strong className="block leading-none tabular-nums text-primary-900
         text-[clamp(4rem,20vw,12rem)]">{set?.[side] ?? 0}</strong>
       {set && <div className="flex items-center justify-center gap-1.5" title={t('timeout')}>
-        {[0, 1].map(i => <span key={i} className={`h-2.5 w-2.5 rounded-full ${
-          i < used ? 'bg-primary-700' : 'bg-neutral-300'}`} />)}
-        {writable && state.status === 'live' && !set.winner && used < 2 &&
+        {Array.from({ length: timeoutsMax }, (_, i) => <span key={i}
+          className={`h-2.5 w-2.5 rounded-full ${i < used ? 'bg-primary-700' : 'bg-neutral-300'}`} />)}
+        {writable && state.status === 'live' && !set.winner && used < timeoutsMax &&
           <button type="button" onClick={() => void dispatch({ type: 'TIMEOUT_CALLED', side })}
             className="ml-1 min-h-7 min-w-11 rounded-full bg-white/80 px-2 py-0.5 text-xs
               font-bold text-primary-900 shadow-sm">{t('timeout')}</button>}
+      </div>}
+      {set && subsMax > 0 && <div className="flex items-center justify-center gap-1.5 text-xs
+        text-neutral-600" title={t('substitution')}>
+        <span>{t('substitution')} {subsUsed}/{subsMax}</span>
+        {writable && state.status === 'live' && !set.winner && subsUsed < subsMax &&
+          <button type="button" onClick={() => void dispatch({ type: 'SUBSTITUTION', side })}
+            className="min-h-7 min-w-11 rounded-full bg-white/80 px-2 py-0.5 text-xs font-bold
+              text-primary-900 shadow-sm">+1</button>}
       </div>}
       {writable && state.status === 'live' && set && <div className="mt-auto flex w-full
         items-stretch gap-2">
@@ -195,6 +281,12 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
           {match.published && <Button variant="outline" asChild>
             <Link to={`/scoreboard/${id}`}>{t('board')}</Link>
           </Button>}
+          <Button variant="outline" aria-pressed={soundOn} onClick={() => {
+            const next = !soundOn;
+            setSoundOn(next);
+            try { localStorage.setItem('skv-sound', next ? '1' : '0'); } catch { /* Optional. */ }
+            if (next) beep('timeout');
+          }}>{t('sound')}</Button>
           <Button variant="outline" onClick={clickFullscreen}>{t('fullscreen')}</Button>
           {'wakeLock' in navigator && <Button variant="outline" onClick={() => {
             if (wake && !wake.released) void wake.release().then(() => setWake(undefined));
@@ -270,9 +362,16 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
       </nav>}
       <section className={`${matchCard} space-y-3 sm:space-y-4`} aria-label={t('title')}>
         <p className="text-center text-sm font-semibold text-neutral-600">
+          {match.match_number && `#${match.match_number} · `}
           {t(state.status)}{set && ` · ${t('set')} ${state.sets.length}`}
           {match.court && ` · ${match.court}`}
+          {elapsedMinutes !== null && state.status !== 'completed' &&
+            ` · ${elapsedMinutes} ${t('minutesShort')}`}
         </p>
+        {timeoutActive && <p role="status" className="rounded-md bg-accent-100 p-3 text-center
+          text-lg font-bold text-primary-900">
+          {t('timeout')} · {timeoutLeft} {t('secondsShort')}
+        </p>}
         <div className="flex items-center justify-center gap-2 sm:gap-3">
           <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 sm:text-xs">
             {t('sets')}
@@ -336,8 +435,24 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             }}>{t('save')}</Button>
           </div>
         </details>}
-        {canSwitchDecider(state, match.rules) &&
-          <p role="status" className="rounded-md bg-accent-50 p-3 font-semibold">{t('switchHint')}</p>}
+        {switchDue(state, match.rules) &&
+          <p role="status" className="rounded-md bg-accent-50 p-3 font-semibold">
+            {t(state.sets.length === match.rules.bestOf && match.rules.bestOf > 1 ?
+              'switchHint' : 'switchNow')}
+          </p>}
+        {canPoint && <div className={`${matchCard} flex flex-wrap items-center gap-2`}>
+          <label className="text-sm font-semibold">{t('sanction')}
+            <select className={`${matchInput} mt-1`} value={sanction}
+              onChange={e => setSanction(e.target.value as SanctionKind)}>
+              {sanctionKeys.map(kind => <option key={kind} value={kind}>{t(kind)}</option>)}
+            </select>
+          </label>
+          {(['a', 'b'] as const).map(side => <Button key={side} variant="outline" size="sm"
+            onClick={() => confirmAction({ type: 'SANCTION', side, kind: sanction },
+              `${t('sanction')}: ${t(sanction)} · ${teamName(match, side)}`)}>
+            {teamName(match, side)}
+          </Button>)}
+        </div>}
         <div className="flex flex-wrap gap-2">
           {['live', 'paused'].includes(state.status) && undoTarget(draft.history) &&
             <Button variant="outline" onClick={() => void dispatch({ type: 'EVENT_UNDONE' })}>
@@ -417,6 +532,7 @@ function Control({ id, actor, authenticated, admin, autoTake }: {
             #{event.sequence} · {formatMatchDate(event.at, language)} · {
               t(actionLabels[event.action.type])}
             {'side' in event.action && ` · ${teamName(match, event.action.side)}`}
+            {'kind' in event.action && ` · ${t(event.action.kind)}`}
             {'setNumber' in event.action && ` · ${t('set')} ${event.action.setNumber}`}
             {'a' in event.action && ` · ${event.action.a}:${event.action.b}`}
             {'reason' in event.action && ` · ${event.action.reason}`}

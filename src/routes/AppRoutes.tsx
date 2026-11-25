@@ -25,6 +25,7 @@ const NewMatchPage = lazy(() => import('@/pages/NewMatchPage'));
 const MatchControlPage = lazy(() => import('@/pages/MatchControlPage'));
 const MatchSpectatorPage = lazy(() => import('@/pages/MatchSpectatorPage'));
 const ClubCompetitionPage = lazy(() => import('@/pages/ClubCompetitionPage'));
+const CourtOverviewPage = lazy(() => import('@/pages/CourtOverviewPage'));
 const AdminMatchCenterPage = lazy(() => import('@/pages/admin/AdminMatchCenterPage'));
 
 interface AppRoutesProps {
@@ -45,6 +46,7 @@ export function AppRoutes({ PageFallback, AdminFallback }: AppRoutesProps) {
         <Route path="/training" element={<TrainingPage />} />
         <Route path="/competitions" element={<CompetitionsPage />} />
         <Route path="/competitions/:competitionId" element={<ClubCompetitionPage />} />
+        <Route path="/competitions/:competitionId/courts" element={<CourtOverviewPage />} />
         <Route path="/scoreboard" element={<MatchCenterPage />} />
         <Route path="/scoreboard/new" element={<NewMatchPage />} />
         <Route path="/scoreboard/:matchId" element={<MatchSpectatorPage />} />

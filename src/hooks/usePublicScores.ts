@@ -106,8 +106,8 @@ export function usePublicScores(competition?: string, active = true) {
   });
 }
 
-export function useClubStandings(id: string | undefined) {
-  return useQuery({ queryKey: ['skv-standings', id], enabled: Boolean(id),
-    queryFn: () => matchRpc<Standing[]>('skv_standings', { cid: id }),
+export function useClubStandings(id: string | undefined, stage?: string) {
+  return useQuery({ queryKey: ['skv-standings', id, stage ?? ''], enabled: Boolean(id),
+    queryFn: () => matchRpc<Standing[]>('skv_standings', { cid: id, stage_filter: stage || null }),
     staleTime: 3000, refetchInterval: 10000, refetchOnWindowFocus: true });
 }

@@ -12,6 +12,15 @@ import { StandingsTable } from '@/pages/ClubCompetitionPage';
 import { useClubStandings } from '@/hooks/usePublicScores';
 import { csvField, downloadMatchFile } from '@/lib/matchStorage';
 
+function useTeamsQuery(cid: string | null) {
+  return useQuery({ queryKey: ['skv-teams', cid], enabled: !!cid, queryFn: async () => {
+    const { data, error } = await matchClient().from('skv_competition_teams')
+      .select('skv_teams(id,name)').eq('competition_id', cid!);
+    if (error) throw new Error(error.message);
+    return (data as unknown as { skv_teams: Team }[]).map(row => row.skv_teams).filter(Boolean);
+  } });
+}
+
 function useSave() {
   const client = useQueryClient();
   const [busy, setBusy] = useState(false);
@@ -129,6 +138,89 @@ function CompetitionForm({ competition, onSave }: {
   </form>;
 }
 
+function groupSplit<T>(items: T[], count: number): T[][] {
+  const groups: T[][] = Array.from({ length: count }, () => []);
+  items.forEach((item, index) => {
+    const round = Math.floor(index / count);
+    const pos = index % count;
+    groups[round % 2 ? count - 1 - pos : pos].push(item);
+  });
+  return groups.filter(g => g.length);
+}
+
+const groupName = (index: number) => String.fromCharCode(65 + index);
+
+function SchedulePlanner({ competition, teams }: { competition: Competition; teams: Team[] }) {
+  const { t } = useMatchText();
+  const save = useSave();
+  const wipe = useSave();
+  const [groups, setGroups] = useState(1);
+  return <>
+    <form className={`${matchCard} space-y-3`} onSubmit={event => {
+      const form = formData(event);
+      if (!window.confirm(t('roundRobin'))) return;
+      void save.run(async () => {
+        const courts = [...new Set(text(form, 'courts').split(',').map(s => s.trim()).filter(Boolean))];
+        if (!courts.length || new Set(courts.map(c => c.toLowerCase())).size !== courts.length) {
+          throw new Error('invalid_action');
+        }
+        const start = Date.parse(berlinTime(text(form, 'starts')) ?? '');
+        const duration = +text(form, 'duration');
+        const split = groupSplit(teams.map(team => team.id), groups);
+        const roundRobins = split.map((ids, gi) => ({
+          stage: split.length > 1 ? `group:${groupName(gi)}` : '',
+          rounds: roundRobin(ids),
+        }));
+        // Interleave the rounds of all groups so courts and breaks are shared fairly.
+        let slot = 0;
+        const fixtures: Record<string, unknown>[] = [];
+        const maxRounds = Math.max(...roundRobins.map(g => g.rounds.length));
+        for (let roundIndex = 0; roundIndex < maxRounds; roundIndex++) {
+          for (const group of roundRobins) {
+            const round = group.rounds[roundIndex];
+            if (!round) continue;
+            round.forEach(([a, b], index) => {
+              fixtures.push({
+                competition_id: competition.id, team_a_id: a, team_b_id: b,
+                court: courts[index % courts.length], duration_minutes: duration,
+                scheduled_at: new Date(start + (slot + Math.floor(index / courts.length)) *
+                  duration * 60000).toISOString(), published: form.has('published'),
+                stage: group.stage,
+              });
+            });
+            slot += Math.ceil(round.length / courts.length);
+          }
+        }
+        await matchRpc('skv_create_schedule', { fixtures });
+      });
+    }}>
+      <h2 className="font-bold">{t('roundRobin')}</h2>
+      <FixtureTime defaultStart={competition.starts_at} requiredTime />
+      <Field label={t('courts')}><input className={matchInput} name="courts" required
+        maxLength={400} /></Field>
+      <Field label={t('groupsCount')}>
+        <select className={matchInput} value={groups} onChange={e => setGroups(+e.target.value)}>
+          {[1, 2, 3, 4].map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </Field>
+      {groups > 1 && <p className="text-sm">{t('groupsHint')}</p>}
+      <Result save={save} />
+      <Button type="submit" disabled={save.busy || teams.length < 2 || teams.length > 20}>
+        {t('roundRobin')}</Button>
+    </form>
+    <div className={`${matchCard} space-y-3`}>
+      <h2 className="font-bold">{t('scheduleReset')}</h2>
+      <p className="text-sm">{t('scheduleResetHint')}</p>
+      <Result save={wipe} />
+      <Button variant="danger" disabled={wipe.busy} onClick={() => {
+        if (window.confirm(t('scheduleReset'))) {
+          void wipe.run(() => matchRpc('skv_delete_schedule', { cid: competition.id }));
+        }
+      }}>{t('scheduleReset')}</Button>
+    </div>
+  </>;
+}
+
 function TournamentFixtures({ competition, teams }: { competition: Competition; teams: Team[] }) {
   const { t } = useMatchText();
   const save = useSave();
@@ -141,7 +233,7 @@ function TournamentFixtures({ competition, teams }: { competition: Competition; 
         competition_id: competition.id, team_a_id: a, team_b_id: b,
         court: text(form, 'court'), scheduled_at: berlinTime(text(form, 'starts')),
         duration_minutes: +text(form, 'duration'), published: form.has('published'),
-        referee_team: text(form, 'referee_team'),
+        referee_team: text(form, 'referee_team'), stage: text(form, 'stage'),
       } }));
     }}>
       <h2 className="font-bold">{t('newMatch')}</h2>
@@ -155,42 +247,136 @@ function TournamentFixtures({ competition, teams }: { competition: Competition; 
         </Field>)}
       <FixtureTime defaultStart={competition.starts_at} requiredTime={false} />
       <Field label={t('court')}><input className={matchInput} name="court" maxLength={80} /></Field>
+      <Field label={t('stageOptional')}><input className={matchInput} name="stage" maxLength={40}
+        placeholder="group:A" /></Field>
       <Field label={t('refereeTeam')}><input className={matchInput} name="referee_team" maxLength={100} /></Field>
       <Result save={save} />
       <Button type="submit" disabled={save.busy || teams.length < 2}>{t('save')}</Button>
     </form>
-    <form className={`${matchCard} space-y-3`} onSubmit={event => {
-      const form = formData(event);
-      if (!window.confirm(t('roundRobin'))) return;
-      void save.run(async () => {
-        const courts = [...new Set(text(form, 'courts').split(',').map(s => s.trim()).filter(Boolean))];
-        if (!courts.length || new Set(courts.map(c => c.toLowerCase())).size !== courts.length) {
-          throw new Error('invalid_action');
-        }
-        const start = Date.parse(berlinTime(text(form, 'starts')) ?? '');
-        const duration = +text(form, 'duration');
-        let slot = 0;
-        const fixtures = roundRobin(teams.map(team => team.id)).flatMap(round => {
-          const matches = round.map(([a, b], index) => ({
-            competition_id: competition.id, team_a_id: a, team_b_id: b,
-            court: courts[index % courts.length], duration_minutes: duration,
-            scheduled_at: new Date(start + (slot + Math.floor(index / courts.length)) *
-              duration * 60000).toISOString(), published: form.has('published'),
-          }));
-          slot += Math.ceil(round.length / courts.length);
-          return matches;
-        });
-        await matchRpc('skv_create_schedule', { fixtures });
-      });
-    }}>
-      <h2 className="font-bold">{t('roundRobin')}</h2>
+    <SchedulePlanner competition={competition} teams={teams} />
+    <PlayoffCreation competition={competition} teams={teams} />
+  </div>;
+}
+
+/** Semi-finals crossed between the first two groups plus final and third place.
+ *  Matches are created one by one so numbering and validation stay server-side. */
+function PlayoffCreation({ competition, teams }: { competition: Competition; teams: Team[] }) {
+  const { t } = useMatchText();
+  const save = useSave();
+  return <form className={`${matchCard} space-y-3 lg:col-span-2`} onSubmit={event => {
+    const form = formData(event);
+    if (!window.confirm(t('createPlayoffs'))) return;
+    void save.run(async () => {
+      const courts = [...new Set(text(form, 'courts').split(',').map(s => s.trim()).filter(Boolean))];
+      if (!courts.length) throw new Error('invalid_action');
+      const start = Date.parse(berlinTime(text(form, 'starts')) ?? '');
+      const duration = +text(form, 'duration');
+      const base = { competition_id: competition.id, duration_minutes: duration,
+        published: form.has('published') };
+      const parallel = courts.length > 1;
+      // Parallel courts: both semis in slot 0, third place and final in slot 1.
+      // Single court: four consecutive slots.
+      const slots = parallel
+        ? { semi1: 0, semi2: 0, third: 1, final: 1 }
+        : { semi1: 0, semi2: 1, third: 2, final: 3 };
+      const at = (slot: number) => new Date(start + slot * duration * 60000).toISOString();
+      const fixtures = [
+        { ...base, team_a: '1A', team_b: '2B', stage: 'playoff:semi1',
+          court: courts[0], scheduled_at: at(slots.semi1) },
+        { ...base, team_a: '2A', team_b: '1B', stage: 'playoff:semi2',
+          court: courts[Math.min(1, courts.length - 1)], scheduled_at: at(slots.semi2) },
+        { ...base, team_a: 'Verlierer HF1', team_b: 'Verlierer HF2', stage: 'playoff:third',
+          court: courts[0], scheduled_at: at(slots.third) },
+        { ...base, team_a: 'Sieger HF1', team_b: 'Sieger HF2', stage: 'playoff:final',
+          court: courts[Math.min(1, courts.length - 1)], scheduled_at: at(slots.final) },
+      ];
+      for (const fixture of fixtures) {
+        await matchRpc('skv_create_match', { config: fixture });
+      }
+    });
+  }}>
+    <h2 className="font-bold">{t('createPlayoffs')}</h2>
+    <p className="text-sm">{t('playoffsHint')}</p>
+    <div className="grid gap-3 sm:grid-cols-2">
       <FixtureTime defaultStart={competition.starts_at} requiredTime />
       <Field label={t('courts')}><input className={matchInput} name="courts" required
         maxLength={400} /></Field>
-      <Button type="submit" disabled={save.busy || teams.length < 2 || teams.length > 20}>
-        {t('roundRobin')}</Button>
-    </form>
-  </div>;
+    </div>
+    <Result save={save} />
+    <Button type="submit" disabled={save.busy || teams.length < 4}>{t('createPlayoffs')}</Button>
+  </form>;
+}
+
+/** One-shot result entry for matches played without live scoring. */
+function QuickResult({ match }: { match: ControlledMatch }) {
+  const { t } = useMatchText();
+  const save = useSave();
+  const [open, setOpen] = useState(false);
+  const [setCount, setSetCount] = useState(2);
+  if (!open) return <Button variant="outline" onClick={() => setOpen(true)}>
+    {t('enterResult')}</Button>;
+  return <form className="w-full space-y-2 rounded-md border border-neutral-200 p-3
+      dark:border-neutral-700" onSubmit={event => {
+    const form = formData(event);
+    const sets: { a: number; b: number }[] = [];
+    for (let index = 1; index <= setCount; index++) {
+      sets.push({ a: +text(form, `a${index}`), b: +text(form, `b${index}`) });
+    }
+    void save.run(() => matchRpc('skv_enter_result', { mid: match.id, sets,
+      note: text(form, 'note') }));
+  }}>
+    <h3 className="font-bold">{t('enterResult')}</h3>
+    <Field label={t('setsPlayed')}>
+      <select className={matchInput} value={setCount} onChange={e => setSetCount(+e.target.value)}>
+        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+      </select>
+    </Field>
+    <div className="grid gap-2">
+      {Array.from({ length: setCount }, (_, index) => index + 1).map(index =>
+        <div key={index} className="flex items-center gap-2">
+          <span className="w-14 text-sm font-semibold">{t('setN')} {index}</span>
+          <input name={`a${index}`} aria-label={`${match.team_a} ${index}`} required type="number"
+            min={0} max={99} defaultValue={0} className={`${matchInput} w-20`} />
+          <span>:</span>
+          <input name={`b${index}`} aria-label={`${match.team_b} ${index}`} required type="number"
+            min={0} max={99} defaultValue={0} className={`${matchInput} w-20`} />
+        </div>)}
+    </div>
+    <Field label={t('note')}><input name="note" className={matchInput} required minLength={1}
+      maxLength={500} defaultValue={t('enterResult')} /></Field>
+    <p className="text-sm">{t('enterResultHint')}</p>
+    <Result save={save} />
+    <div className="flex gap-2">
+      <Button type="submit" disabled={save.busy}>{t('save')}</Button>
+      <Button type="button" variant="outline" onClick={() => setOpen(false)}>{t('dismiss')}</Button>
+    </div>
+  </form>;
+}
+
+/** Replace playoff placeholder labels ("1A", "Sieger HF1") with the real teams. */
+function ResolveTeams({ match }: { match: ControlledMatch }) {
+  const { t } = useMatchText();
+  const save = useSave();
+  const teams = useTeamsQuery(match.competition_id);
+  return <form className="w-full space-y-2 rounded-md border border-accent-300 p-3
+      dark:border-accent-700" onSubmit={event => {
+    const form = formData(event);
+    void save.run(() => matchRpc('skv_edit_match', { mid: match.id, config: {
+      team_a_id: text(form, 'team_a') || null, team_b_id: text(form, 'team_b') || null,
+    } }));
+  }}>
+    <h3 className="font-bold">{t('resolveTeams')}</h3>
+    {([['team_a', match.team_a, match.team_a_id], ['team_b', match.team_b, match.team_b_id]] as const)
+      .map(([name, label, current]) =>
+        <Field key={name} label={`${name === 'team_a' ? t('teamA') : t('teamB')}: ${label}`}>
+          <select name={name} className={matchInput} defaultValue={current ?? ''} required>
+            <option value="">{t('chooseTeam')}</option>
+            {(teams.data ?? []).map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
+          </select>
+        </Field>)}
+    <Result save={save} />
+    <Button type="submit" disabled={save.busy}>{t('save')}</Button>
+  </form>;
 }
 
 function FixtureTime({ defaultStart, requiredTime, duration = 60, disabled = false }: {
@@ -237,12 +423,7 @@ function CompetitionManagement({ competition }: { competition: Competition }) {
   const { t } = useMatchText();
   const save = useSave();
   const standings = useClubStandings(competition.id);
-  const teams = useQuery({ queryKey: ['skv-teams', competition.id], queryFn: async () => {
-    const { data, error } = await matchClient().from('skv_competition_teams')
-      .select('skv_teams(id,name)').eq('competition_id', competition.id);
-    if (error) throw new Error(error.message);
-    return (data as unknown as { skv_teams: Team }[]).map(row => row.skv_teams).filter(Boolean);
-  } });
+  const teams = useTeamsQuery(competition.id);
   return <>
     <form className={`${matchCard} space-y-3`} onSubmit={event => {
       const form = formData(event);
@@ -361,12 +542,20 @@ function Fixture({ match }: { match: ControlledMatch }) {
   const deletable = !match.published && match.state.status !== 'completed';
   return <details className={matchCard}>
     <summary className="cursor-pointer break-words font-semibold">
+      {match.match_number ? `#${match.match_number} · ` : ''}
+      {match.stage ? `${match.stage} · ` : ''}
       {match.team_a} – {match.team_b} · {match.court} · {t(match.state.status)}
       {match.referee_team && ` · ${t('refereeTeam')}: ${match.referee_team}`}
       {match.scheduled_at && ` · ${formatMatchDate(match.scheduled_at, language)}`}
     </summary>
-    <Button asChild className="my-3"><Link to={`/scoreboard/${match.id}/control`}>
-      {t('control')}</Link></Button>
+    <div className="my-3 flex flex-wrap gap-2">
+      <Button asChild><Link to={`/scoreboard/${match.id}/control`}>
+        {t('control')}</Link></Button>
+      {scheduled && match.team_a_id && match.team_b_id &&
+        <QuickResult match={match} />}
+    </div>
+    {scheduled && (!match.team_a_id || !match.team_b_id) &&
+      <ResolveTeams match={match} />}
     <div className="grid gap-4 lg:grid-cols-2">
       <form className="space-y-2" onSubmit={event => {
         const form = formData(event);

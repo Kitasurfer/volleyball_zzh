@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyScore, canSwitchDecider, currentSet, indoorRules, initialMatch, setWins,
+import { applyScore, canSwitchDecider, currentSet, indoorRules, initialMatch, setWins, switchDue,
   type MatchRules, type MatchState, type Side } from '@/lib/matchRules';
 import { berlinTime, compareLeagueResult, roundRobin, type ControlledMatch, type PublicScore } from '@/lib/matchApi';
 import type { CompetitionMatch } from '@/types/standings';
@@ -71,7 +71,10 @@ describe('volleyball rules', () => {
     expect(canSwitchDecider(third, r)).toBe(true);
     const swapped = applyScore(third, r, { type: 'SIDES_SWITCHED' });
     expect(swapped.left).not.toBe(third.left);
-    expect(swapped.sets).toEqual(third.sets);
+    // The scores themselves stay untouched; only the switch counter advances.
+    expect(swapped.sets.map(({ switches: _a, ...rest }) => rest))
+      .toEqual(third.sets.map(({ switches: _b, ...rest }) => rest));
+    expect(currentSet(swapped)?.switches).toBe(1);
     expect(canSwitchDecider(swapped, r)).toBe(false);
   });
 
@@ -176,13 +179,101 @@ describe('timeouts', () => {
   });
 });
 
+describe('scoring extensions', () => {
+  it('subtracts points without touching the serve and reopens a finished set', () => {
+    const r = indoorRules(1);
+    let s = correct(start(r), r, 24, 20);
+    s = applyScore(s, r, { type: 'POINT_AWARDED', side: 'a' });
+    expect(currentSet(s)?.winner).toBe('a');
+    expect(s.serve).toBe('a');
+    const removed = applyScore(s, r, { type: 'POINT_REMOVED', side: 'a' });
+    expect(currentSet(removed)).toMatchObject({ a: 24, b: 20, winner: null });
+    expect(removed.serve).toBe('a');
+    expect(() => applyScore(correct(start(r), r, 0, 0), r,
+      { type: 'POINT_REMOVED', side: 'a' })).toThrow('invalid_action');
+  });
+
+  it('counts substitutions up to the configured limit per set', () => {
+    const r: MatchRules = { ...indoorRules(3), substitutions: 2 };
+    let s = start(r);
+    s = applyScore(s, r, { type: 'SUBSTITUTION', side: 'a' });
+    s = applyScore(s, r, { type: 'SUBSTITUTION', side: 'a' });
+    expect(currentSet(s)?.subs_a).toBe(2);
+    expect(() => applyScore(s, r, { type: 'SUBSTITUTION', side: 'a' })).toThrow('invalid_action');
+    const finished = correct(s, r, 25, 20);
+    const second = next(finished, r);
+    expect(currentSet(second)?.subs_a).toBe(0);
+  });
+
+  it('disables substitutions when the limit is zero', () => {
+    const r: MatchRules = { ...indoorRules(1), substitutions: 0 };
+    expect(() => applyScore(start(r), r, { type: 'SUBSTITUTION', side: 'a' }))
+      .toThrow('invalid_action');
+  });
+
+  it('records warnings without changing the score', () => {
+    const r = indoorRules(1);
+    const s = applyScore(start(r), r, { type: 'SANCTION', side: 'a', kind: 'warning' });
+    expect(currentSet(s)).toMatchObject({ a: 0, b: 0 });
+    expect(currentSet(s)?.sanctions).toEqual([{ side: 'a', kind: 'warning' }]);
+    expect(s.serve).toBe('a');
+  });
+
+  it('awards point and serve to the opponent on a penalty, ending set and match', () => {
+    const r = indoorRules(1);
+    let s = correct(start(r), r, 24, 20);
+    s = applyScore(s, r, { type: 'SANCTION', side: 'b', kind: 'penalty' });
+    expect(currentSet(s)).toMatchObject({ a: 25, b: 20, winner: 'a' });
+    expect(s.serve).toBe('a');
+    expect(s.winner).toBe('a');
+    expect(currentSet(s)?.sanctions).toEqual([{ side: 'b', kind: 'penalty' }]);
+  });
+
+  it('rejects unknown scoring actions on finished sets', () => {
+    const r = indoorRules(1);
+    const s = correct(start(r), r, 25, 20);
+    expect(() => applyScore(s, r, { type: 'SUBSTITUTION', side: 'a' })).toThrow('invalid_action');
+    expect(() => applyScore(s, r, { type: 'SANCTION', side: 'a', kind: 'warning' }))
+      .toThrow('invalid_action');
+    expect(() => applyScore(s, r, { type: 'TIMEOUT_CALLED', side: 'a' })).toThrow('invalid_action');
+  });
+
+  it('honours a custom timeout limit', () => {
+    const r: MatchRules = { ...indoorRules(1), timeouts: 1 };
+    const s = applyScore(start(r), r, { type: 'TIMEOUT_CALLED', side: 'a' });
+    expect(currentSet(s)?.timeouts_a).toBe(1);
+    expect(() => applyScore(s, r, { type: 'TIMEOUT_CALLED', side: 'a' })).toThrow('invalid_action');
+  });
+
+  it('prompts beach side switches every seven points in every set', () => {
+    const r: MatchRules = { ...indoorRules(1), points: 21, switchAt: 0, switchEvery: 7 };
+    let s = correct(start(r), r, 4, 3);
+    expect(switchDue(s, r)).toBe(true);
+    s = applyScore(s, r, { type: 'SIDES_SWITCHED' });
+    expect(switchDue(s, r)).toBe(false);
+    expect(currentSet(s)?.switches).toBe(1);
+    s = correct(s, r, 8, 6);
+    expect(switchDue(s, r)).toBe(true);
+  });
+
+  it('uses the decider interval in the last set instead of the regular one', () => {
+    const r: MatchRules = { ...indoorRules(3), switchEvery: 7, switchEveryDecider: 5 };
+    const first = correct(start(r), r, 25, 15);
+    const second = correct(next(first, r), r, 18, 25);
+    const third = correct(next(second, r), r, 3, 2);
+    expect(switchDue(third, r)).toBe(true);
+    const swapped = applyScore(third, r, { type: 'SIDES_SWITCHED' });
+    expect(switchDue(swapped, r)).toBe(false);
+  });
+});
+
 describe('durable event projection', () => {
   it('retains ordered pending actions, base revisions and undo references', () => {
     const match: ControlledMatch = {
       id: 'test', team_a: 'A', team_b: 'B', court: '1', rules: indoorRules(1), state: initialMatch(),
       version: 0, published: true, competition_id: null, external_match_id: null, scheduled_at: null,
       started_at: null, finished_at: null, updated_at: new Date().toISOString(), duration_minutes: 60,
-      referee_team: null,
+      referee_team: null, team_a_id: null, team_b_id: null, stage: '', match_number: null,
     };
     let draft = seedDraft('test', match);
     draft = queueAction(draft, { type: 'MATCH_STARTED', side: 'a' }, false);

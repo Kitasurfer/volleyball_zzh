@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
 import { Seo } from '@/components/Seo';
@@ -6,10 +6,76 @@ import { MatchScore, SetReport, matchPage } from '@/components/MatchScore';
 import { useMatchText } from '@/data/matchTranslations';
 import { usePublicScore, usePublicScores } from '@/hooks/usePublicScores';
 import { formatMatchDate } from '@/lib/matchApi';
+import type { MatchState } from '@/lib/matchRules';
 
 export default function MatchSpectatorPage({ display = false }: { display?: boolean }) {
   const { matchId = '' } = useParams();
   return <Spectator key={matchId} id={matchId} display={display} />;
+}
+
+const TIMEOUT_SECONDS = 30;
+
+function useTimeoutOverlay(match: { state: MatchState; updated_at: string } | null | undefined) {
+  const [started, setStarted] = useState(0);
+  const total = match?.state.sets.reduce((sum, s) =>
+    sum + (s.timeouts_a ?? 0) + (s.timeouts_b ?? 0), 0) ?? 0;
+  const previous = useRef<{ total: number; initialized: boolean }>({ total: 0, initialized: false });
+  const [, force] = useState(0);
+  useEffect(() => {
+    if (!previous.current.initialized) {
+      // Spectators joining mid-match must not see a phantom overlay for old timeouts.
+      previous.current = { total, initialized: true };
+      return;
+    }
+    if (total > previous.current.total) {
+      previous.current.total = total;
+      setStarted(Date.now());
+    } else {
+      previous.current.total = total;
+    }
+    if (!started) return;
+    const timer = window.setInterval(() => {
+      if (Date.now() - started >= TIMEOUT_SECONDS * 1000) setStarted(0);
+      else force(x => x + 1);
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [total, started, match?.updated_at]);
+  if (!started || !match || match.state.status !== 'live') return 0;
+  return Math.max(0, TIMEOUT_SECONDS - Math.floor((Date.now() - started) / 1000));
+}
+
+function useClock() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return now;
+}
+
+function useBeep(enabled: boolean) {
+  const context = useRef<AudioContext>();
+  return useCallback((kind: 'set' | 'match') => {
+    if (!enabled) return;
+    try {
+      context.current ??= new AudioContext();
+      const audio = context.current;
+      if (audio.state === 'suspended') void audio.resume();
+      const pattern = kind === 'match' ? [880, 660, 880] : [880, 880];
+      pattern.forEach((frequency, index) => {
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'square';
+        gain.gain.setValueAtTime(0.0001, audio.currentTime + index * 0.35);
+        gain.gain.exponentialRampToValueAtTime(0.12, audio.currentTime + index * 0.35 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + index * 0.35 + 0.3);
+        oscillator.connect(gain).connect(audio.destination);
+        oscillator.start(audio.currentTime + index * 0.35);
+        oscillator.stop(audio.currentTime + index * 0.35 + 0.32);
+      });
+    } catch { /* Audio is optional. */ }
+  }, [enabled]);
 }
 
 function Spectator({ id, display }: { id: string; display: boolean }) {
@@ -18,6 +84,23 @@ function Spectator({ id, display }: { id: string; display: boolean }) {
   const { data: match, isLoading, isError, connected } = usePublicScore(id);
   const [notice, setNotice] = useState('');
   const [qr, setQr] = useState('');
+  const timeoutLeft = useTimeoutOverlay(match);
+  const now = useClock();
+  const [soundOn, setSoundOn] = useState(() => {
+    try { return localStorage.getItem('skv-sound') === '1'; } catch { return false; }
+  });
+  const beep = useBeep(soundOn && display);
+  const set = match?.state.sets[match.state.sets.length - 1];
+  const lastSetSignal = useRef('');
+  useEffect(() => {
+    if (!match) return;
+    const key = `${match.state.sets.length}:${set?.winner ?? ''}:${match.state.winner ?? ''}`;
+    if (set?.winner && lastSetSignal.current && lastSetSignal.current !== key) {
+      beep(match.state.winner ? 'match' : 'set');
+    }
+    if (!lastSetSignal.current) lastSetSignal.current = key;
+    else if (lastSetSignal.current !== key) lastSetSignal.current = key;
+  }, [match, set?.winner, beep]);
   const spectatorUrl = `${window.location.origin}/scoreboard/${id}`;
   const published = !!match;
   const finished = !!match && ['completed', 'cancelled'].includes(match.state.status);
@@ -73,14 +156,34 @@ function Spectator({ id, display }: { id: string; display: boolean }) {
           <h1 className="break-words font-bold">{match.competition_name || title}</h1>
           {match.external_match_id && <p className="text-sm">{t('unofficial')}</p>}
         </div>
-        {display && <Button variant="accent" onClick={() => {
-          const root = document.documentElement;
-          const request = document.fullscreenElement ? document.exitFullscreen?.() :
-            root.requestFullscreen?.();
-          if (!request) setNotice(t('unavailable'));
-          void request?.catch(() => setNotice(t('unavailable')));
-        }}>{t('fullscreen')}</Button>}
+        {display && <div className="flex gap-2">
+          <Button variant="outline" aria-pressed={soundOn} onClick={() => {
+            const next = !soundOn;
+            setSoundOn(next);
+            try { localStorage.setItem('skv-sound', next ? '1' : '0'); } catch { /* Optional. */ }
+            if (next) beep('set');
+          }}>{t('sound')}</Button>
+          <Button variant="accent" onClick={() => {
+            const root = document.documentElement;
+            const request = document.fullscreenElement ? document.exitFullscreen?.() :
+              root.requestFullscreen?.();
+            if (!request) setNotice(t('unavailable'));
+            void request?.catch(() => setNotice(t('unavailable')));
+          }}>{t('fullscreen')}</Button>
+        </div>}
       </header>
+      {match.state.status === 'scheduled' && match.scheduled_at && (() => {
+        const minutes = Math.round((Date.parse(match.scheduled_at) - now) / 60000);
+        return <p role="status" className={`rounded-md p-3 text-center font-semibold ${display ?
+          'bg-white/10 text-white' : 'bg-primary-50 text-primary-900'}`}>
+          {minutes >= 2 ? `${t('startsIn')} ${minutes} ${t('minutesShort')}` :
+            minutes >= 0 ? t('startsNow') : `${t('delayed')} · ${formatMatchDate(match.scheduled_at, language)}`}
+        </p>;
+      })()}
+      {timeoutLeft > 0 && <p role="status" className={`rounded-md p-3 text-center text-lg
+        font-bold ${display ? 'bg-accent-500 text-primary-950' : 'bg-accent-100 text-primary-900'}`}>
+        {t('timeout')} · {timeoutLeft} {t('secondsShort')}
+      </p>}
       <MatchScore match={match} display={display} />
       <div className={display ? 'text-neutral-900' : ''}><SetReport state={match.state} /></div>
       <p aria-live="polite" className="text-sm">

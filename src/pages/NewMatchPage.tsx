@@ -7,7 +7,7 @@ import { matchError, useMatchText } from '@/data/matchTranslations';
 import { useMatchShell } from '@/hooks/useMatchShell';
 import { useAuth } from '@/lib/AuthContext';
 import { matchClient, matchRpc, type ControlledMatch, type Team } from '@/lib/matchApi';
-import { indoorRules, initialMatch } from '@/lib/matchRules';
+import { beachRules, indoorRules, initialMatch } from '@/lib/matchRules';
 import { saveDraft, seedDraft } from '@/lib/matchStorage';
 
 export default function NewMatchPage() {
@@ -47,7 +47,7 @@ export default function NewMatchPage() {
           id, team_a, team_b, court, rules, state: initialMatch(), competition_id: null,
           external_match_id: null, published: false, scheduled_at: null, duration_minutes: 60,
           updated_at: new Date().toISOString(), started_at: null, finished_at: null, version: 0,
-          referee_team: null,
+          referee_team: null, team_a_id: null, team_b_id: null, stage: '', match_number: null,
         };
         await saveDraft(seedDraft(id, match), undefined);
       } else {
@@ -85,8 +85,15 @@ export default function NewMatchPage() {
       <datalist id="skv-team-names">{admin && teams.data?.map(team =>
         <option value={team.name} key={team.id} />)}</datalist>
       <label className="block">{t('court')} <input className={matchInput} name="court" maxLength={80} /></label>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-semibold">{t('format')}:</span>
+        <Button type="button" variant="outline" size="sm"
+          onClick={() => setRules(indoorRules())}>{t('presetIndoor')}</Button>
+        <Button type="button" variant="outline" size="sm"
+          onClick={() => setRules(beachRules())}>{t('presetBeach')}</Button>
+      </div>
       <details>
-        <summary className="cursor-pointer font-semibold">{t('format')}</summary>
+        <summary className="cursor-pointer font-semibold">{t('editRules')}</summary>
         <div className="mt-3"><RuleFields rules={rules} onChange={setRules} /></div>
       </details>
       {!local && admin && <>

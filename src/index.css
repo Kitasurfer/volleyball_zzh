@@ -55,3 +55,23 @@
 img {
   object-position: top;
 }
+
+/* Tournament protocol printing: flat cards, no shadows, avoid splitting rows. */
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+  main {
+    padding-top: 0 !important;
+  }
+  .shadow-sm, .shadow-md, .shadow-lg {
+    box-shadow: none !important;
+  }
+  table, tr, section {
+    break-inside: avoid;
+  }
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+}

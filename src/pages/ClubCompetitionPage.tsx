@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui';
-import { PublicMatchCards, matchCard, matchPage } from '@/components/MatchScore';
+import { PublicMatchCards, matchCard, matchPage, stageLabel } from '@/components/MatchScore';
 import { useMatchText } from '@/data/matchTranslations';
 import { useClubStandings, usePublicScores } from '@/hooks/usePublicScores';
 import { formatMatchDate, getCompetition, type Standing } from '@/lib/matchApi';
@@ -27,6 +27,16 @@ export function StandingsTable({ rows }: { rows: Standing[] }) {
   </div>;
 }
 
+function GroupStandings({ id, stage }: { id: string; stage: string }) {
+  const { t } = useMatchText();
+  const standings = useClubStandings(id, stage);
+  return <section className="space-y-3">
+    <h3 className="text-xl font-bold text-primary-900">{stageLabel(stage, t)}</h3>
+    {standings.isError ? <p role="alert">{t('error')}</p> : standings.isLoading ?
+      <p>{t('loading')}</p> : <StandingsTable rows={standings.data ?? []} />}
+  </section>;
+}
+
 export default function ClubCompetitionPage() {
   const { competitionId = '' } = useParams();
   const { t, language } = useMatchText();
@@ -42,21 +52,53 @@ export default function ClubCompetitionPage() {
     {t(competition.isLoading ? 'loading' : competition.isError ? 'error' : 'unavailable')}
   </main>;
   const matches = fixtures.data ?? [];
+  const groupStages = [...new Set(matches.map(m => m.stage).filter(s => s.startsWith('group:')))].sort();
+  const playoffOrder = ['playoff:semi1', 'playoff:semi2', 'playoff:third', 'playoff:final'];
+  const playoffs = matches.filter(m => m.stage.startsWith('playoff:'))
+    .sort((x, y) => playoffOrder.indexOf(x.stage) - playoffOrder.indexOf(y.stage));
+  const grouped = (stage: string) => matches.filter(m => m.stage === stage);
   return <main className={matchPage}>
     <header className={`${matchCard} space-y-2`}>
       <p className="text-sm font-semibold text-primary-700">{t('tournaments')}</p>
       <h1 className="break-words text-3xl font-bold text-primary-900">{info.name}</h1>
       <p>{info.venue}{info.starts_at && ` · ${formatMatchDate(info.starts_at, language)}`}</p>
       <p className="whitespace-pre-wrap break-words">{info.description}</p>
+      <p><Link className="font-semibold text-primary-700 underline"
+        to={`/competitions/${competitionId}/courts`}>{t('courtOverview')}</Link></p>
     </header>
-    <section className="space-y-3">
+    {groupStages.length ? <div className="space-y-5">
+      <h2 className="text-2xl font-bold text-primary-900">{t('standings')}</h2>
+      {groupStages.map(stage => <GroupStandings key={stage} id={competitionId} stage={stage} />)}
+    </div> : <section className="space-y-3">
       <h2 className="text-2xl font-bold text-primary-900">{t('standings')}</h2>
       {standings.isError ? <p role="alert">{t('error')}</p> : standings.isLoading ?
         <p>{t('loading')}</p> : <StandingsTable rows={standings.data ?? []} />}
-    </section>
+    </section>}
+    {!!playoffs.length && <section className="space-y-3">
+      <h2 className="text-2xl font-bold text-primary-900">{t('playoffs')}</h2>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {playoffs.map(m => <div key={m.match_id} className={`${matchCard} space-y-1`}>
+          <p className="text-sm font-bold uppercase tracking-wide text-accent-600">
+            {stageLabel(m.stage, t)}{m.match_number ? ` · #${m.match_number}` : ''}</p>
+          <p className="break-words text-lg font-bold">
+            {m.team_a} – {m.team_b}</p>
+          <p className="text-2xl font-black tabular-nums">
+            {m.state.status === 'completed' || m.state.status === 'live' || m.state.status === 'paused'
+              ? `${setWins(m.state, 'a')}:${setWins(m.state, 'b')}`
+              : m.scheduled_at ? formatMatchDate(m.scheduled_at, language) : t(m.state.status)}
+          </p>
+          <p className="text-sm">{m.state.sets.filter(s => s.a || s.b || s.winner)
+            .map(s => `${s.a}:${s.b}`).join(' / ')}</p>
+          <Link className="text-sm font-semibold text-primary-700 underline print:hidden"
+            to={`/scoreboard/${m.match_id}`}>{t('spectate')}</Link>
+        </div>)}
+      </div>
+    </section>}
     <section className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
         <h2 className="text-2xl font-bold text-primary-900">{t('schedule')}</h2>
+        <div className="flex gap-2">
+        <Button variant="outline" onClick={() => window.print()}>{t('print')}</Button>
         <Button variant="outline" disabled={!matches.some(m => m.state.status === 'completed')}
           onClick={() => {
             const rows = [
@@ -70,10 +112,27 @@ export default function ClubCompetitionPage() {
             downloadMatchFile('skv-results.csv', '\ufeff' +
               rows.map(row => row.map(csvField).join(';')).join('\r\n'), 'text/csv;charset=utf-8');
           }}>{t('export')}</Button>
+        </div>
       </div>
       {fixtures.isError && <p role="alert">{t('offline')}</p>}
       {!matches.length && <p>{t(fixtures.isLoading ? 'loading' : 'empty')}</p>}
-      <PublicMatchCards matches={matches} />
+      {groupStages.length ? <div className="space-y-5">
+        {[...groupStages, '', ...playoffOrder.filter(s => playoffs.some(m => m.stage === s))]
+          .filter((stage, index, all) => all.indexOf(stage) === index &&
+            (stage !== '' || matches.some(m => !m.stage)))
+          .map(stage => grouped(stage).length ? <div key={stage || 'main'} className="space-y-3">
+            {stage && <h3 className="text-lg font-bold text-primary-900">{stageLabel(stage, t)}</h3>}
+            <PublicMatchCards matches={grouped(stage)} />
+          </div> : null)}
+      </div> : <PublicMatchCards matches={matches} />}
     </section>
+    <footer className="mt-10 hidden print:block">
+      <p className="text-lg font-bold">{t('protocol')} · {info.name}</p>
+      <p>{info.venue}{info.starts_at && ` · ${formatMatchDate(info.starts_at, language)}`}</p>
+      <div className="mt-8 grid grid-cols-2 gap-8">
+        <p className="border-t border-black pt-1">{t('organizerSignature')}</p>
+        <p className="border-t border-black pt-1">{t('refereeSignature')}</p>
+      </div>
+    </footer>
   </main>;
 }

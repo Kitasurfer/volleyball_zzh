@@ -35,3 +35,12 @@ Use the scratch postgres instance instead (postgresql@14 via homebrew):
   `context.addInitScript` to override `navigator.onLine` and seed sessionStorage.
 - `.env` points at local supabase (127.0.0.1:54321); most pages degrade gracefully
   when it is down.
+
+## Production database
+- Project ref `kxwmkvtxkaczuonnnxlj` (volleyball, Stockholm) is linked; `supabase db push`
+  works. Out-of-order migrations need `--include-all`.
+- The gallery tables existed in production from manual setup with a slightly different
+  shape — never assume production matches local migrations exactly. To inspect production
+  schema state, add a throwaway migration whose `raise exception` carries the probe result
+  (transaction rolls back, nothing is recorded), run `db push`, then delete the file.
+- `supabase db dump --linked` hangs against this project (lock waits) — prefer the probe.

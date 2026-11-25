@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui';
@@ -138,17 +138,58 @@ function CompetitionForm({ competition, onSave }: {
   </form>;
 }
 
+/** Shareable referee access link with QR: scanning it opens the control page
+ *  where the referee enters a name; the admin then approves the request. */
+function RefereeAccessLink({ id }: { id: string }) {
+  const { t } = useMatchText();
+  const [qr, setQr] = useState('');
+  const [copied, setCopied] = useState(false);
+  const url = `${window.location.origin}/scoreboard/${id}/control`;
+  useEffect(() => {
+    let live = true;
+    void import('qrcode').then(qrcode => qrcode.toDataURL(url, { margin: 1, width: 180 }))
+      .then(image => { if (live) setQr(image); });
+    return () => { live = false; };
+  }, [url]);
+  return <div className="flex flex-wrap items-center gap-3 rounded-lg border border-primary-200 p-3">
+    {qr && <img src={qr} width={120} height={120} alt={t('refereeAccess')} className="shrink-0" />}
+    <div className="min-w-0 flex-1 space-y-2">
+      <p className="text-sm font-semibold">{t('refereeAccess')}</p>
+      <p className="break-all text-xs text-primary-700">{url}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={() => {
+          void navigator.clipboard?.writeText(url).then(() => {
+            setCopied(true); window.setTimeout(() => setCopied(false), 2000);
+          });
+        }}>{copied ? t('copied') : t('copyLink')}</Button>
+      </div>
+      <p className="text-xs text-primary-600">{t('accessLinkHint')}</p>
+    </div>
+  </div>;
+}
+
 /** Referee team select listing all competition teams; keeps a foreign current
  *  value selectable so nothing is lost when editing older matches. */
 function RefereeTeamInput({ teams, name = 'referee_team', defaultValue = '' }: {
   teams: Team[]; name?: string; defaultValue?: string;
 }) {
+  const { t } = useMatchText();
   const known = teams.some(team => team.name === defaultValue);
+  const [custom, setCustom] = useState(Boolean(defaultValue && !known));
+  if (custom) {
+    return <div className="flex items-center gap-2">
+      <input className={matchInput} name={name} maxLength={100} autoComplete="off"
+        defaultValue={defaultValue} placeholder={t('refereeCustomHint')} />
+      <button type="button" className="shrink-0 text-sm text-primary-700 underline"
+        onClick={() => setCustom(false)}>{t('refereePickTeam')}</button>
+    </div>;
+  }
   return <select key={teams.length ? 'ready' : 'loading'} className={matchInput}
-    name={name} defaultValue={defaultValue}>
+    name={name} defaultValue={known ? defaultValue : ''}
+    onChange={event => { if (event.target.value === '__custom__') setCustom(true); }}>
     <option value="">—</option>
     {teams.map(team => <option key={team.id} value={team.name}>{team.name}</option>)}
-    {defaultValue && !known && <option value={defaultValue}>{defaultValue}</option>}
+    <option value="__custom__">{t('refereeCustom')}</option>
   </select>;
 }
 
@@ -684,6 +725,7 @@ function Fixture({ match, compLabel = '' }: { match: ControlledMatch; compLabel?
         <Result save={edit} />
         <Button type="submit" disabled={edit.busy}>{t('save')}</Button>
       </form>
+      <RefereeAccessLink id={match.id} />
       <form className="space-y-2" onSubmit={event => {
         const revoke = (event.nativeEvent as SubmitEvent).submitter?.getAttribute('value') === 'revoke';
         const form = formData(event);

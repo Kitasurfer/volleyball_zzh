@@ -44,3 +44,15 @@ Use the scratch postgres instance instead (postgresql@14 via homebrew):
   schema state, add a throwaway migration whose `raise exception` carries the probe result
   (transaction rolls back, nothing is recorded), run `db push`, then delete the file.
 - `supabase db dump --linked` hangs against this project (lock waits) — prefer the probe.
+
+## Deployment pipeline (since Nov 2026)
+- Netlify automatic builds are DISABLED on both sites (`stop_builds`) — they burned
+  300 free credits in 5 days. Deploys run through `.github/workflows/deploy.yml`:
+  GitHub Actions builds the project (free for public repos) and uploads the finished
+  `dist` to Netlify, which consumes no build credits.
+- Secrets live in GitHub repo settings: NETLIFY_AUTH_TOKEN, NETLIFY_SITE_ID,
+  VITE_SUPABASE_URL/ANON_KEY/FUNCTIONS_URL.
+- Main site `skvunterensingen` is in Netlify account `skillhandtx@gmail.com`
+  (site id 3c531e36-...). Mirror `zizishausen-volleyball` in account ax6591em.
+- Credit period resets on the 22nd of each month. While credits are exhausted ALL
+  deploys (even uploads) are blocked with "Account credit usage exceeded".
